@@ -11,7 +11,7 @@ import FirebaseAnalytics
 import FirebaseMessaging
 import Foundation
 import GoogleSignIn
-import InstabugSDK
+import LuciqSDK
 import ReownWalletKit
 import Resolver
 import SwiftUI
@@ -109,7 +109,7 @@ class AppDelegate: RCTDefaultReactNativeFactoryDelegate, UIApplicationDelegate {
             _ = Replies.didReceiveRemoteNotification(notification)
         }
         FlowLog.logEnv()
-        InstallInfoManager.recordInstallInfoIfNeeded()
+        asyncConfig()
         return true
     }
 
@@ -249,6 +249,13 @@ extension AppDelegate {
 
         HUD.setupProgressHUD()
     }
+    private func asyncConfig() {
+        Task {
+            await fetchWhatsNew()
+            //must be called after `fetchWhatsNew`
+            InstallInfoManager.recordInstallInfoIfNeeded()
+        }
+    }
 }
 
 // MARK: - UI
@@ -320,7 +327,7 @@ extension AppDelegate {
     }
 
     func application(_: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
-        let isInstabugNotification = Replies.didReceiveRemoteNotification(userInfo)
+        let isLuciqNotification = Replies.didReceiveRemoteNotification(userInfo)
     }
 }
 

@@ -1,5 +1,5 @@
 import { Box, Card, CardActionArea, CardContent, CardMedia, Typography } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 
 import fallback from '@/ui/assets/image/errorImage.png';
@@ -7,7 +7,6 @@ import type { PostMedia } from '@/ui/utils/url';
 
 interface GridViewProps {
   data: any;
-  accessible?: any[];
   blockList?: any[];
   index: number;
   ownerAddress: string;
@@ -21,7 +20,6 @@ interface GridViewProps {
 const GridView = (props: GridViewProps) => {
   const {
     data,
-    accessible,
     blockList = [],
     index,
     ownerAddress,
@@ -33,25 +31,12 @@ const GridView = (props: GridViewProps) => {
   } = props;
 
   const [loaded, setLoaded] = useState(false);
-  const [isAccessible, setAccessible] = useState(true);
-  const [media, setGetMediea] = useState<PostMedia | null>(null);
+  const [media, setMedia] = useState<PostMedia | null>(null);
+  const [imageCandidateIndex, setImageCandidateIndex] = useState(0);
+  const [imageExhausted, setImageExhausted] = useState(false);
   const fetchMedia = useCallback(async () => {
-    setGetMediea(data.postMedia || data.media);
-
-    if (accessible) {
-      accessible.forEach((item) => {
-        const parts = item.id.split('.');
-        // Check both possible contract name fields
-        const contractName = data.contractName || data.collectionContractName;
-
-        if (parts[2] === contractName && item.idList.includes(data.id)) {
-          setAccessible(true);
-        } else {
-          setAccessible(false);
-        }
-      });
-    }
-  }, [data, accessible]);
+    setMedia(data.postMedia || data.media);
+  }, [data]);
 
   useEffect(() => {
     fetchMedia();
@@ -72,16 +57,92 @@ const GridView = (props: GridViewProps) => {
       return '';
     }
 
+    // Keep historical endpoint behavior as primary.
     const lilicoEndpoint = 'https://gateway.pinata.cloud/ipfs/';
 
     const replacedURL = url
       .replace('ipfs://', lilicoEndpoint)
       .replace('https://ipfs.infura.io/ipfs/', lilicoEndpoint)
+      .replace('https://ipfs-gtwy-nft.infura-ipfs.io/ipfs/', lilicoEndpoint)
       .replace('https://ipfs.io/ipfs/', lilicoEndpoint)
       .replace('https://lilico.app/api/ipfs/', lilicoEndpoint);
 
     return replacedURL;
   };
+
+  const getIpfsPath = (url: string): string | null => {
+    if (!url) return null;
+    const normalized = url.trim();
+    if (normalized.startsWith('ipfs://')) {
+      return normalized
+        .replace(/^ipfs:\/\//, '')
+        .replace(/^ipfs\//, '')
+        .replace(/^\/+/, '');
+    }
+    const markers = [
+      'https://ipfs.io/ipfs/',
+      'https://gateway.pinata.cloud/ipfs/',
+      'https://cloudflare-ipfs.com/ipfs/',
+      'https://dweb.link/ipfs/',
+      'https://nftstorage.link/ipfs/',
+      'https://ipfs.infura.io/ipfs/',
+      'https://ipfs-gtwy-nft.infura-ipfs.io/ipfs/',
+      'https://lilico.app/api/ipfs/',
+    ];
+    const marker = markers.find((prefix) => normalized.startsWith(prefix));
+    if (!marker) return null;
+    return normalized.slice(marker.length).replace(/^\/+/, '');
+  };
+
+  const expandIpfsGateways = (url: string): string[] => {
+    const ipfsPath = getIpfsPath(url);
+    if (!ipfsPath) {
+      return [url];
+    }
+    const gateways = [
+      'https://gateway.pinata.cloud/ipfs/',
+      'https://cloudflare-ipfs.com/ipfs/',
+      'https://ipfs.io/ipfs/',
+      'https://dweb.link/ipfs/',
+      'https://nftstorage.link/ipfs/',
+    ];
+    return gateways.map((gateway) => `${gateway}${ipfsPath}`);
+  };
+
+  const getImageCandidates = (): string[] => {
+    const traitImageUrl = Array.isArray(data?.traits)
+      ? data.traits.find((trait) => trait?.name === 'imageUrl')?.value
+      : '';
+
+    // Some collections expose imageUrl with a trailing slash that breaks direct image loading.
+    const normalizedTraitImage =
+      typeof traitImageUrl === 'string' ? traitImageUrl.replace(/\/+$/, '') : '';
+
+    const primarySources = [
+      media?.image || '',
+      data?.postMedia?.image || '',
+      data?.thumbnail || '',
+      normalizedTraitImage,
+    ].map((url) => replaceIPFS(url || ''));
+
+    const expanded = primarySources
+      .filter((url) => !!url)
+      .flatMap((url) => expandIpfsGateways(url));
+
+    return Array.from(new Set(expanded));
+  };
+
+  const imageCandidates = useMemo(() => getImageCandidates(), [media, data]);
+  const currentImageSrc = imageExhausted
+    ? fallback
+    : (imageCandidates[imageCandidateIndex] ?? fallback);
+
+  useEffect(() => {
+    // Reset loading state only when switching to another NFT card.
+    setImageCandidateIndex(0);
+    setImageExhausted(false);
+    setLoaded(false);
+  }, [data?.id, data?.flowIdentifier]);
 
   const getUri = () => {
     return (
@@ -99,43 +160,29 @@ const GridView = (props: GridViewProps) => {
           />
         )}
 
-        {media &&
-          (media.image ? (
-            <img
-              src={replaceIPFS(media.image)}
-              style={{
-                width: '100%',
-                height: '100%',
-                borderRadius: '8px',
-                margin: '0 auto',
-                objectFit: 'cover',
-              }}
-              onLoad={() => setLoaded(true)}
-              onError={({ currentTarget }) => {
-                currentTarget.onerror = null; // prevents looping
-                currentTarget.src = fallback;
-              }}
-            />
-          ) : (
-            <>
-              <video
-                loop
-                autoPlay
-                muted
-                preload="auto"
-                onLoadedData={() => setLoaded(true)}
-                style={{
-                  margin: '0 auto',
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '8px',
-                }}
-              >
-                <source src={replaceIPFS(media.video)} type="video/mp4" />
-              </video>
-            </>
-          ))}
+        <img
+          src={currentImageSrc}
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '8px',
+            margin: '0 auto',
+            objectFit: 'cover',
+          }}
+          onLoad={() => setLoaded(true)}
+          onError={
+            imageExhausted
+              ? () => setLoaded(true)
+              : () => {
+                  if (imageCandidateIndex < imageCandidates.length - 1) {
+                    setImageCandidateIndex((prev) => prev + 1);
+                    return;
+                  }
+                  setImageExhausted(true);
+                  setLoaded(true);
+                }
+          }
+        />
       </>
     );
   };

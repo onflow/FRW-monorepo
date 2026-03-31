@@ -100,10 +100,10 @@ describe('Transaction Service', () => {
       return Promise.resolve();
     });
     vi.mocked(getInvalidData).mockImplementation((key) => {
-      return Promise.resolve(undefined);
+      return Promise.resolve(memoryStore.get(key));
     });
     vi.mocked(getValidData).mockImplementation((key) => {
-      return Promise.resolve(undefined);
+      return Promise.resolve(memoryStore.get(key));
     });
     vi.mocked(setCachedData).mockImplementation((key, value) => {
       memoryStore.set(key, value);
@@ -242,11 +242,14 @@ describe('Transaction Service', () => {
       await transaction.updatePending(network, address, txId, status);
 
       const pendingItems = await transaction.listPending(network, address);
-      expect(pendingItems[0].status).toBe('Sealed');
-      expect(pendingItems[0].error).toBe(false);
-      expect(pendingItems[0].cadenceTxId).toBe(txId);
-      expect(pendingItems[0].evmTxIds).toHaveLength(1);
-      expect(pendingItems[0].evmTxIds![0]).toMatch(/^0x[0-9a-f]+$/);
+      expect(pendingItems).toHaveLength(0);
+
+      const transactions = await transaction.listTransactions(network, address, '0', '15');
+      expect(transactions[0].status).toBe('Sealed');
+      expect(transactions[0].error).toBe(false);
+      expect(transactions[0].cadenceTxId).toBe(txId);
+      expect(transactions[0].evmTxIds).toHaveLength(1);
+      expect(transactions[0].evmTxIds![0]).toMatch(/^0x[0-9a-f]+$/);
     });
 
     test('should not duplicate EVM transaction IDs', async () => {
@@ -293,8 +296,11 @@ describe('Transaction Service', () => {
       await transaction.updatePending(network, address, txId, status);
 
       const pendingItems = await transaction.listPending(network, address);
-      expect(pendingItems[0].evmTxIds).toHaveLength(1);
-      expect(pendingItems[0].status).toBe('Sealed');
+      expect(pendingItems).toHaveLength(0);
+
+      const transactions = await transaction.listTransactions(network, address, '0', '15');
+      expect(transactions[0].evmTxIds).toHaveLength(1);
+      expect(transactions[0].status).toBe('Sealed');
     });
 
     test('should mark transaction as error when status code is 1', async () => {
@@ -316,8 +322,11 @@ describe('Transaction Service', () => {
       await transaction.updatePending(network, address, txId, status);
 
       const pendingItems = await transaction.listPending(network, address);
-      expect(pendingItems[0].status).toBe('FAILED');
-      expect(pendingItems[0].error).toBe(true);
+      expect(pendingItems).toHaveLength(0);
+
+      const transactions = await transaction.listTransactions(network, address, '0', '15');
+      expect(transactions[0].status).toBe('FAILED');
+      expect(transactions[0].error).toBe(true);
     });
 
     test('should remove pending transaction', async () => {
@@ -369,8 +378,8 @@ describe('Transaction Service', () => {
       // Update it with EVM transactions to create a composite hash
       const status: TransactionStatus = {
         blockId: '123',
-        status: 4 as TransactionExecutionStatus,
-        statusString: 'Sealed',
+        status: 1 as TransactionExecutionStatus,
+        statusString: 'PENDING',
         statusCode: 0,
         errorMessage: '',
         events: [
@@ -433,8 +442,8 @@ describe('Transaction Service', () => {
 
       const status: TransactionStatus = {
         blockId: '123',
-        status: 4 as TransactionExecutionStatus,
-        statusString: 'Sealed',
+        status: 1 as TransactionExecutionStatus,
+        statusString: 'PENDING',
         statusCode: 0,
         errorMessage: '',
         events,
@@ -445,7 +454,7 @@ describe('Transaction Service', () => {
       const pendingItems = await transaction.listPending(network, address);
       expect(pendingItems[0].evmTxIds).toHaveLength(numEvmTxs);
       expect(pendingItems[0].cadenceTxId).toBe(cadenceTxId);
-      expect(pendingItems[0].status).toBe('Sealed');
+      expect(pendingItems[0].status).toBe('PENDING');
 
       // Verify we can still remove it using any of the IDs
       await transaction.removePending(network, address, pendingItems[0].evmTxIds![25]); // Try removing using a middle EVM tx ID
@@ -490,18 +499,9 @@ describe('Transaction Service', () => {
       // Clear pending transactions for this address
       await transaction.clearPending(network, address);
 
-      // Ensure getValidData returns undefined to force loading from API
-      vi.mocked(getValidData).mockResolvedValue(undefined);
-
-      // Mock getValidData to return empty data structure for getCount
-      vi.mocked(getValidData).mockResolvedValueOnce({
-        count: 0,
-        pendingCount: 0,
-        list: [],
-      });
-
-      // Also ensure getInvalidData returns undefined to avoid existing transaction data
-      vi.mocked(getInvalidData).mockResolvedValue(undefined);
+      // Ensure cache reads are empty for this test start
+      vi.mocked(getValidData).mockImplementation((key) => Promise.resolve(memoryStore.get(key)));
+      vi.mocked(getInvalidData).mockImplementation((key) => Promise.resolve(memoryStore.get(key)));
 
       await transaction.loadTransactions(network, address, '0', '15');
 

@@ -8,6 +8,7 @@ import {
   accessibleAssetQueryKeys,
   accessibleAssetQueries,
   accessibleAssetHelpers,
+  shouldHideCoaAccount,
 } from '@onflow/frw-stores';
 import {
   type CollectionModel,
@@ -172,6 +173,37 @@ export function SelectTokensScreen(): React.ReactElement {
     ...retryConfigs.critical, // Critical batch balance data retry config
   });
 
+  // Identify zero-FLOW-balance EVM addresses — only these need NFT/ERC20 visibility checks
+  const zeroBalanceEvmAddresses = React.useMemo(() => {
+    if (!batchBalances) return [];
+    const balLookup = new Map(batchBalances);
+    return accounts
+      .filter((acc) => {
+        if (acc.type !== 'evm') return false;
+        const balStr = balLookup.get(acc.address) || '0';
+        const match = balStr.match(/^([\d,.]+)/);
+        const val = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+        return val === 0;
+      })
+      .map((acc) => acc.address);
+  }, [batchBalances, accounts]);
+
+  // Batch fetch NFT counts only for zero-FLOW EVM addresses (COA visibility)
+  const { data: batchNFTCounts } = useQuery({
+    queryKey: ['batchNFTCounts', zeroBalanceEvmAddresses, network],
+    queryFn: () => tokenQueries.fetchBatchNFTCounts(zeroBalanceEvmAddresses, network),
+    enabled: zeroBalanceEvmAddresses.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch ERC20 balance presence only for zero-FLOW EVM addresses
+  const { data: batchERC20Balances } = useQuery({
+    queryKey: ['batchERC20HasBalance', zeroBalanceEvmAddresses, network],
+    queryFn: () => tokenQueries.fetchBatchERC20HasBalance(zeroBalanceEvmAddresses, network),
+    enabled: zeroBalanceEvmAddresses.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // 🔥 TanStack Query: Fetch accessible IDs for child accounts only
   const { data: accessibleIds, refetch: refetchAccessibleIds } = useQuery({
     queryKey: accessibleAssetQueryKeys.allowTypes(
@@ -297,13 +329,19 @@ export function SelectTokensScreen(): React.ReactElement {
     return lookup;
   }, [batchBalances]);
 
-  // Convert wallet accounts to AccountCard format with dynamic balances
+  // Convert wallet accounts to AccountCard format with dynamic balances, NFT counts, and filter hidden COAs
   const accountsForModal = React.useMemo(() => {
-    return accounts.map((account) => ({
-      ...account,
-      balance: balanceLookup.get(account.address) || account.balance || '0 FLOW',
-    }));
-  }, [accounts, balanceLookup]);
+    const nftLookup = new Map(batchNFTCounts || []);
+    const erc20Lookup = new Map(batchERC20Balances || []);
+
+    return accounts
+      .map((account) => ({
+        ...account,
+        balance: balanceLookup.get(account.address) || account.balance || '0 FLOW',
+        nfts: String(nftLookup.get(account.address) || 0),
+      }))
+      .filter((account) => !shouldHideCoaAccount(account, erc20Lookup));
+  }, [accounts, balanceLookup, batchNFTCounts, batchERC20Balances]);
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">

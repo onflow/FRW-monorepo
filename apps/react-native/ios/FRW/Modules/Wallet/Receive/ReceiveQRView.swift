@@ -150,7 +150,7 @@ struct ReceiveQRView: RouteableView {
                 .aspectRatio(contentMode: .fit)
                 .width(16)
 
-            Text(.init("deposit_evm_warning"))
+            Text(.init("deposit_evm_warning".localized))
         }
         .font(Font.LL.body3).fontWeight(.regular)
         .fixedSize(horizontal: false, vertical: true)

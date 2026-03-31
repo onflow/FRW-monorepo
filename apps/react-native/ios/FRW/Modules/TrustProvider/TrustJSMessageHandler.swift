@@ -9,14 +9,14 @@ import BigInt
 import Combine
 import CryptoKit
 import Flow
+import FlowWalletKit
 import Foundation
 import ReownWalletKit
 import TrustWeb3Provider
 import WalletCore
 import Web3Core
-import web3swift
 import WebKit
-import FlowWalletKit
+import web3swift
 
 // MARK: - TrustJSMessageHandler
 
@@ -27,10 +27,11 @@ class TrustJSMessageHandler: NSObject {
         Flow.ChainID.mainnet.networkID: .mainnet,
         Flow.ChainID.testnet.networkID: .testnet,
     ]
-    
-    func web3() async throws ->  Web3? {
+
+    func web3() async throws -> Web3? {
         guard let url = TrustWeb3Provider.flowConfig()?.config.ethereum.rpcUrl,
-            let rpcURL = URL(string: url) else {
+            let rpcURL = URL(string: url)
+        else {
             throw NSError(domain: "InvalidRPC", code: -1)
         }
         let web3 = try await Web3.new(rpcURL)
@@ -59,27 +60,27 @@ extension TrustJSMessageHandler {
 
     private func extractMessage(json: [String: Any]) -> Data? {
         guard let params = json["object"] as? [String: Any],
-              let string = params["data"] as? String,
-              let data = Data(hexString: string)
+            let string = params["data"] as? String,
+            let data = Data(hexString: string)
         else {
             return nil
         }
         return data
     }
-  
+
     private func extractEVMAddress(json: [String: Any]) -> String? {
-      guard let params = json["object"] as? [String: Any]
-      else {
-        return nil
-      }
-      let address = params["address"] as? String
-      let from = params["from"] as? String
-      return address ?? from
+        guard let params = json["object"] as? [String: Any]
+        else {
+            return nil
+        }
+        let address = params["address"] as? String
+        let from = params["from"] as? String
+        return address ?? from
     }
 
     private func extractRaw(json: [String: Any]) -> String? {
         guard let params = json["object"] as? [String: Any],
-              let raw = params["raw"] as? String
+            let raw = params["raw"] as? String
         else {
             return nil
         }
@@ -95,9 +96,9 @@ extension TrustJSMessageHandler {
 
     private func extractEthereumChainId(json: [String: Any]) -> Int? {
         guard let params = json["object"] as? [String: Any],
-              let string = params["chainId"] as? String,
-              let chainId = Int(String(string.dropFirst(2)), radix: 16),
-              chainId > 0
+            let string = params["chainId"] as? String,
+            let chainId = Int(String(string.dropFirst(2)), radix: 16),
+            chainId > 0
         else {
             return nil
         }
@@ -113,8 +114,8 @@ extension TrustJSMessageHandler: WKScriptMessageHandler {
         let url = message.frameInfo.request.url ?? webVC?.webView.url
 
         guard let method = extractMethod(json: json),
-              let id = json["id"] as? Int64,
-              let network = extractNetwork(json: json)
+            let id = json["id"] as? Int64,
+            let network = extractNetwork(json: json)
         else {
             log.error("[Trust] json:\(json)")
             return
@@ -139,7 +140,7 @@ extension TrustJSMessageHandler: WKScriptMessageHandler {
             log.info("[Trust] signMessage")
         case .signTypedMessage:
             guard let data = extractMessage(json: json),
-                  let raw = extractRaw(json: json)
+                let raw = extractRaw(json: json)
             else {
                 print("data is missing")
                 return
@@ -157,12 +158,12 @@ extension TrustJSMessageHandler: WKScriptMessageHandler {
             log.info("[Trust] sendTransaction")
         case .ecRecover:
             log.info("[Trust] ecRecover")
-          guard let obj = extractObject(json: json)
-          else {
-              log.info("[Trust] data is missing\(method)")
-              return
-          }
-          handleECRecover(network: network, id: id, json: obj)
+            guard let obj = extractObject(json: json)
+            else {
+                log.info("[Trust] data is missing\(method)")
+                return
+            }
+            handleECRecover(network: network, id: id, json: obj)
         case .watchAsset:
             print("[Trust] watchAsset")
             guard let obj = extractObject(json: json)
@@ -192,27 +193,28 @@ extension TrustJSMessageHandler: WKScriptMessageHandler {
 
 extension TrustJSMessageHandler {
     private func handleRequestAccounts(url: URL?, network: ProviderNetwork, id: Int64) {
-      let address = webVC?.trustProvider?.config.ethereum.address ?? ""
-      
-      let provider = AuthnDataProvider(title: webVC?.webView.title ?? "unknown",
-                                       url: url?.host() ?? "unknown",
-                                       address: address,
-                                       logo: url?.absoluteString.toFavIcon()?.absoluteString
-      )
-      let viewModel = AuthnViewModel(provider: provider) { [weak self] result in
-        guard let self = self else {
-            return
+        let address = webVC?.trustProvider?.config.ethereum.address ?? ""
+
+        let provider = AuthnDataProvider(
+            title: webVC?.webView.title ?? "unknown",
+            url: url?.host() ?? "unknown",
+            address: address,
+            logo: url?.absoluteString.toFavIcon()?.absoluteString
+        )
+        let viewModel = AuthnViewModel(provider: provider) { [weak self] result in
+            guard let self = self else {
+                return
+            }
+
+            if let address = result {
+                webVC?.webView.tw.set(network: network.rawValue, address: address)
+                webVC?.webView.tw.send(network: network, results: [address], to: id)
+            } else {
+                webVC?.webView.tw.send(network: network, error: "Canceled", to: id)
+                log.debug("handle authn cancelled")
+            }
         }
-        
-        if let address =  result {
-          webVC?.webView.tw.set(network: network.rawValue, address: address)
-          webVC?.webView.tw.send(network: network, results: [address], to: id)
-        } else {
-            webVC?.webView.tw.send(network: network, error: "Canceled", to: id)
-            log.debug("handle authn cancelled")
-        }
-      }
-      Router.route(to: RouteMap.Explore.authnV2(viewModel))
+        Router.route(to: RouteMap.Explore.authnV2(viewModel))
     }
 
     private func handleSignPersonal(
@@ -248,41 +250,45 @@ extension TrustJSMessageHandler {
                 }
 
                 Task {
-                  if self.currentIsCoa(EVMAddress) {
-                    guard let hashedData = Utilities.hashPersonalMessage(data) else { return }
-                    let joinData = Flow.DomainTag.user.normalize + hashedData
-                    let address = Flow.Address(hex: addrStr)
-                    guard let sig = try? await self.signWithMessage(data: joinData) else {
-                        HUD.error(title: "sign failed")
-                        await self.webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
-                        return
+                    if self.currentIsCoa(EVMAddress) {
+                        guard let hashedData = Utilities.hashPersonalMessage(data) else { return }
+                        let joinData = Flow.DomainTag.user.normalize + hashedData
+                        let address = Flow.Address(hex: addrStr)
+                        guard let sig = try? await self.signWithMessage(data: joinData) else {
+                            HUD.error(title: "sign failed")
+                            await self.webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
+                            return
+                        }
+                        let keyIndex = await BigUInt(WalletManager.shared.keyIndex)
+                        let proof = COAOwnershipProof(
+                            keyIninces: [keyIndex],
+                            address: address.data,
+                            capabilityPath: "evm",
+                            signatures: [sig]
+                        )
+                        guard let encoded = RLP.encode(proof.rlpList) else {
+                            await self.webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
+                            return
+                        }
+
+                        await self.webVC?.webView.tw.send(
+                            network: .ethereum,
+                            result: encoded.hexString.addHexPrefix(),
+                            to: id
+                        )
+                    } else {
+                        guard let index = await WalletManager.shared.eoaIndex(address: EVMAddress) else {
+                            log.error("[EOA] index is error")
+                            await self.webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
+                            return
+                        }
+                        guard let sig = try? await WalletManager.shared.walletEntity?.ethSignPersonalMessage(data, index: index) else {
+                            log.error("[EOA] sign for data is error")
+                            await self.webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
+                            return
+                        }
+                        await self.webVC?.webView.tw.send(network: .ethereum, result: sig.hexString.addHexPrefix(), to: id)
                     }
-                    let keyIndex = await BigUInt(WalletManager.shared.keyIndex)
-                    let proof = COAOwnershipProof(
-                        keyIninces: [keyIndex],
-                        address: address.data,
-                        capabilityPath: "evm",
-                        signatures: [sig]
-                    )
-                    guard let encoded = RLP.encode(proof.rlpList) else {
-                        await self.webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
-                        return
-                    }
-                    
-                    await self.webVC?.webView.tw.send(
-                        network: .ethereum,
-                        result: encoded.hexString.addHexPrefix(),
-                        to: id
-                    )
-                  } else {
-                    
-                    guard let sig = try? await WalletManager.shared.walletEntity?.ethSignPersonalMessage(data) else {
-                      log.error("[EOA] sign for data is error")
-                      await self.webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
-                      return
-                    }
-                    await self.webVC?.webView.tw.send(network: .ethereum, result: sig.hexString.addHexPrefix(), to: id)
-                  }
                 }
             } else {
                 webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
@@ -316,41 +322,45 @@ extension TrustJSMessageHandler {
                     HUD.error(title: "invalid_address".localized)
                     return
                 }
-                
+
                 Task {
-                  if self.currentIsCoa(EVMAddress) {
-                    let address = Flow.Address(hex: addrStr)
-                    let joinData = Flow.DomainTag.user.normalize + data
-                    guard let sig = try? await self.signWithMessage(data: joinData) else {
-                        HUD.error(title: "sign failed")
-                        return
+                    if self.currentIsCoa(EVMAddress) {
+                        let address = Flow.Address(hex: addrStr)
+                        let joinData = Flow.DomainTag.user.normalize + data
+                        guard let sig = try? await self.signWithMessage(data: joinData) else {
+                            HUD.error(title: "sign failed")
+                            return
+                        }
+                        let keyIndex = BigUInt(WalletManager.shared.keyIndex)
+                        let proof = COAOwnershipProof(
+                            keyIninces: [keyIndex],
+                            address: address.data,
+                            capabilityPath: "evm",
+                            signatures: [sig]
+                        )
+                        guard let encoded = RLP.encode(proof.rlpList) else {
+                            return
+                        }
+                        await self.webVC?.webView.tw.send(
+                            network: .ethereum,
+                            result: encoded.hexString.addHexPrefix(),
+                            to: id
+                        )
+                    } else {
+                        guard let index = await WalletManager.shared.eoaIndex(address: EVMAddress) else {
+                            log.error("[EOA] get index error")
+                            return
+                        }
+                        guard let signature = try? await WalletManager.shared.walletEntity?.ethSignTypedData(json: raw, index: index) else {
+                            return
+                        }
+                        await self.webVC?.webView.tw.send(
+                            network: .ethereum,
+                            result: signature.hexString.addHexPrefix(),
+                            to: id
+                        )
                     }
-                    let keyIndex = BigUInt(WalletManager.shared.keyIndex)
-                    let proof = COAOwnershipProof(
-                        keyIninces: [keyIndex],
-                        address: address.data,
-                        capabilityPath: "evm",
-                        signatures: [sig]
-                    )
-                    guard let encoded = RLP.encode(proof.rlpList) else {
-                        return
-                    }
-                    await self.webVC?.webView.tw.send(
-                        network: .ethereum,
-                        result: encoded.hexString.addHexPrefix(),
-                        to: id
-                    )
-                  } else {
-                    guard let signature = try? await WalletManager.shared.walletEntity?.ethSignTypedData(json: raw) else {
-                      return
-                    }
-                    await self.webVC?.webView.tw.send(
-                        network: .ethereum,
-                        result: signature.hexString.addHexPrefix(),
-                        to: id
-                    )
-                  }
-                    
+
                 }
             } else {
                 webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
@@ -375,8 +385,8 @@ extension TrustJSMessageHandler {
         let originCadence = CadenceManager.shared.current.evm?.callContractV2?.toFunc() ?? ""
 
         guard let data = info.jsonData,
-              let receiveModel = try? JSONDecoder().decode(EVMTransactionReceive.self, from: data),
-              let toAddr = receiveModel.toAddress
+            let receiveModel = try? JSONDecoder().decode(EVMTransactionReceive.self, from: data),
+            let toAddr = receiveModel.toAddress
         else {
             cancel(id: id)
             return
@@ -389,7 +399,7 @@ extension TrustJSMessageHandler {
             .uint64(receiveModel.gasIntValue),
         ]
 
-        let vm = BrowserAuthzViewModel(
+        let vm: BrowserAuthzViewModel = BrowserAuthzViewModel(
             title: title,
             url: url?.absoluteString ?? "unknown",
             logo: url?.absoluteString.toFavIcon()?.absoluteString,
@@ -412,188 +422,232 @@ extension TrustJSMessageHandler {
 
             Task {
                 do {
-                  if self.currentIsCoa(EVMAddress) {
-                    let txid = try await FlowNetwork.sendTransaction(
-                        amount: receiveModel.amount,
-                        data: receiveModel.dataValue,
-                        toAddress: toAddr,
-                        gas: receiveModel.gasIntValue
-                    )
-
-                    let holder = TransactionManager.TransactionHolder(id: txid, type: .transferCoin)
-                    TransactionManager.shared.newTransaction(holder: holder)
-
-                    let calculateId = try await WalletConnectEVMHandler.calculateTX(
-                        receiveModel,
-                        txId: txid
-                    )
-                    log.info("[EVM] calculate TX id: \(calculateId)")
-                    await MainActor.run {
-                        self.webVC?.webView.tw.send(
-                            network: .ethereum,
-                            result: calculateId.addHexPrefix(),
-                            to: id
+                    if self.currentIsCoa(EVMAddress) {
+                        let txid = try await FlowNetwork.sendTransaction(
+                            amount: receiveModel.amount,
+                            data: receiveModel.dataValue,
+                            toAddress: toAddr,
+                            gas: receiveModel.gasIntValue
                         )
-                    }
-                  } else {
-                    // Send the signed transaction to the network
-                    guard let web3 = try await self.web3() else {
-                      log.error("[EOA] Invalid RPC URL for sending transaction")
-                      self.cancel(id: id)
-                      return
-                    }
-                    
-                    guard let chainId = await self.webVC?.trustProvider?.config.ethereum.chainId,
-                          let amount = receiveModel.value
-                    else {
-                      self.cancel(id: id)
-                      return
-                    }
-                    let defaultGas = await WalletManager.defaultGas
-                    // Normalize all hex strings using the helper function
-                    let chainIdHex = String(format: "%x", chainId).normalizeHexString()
-                    let gasValue = (receiveModel.gas ?? String(format: "%x", defaultGas)).normalizeHexString()
 
-                    //MARK: get nonce
-                    let address = await self.webVC?.trustProvider?.config.ethereum.address ?? ""
-                    let nonce = try await self.getTransactionNonce(for: address)
-                    let nonceHex = String(nonce, radix: 16).normalizeHexString()
+                        let holder = TransactionManager.TransactionHolder(id: txid, type: .transferCoin)
+                        TransactionManager.shared.newTransaction(holder: holder)
 
-                    // Prepare transaction input
-                    var input = EthereumSigningInput()
-
-                    guard let chainIdData = Data(hexString: chainIdHex),
-                          let nonceData = Data(hexString: nonceHex),
-                          let gasLimitData = Data(hexString: gasValue)
-                    else {
-                      log.error("[EOA] Invalid hex data for transaction parameters")
-                      log.error("[EOA] chainIdHex: \(chainIdHex), nonceHex: \(nonceHex), gasValue: \(gasValue)")
-                      self.cancel(id: id)
-                      return
-                    }
-
-                    input.chainID = chainIdData
-                    input.nonce = nonceData
-                    input.gasLimit = gasLimitData
-                    input.toAddress = toAddr.addHexPrefix()
-
-                    if let maxFeePerGas = receiveModel.maxFeePerGas,
-                       let maxPriorityFeePerGas = receiveModel.maxPriorityFeePerGas {
-                        
-                        let maxFeeHex = maxFeePerGas.normalizeHexString()
-                        let maxPriorityHex = maxPriorityFeePerGas.normalizeHexString()
-                        
-                        guard let maxFeeData = Data(hexString: maxFeeHex),
-                              let maxPriorityData = Data(hexString: maxPriorityHex) else {
-                            log.error("[EOA] Invalid EIP-1559 fee data")
-                            HUD.error(EVMError.invalidEIP1559FeeData)
-                            self.cancel(id: id)
-                            return
-                        }
-                        // Validate EIP-1559 fee relationship
-                        guard let maxFeeVal = BigUInt(maxFeeHex, radix: 16),
-                              let maxPriorityVal = BigUInt(maxPriorityHex, radix: 16),
-                              maxFeeVal >= maxPriorityVal else {
-                            log.error("[EOA] maxFeePerGas must be >= maxPriorityFeePerGas")
-                            HUD.error(EVMError.EIP1559MaxFeeLessThanPriority)
-                            self.cancel(id: id)
-                            return
-                        }
-
-                        input.txMode = .enveloped
-                        input.maxFeePerGas = maxFeeData
-                        input.maxInclusionFeePerGas = maxPriorityData
-                        log.info("[EOA] EIP-1559 Transaction - maxFee: \(maxFeeHex), maxPriority: \(maxPriorityHex)")
-                        
-                    } else {
-                        //MARK: Get current gas price from network
-                        let gasPrice = try await web3.eth.gasPrice()
-                        let gasPriceHex = String(gasPrice, radix: 16).normalizeHexString()
-                        
-                        guard let gasPriceData = Data(hexString: gasPriceHex) else {
-                            log.error("[EOA] Invalid gas price data")
-                            HUD.error(EVMError.invalidGasPriceData)
-                            self.cancel(id: id)
-                            return
-                        }
-                        
-                        input.txMode = .legacy
-                        input.gasPrice = gasPriceData
-                        log.info("[EOA] Legacy Transaction - gasPrice: \(gasPriceHex)")
-                    }
-
-                    // Handle both transfer and contract call transactions
-                    let normalizedAmount = amount.normalizeHexString()
-                    guard let amountData = Data(hexString: normalizedAmount) else {
-                      log.error("[EOA] Invalid amount data: \(normalizedAmount)")
-                      HUD.error(EVMError.invalidAmountData)
-                      self.cancel(id: id)
-                      return
-                    }
-
-                    // Check if this is a contract call (has data) or simple transfer
-                    if let dataString = receiveModel.data, !dataString.isEmpty, dataString != "0x" {
-                      // Contract call transaction
-                      let normalizedData = dataString.normalizeHexString()
-                      guard let callData = Data(hexString: normalizedData) else {
-                        log.error("[EOA] Invalid contract call data: \(normalizedData)")
-                        self.cancel(id: id)
-                        return
-                      }
-                      input.transaction = EthereumTransaction.with {
-                        $0.contractGeneric = EthereumTransaction.ContractGeneric.with {
-                          $0.amount = amountData
-                          $0.data = callData
-                        }
-                      }
-                    } else {
-                      // Simple transfer transaction
-                      input.transaction = EthereumTransaction.with {
-                        $0.transfer = EthereumTransaction.Transfer.with {
-                          $0.amount = amountData
-                        }
-                      }
-                    }
-
-                    // Sign the transaction
-                    guard let signedTransaction = try await WalletManager.shared.walletEntity?.ethSignTransaction(input) else {
-                      log.error("[EOA] Failed to sign transaction")
-                      HUD.error(EVMError.failedSign)
-                      self.cancel(id: id)
-                      return
-                    }
-                    if RemoteConfigManager.shared.allowWrapEOAWithCadence {
-                      let wallet = await WalletManager.shared
-                      let mainAddress = await wallet.mainAccount?.hexAddr ?? ""
-                      let result = try await wallet.walletEntity?
-                        .ethSendSignedTransactionByCadence(
-                          chainId: currentNetwork,
-                          account: .init(hex: mainAddress),
-                          rlpEncodedTransaction: signedTransaction.encoded,
-                          coinbaseAddr: wallet.EOAs?.first?.address ?? "",
-                          signers: wallet.defaultSigners
+                        let calculateId = try await WalletConnectEVMHandler.calculateTX(
+                            receiveModel,
+                            txId: txid
                         )
-                      log.info("[EOA] Transaction sent successfully with hash: \(result?.description ?? "")")
-                      guard (result?.description) != nil else {
-                        self.cancel(id: id)
-                        return
-                      }
-                    }else {
-                      let result = try await web3.eth.send(raw: signedTransaction.encoded)
-                      log.info("[EOA] result \(result.hash)")
-                    }
+                        log.info("[EVM] calculate TX id: \(calculateId)")
+                        await MainActor.run {
+                            self.webVC?.webView.tw.send(
+                                network: .ethereum,
+                                result: calculateId.addHexPrefix(),
+                                to: id
+                            )
+                        }
+                    } else {
+                        // Send the signed transaction to the network
+                        guard let web3 = try await self.web3() else {
+                            log.error("[EOA] Invalid RPC URL for sending transaction")
+                            self.cancel(id: id)
+                            return
+                        }
 
-                    let evmTXID = signedTransaction.txIdHex()
-                    // Return the transaction hash to frontend
-                    await MainActor.run {
-                      self.webVC?.webView.tw.send(
-                          network: .ethereum,
-                          result: evmTXID.addHexPrefix(),
-                          to: id
-                      )
+                        guard let chainId = await self.webVC?.trustProvider?.config.ethereum.chainId,
+                            let amount = receiveModel.value
+                        else {
+                            self.cancel(id: id)
+                            return
+                        }
+                        log.debug("EOATransaction =======")
+                        log.debug("EOATransaction# transaction.to: \(receiveModel.to)")
+                        log.debug("EOATransaction# transaction.value: \(receiveModel.value)")
+                        log.debug("EOATransaction# transaction.gas: \(receiveModel.gas)")
+                        log.debug("EOATransaction# transaction.data: \(receiveModel.data)")
+
+                        let defaultGas = await WalletManager.defaultGas
+                        // Normalize all hex strings using the helper function
+                        let chainIdHex = String(format: "%x", chainId).normalizeHexString()
+                        let gasValue = (receiveModel.gas ?? String(format: "%x", defaultGas)).normalizeHexString()
+
+                        //MARK: get nonce
+                        let address = EVMAddress ?? self.cachedEVMAddress(
+                            for: url?.absoluteString ?? ""
+                        ) ?? WalletManager.shared.selectedEOAAccount?.hexAddr ?? ""
+
+                        let nonce = try await self.getTransactionNonce(for: address)
+                        let nonceHex = String(nonce, radix: 16).normalizeHexString()
+
+                        // Prepare transaction input
+                        var input = EthereumSigningInput()
+
+                        guard let chainIdData = Data(hexString: chainIdHex),
+                            let nonceData = Data(hexString: nonceHex),
+                            let gasLimitData = Data(hexString: gasValue)
+                        else {
+                            log.error("[EOA] Invalid hex data for transaction parameters")
+                            log.error("[EOA] chainIdHex: \(chainIdHex), nonceHex: \(nonceHex), gasValue: \(gasValue)")
+                            self.cancel(id: id)
+                            return
+                        }
+
+                        input.chainID = chainIdData
+                        input.nonce = nonceData
+                        input.gasLimit = gasLimitData
+                        input.toAddress = toAddr.addHexPrefix()
+
+                        if let maxFeePerGas = receiveModel.maxFeePerGas,
+                            let maxPriorityFeePerGas = receiveModel.maxPriorityFeePerGas
+                        {
+
+                            let maxFeeHex = maxFeePerGas.normalizeHexString()
+                            let maxPriorityHex = maxPriorityFeePerGas.normalizeHexString()
+
+                            guard let maxFeeData = Data(hexString: maxFeeHex),
+                                let maxPriorityData = Data(hexString: maxPriorityHex)
+                            else {
+                                log.error("[EOA] Invalid EIP-1559 fee data")
+                                HUD.error(EVMError.invalidEIP1559FeeData)
+                                self.cancel(id: id)
+                                return
+                            }
+                            // Validate EIP-1559 fee relationship
+                            guard let maxFeeVal = BigUInt(maxFeeHex, radix: 16),
+                                let maxPriorityVal = BigUInt(maxPriorityHex, radix: 16),
+                                maxFeeVal >= maxPriorityVal
+                            else {
+                                log.error("[EOA] maxFeePerGas must be >= maxPriorityFeePerGas")
+                                HUD.error(EVMError.EIP1559MaxFeeLessThanPriority)
+                                self.cancel(id: id)
+                                return
+                            }
+
+                            input.txMode = .enveloped
+                            input.maxFeePerGas = maxFeeData
+                            input.maxInclusionFeePerGas = maxPriorityData
+                            log.info("[EOA] EIP-1559 Transaction - maxFee: \(maxFeeHex), maxPriority: \(maxPriorityHex)")
+
+                        } else {
+                            //MARK: Get current gas price from network
+                            let gasPrice = try await web3.eth.gasPrice()
+                            let gasPriceHex = String(gasPrice, radix: 16).normalizeHexString()
+
+                            guard let gasPriceData = Data(hexString: gasPriceHex) else {
+                                log.error("[EOA] Invalid gas price data")
+                                HUD.error(EVMError.invalidGasPriceData)
+                                self.cancel(id: id)
+                                return
+                            }
+
+                            input.txMode = .legacy
+                            input.gasPrice = gasPriceData
+                            log.info("[EOA] Legacy Transaction - gasPrice: \(gasPriceHex)")
+                        }
+
+                        // Handle both transfer and contract call transactions
+                        let normalizedAmount = amount.normalizeHexString()
+                        guard let amountData = Data(hexString: normalizedAmount) else {
+                            log.error("[EOA] Invalid amount data: \(normalizedAmount)")
+                            HUD.error(EVMError.invalidAmountData)
+                            self.cancel(id: id)
+                            return
+                        }
+
+                        // Check if this is a contract call (has data) or simple transfer
+                        if let dataString = receiveModel.data, !dataString.isEmpty, dataString != "0x" {
+                            // Contract call transaction
+                            let normalizedData = dataString.normalizeHexString()
+                            guard let callData = Data(hexString: normalizedData) else {
+                                log.error("[EOA] Invalid contract call data: \(normalizedData)")
+                                self.cancel(id: id)
+                                return
+                            }
+                            input.transaction = EthereumTransaction.with {
+                                $0.contractGeneric = EthereumTransaction.ContractGeneric.with {
+                                    $0.amount = amountData
+                                    $0.data = callData
+                                }
+                            }
+                        } else {
+                            // Simple transfer transaction
+                            input.transaction = EthereumTransaction.with {
+                                $0.transfer = EthereumTransaction.Transfer.with {
+                                    $0.amount = amountData
+                                }
+                            }
+                        }
+
+                        // Sign the transaction
+                        guard let index = await WalletManager.shared.eoaIndex(address: EVMAddress) else {
+                            log.error("[EOA] get index error")
+                            self.cancel(id: id)
+                            return
+                        }
+                        guard let signedTransaction = try await WalletManager.shared.walletEntity?.ethSignTransaction(input, index: index) else {
+                            log.error("[EOA] Failed to sign transaction")
+                            HUD.error(EVMError.failedSign)
+                            self.cancel(id: id)
+                            return
+                        }
+                        if RemoteConfigManager.shared.allowWrapEOAWithCadence {
+                            let wallet = await WalletManager.shared
+                            let mainAddress = await wallet.mainAccount?.hexAddr ?? ""
+                            let payer = RemoteConfigManager.shared.remoteGreeGas ? Flow.Address(hex: RemoteConfigManager.shared.payer) : nil
+                            guard let flowTxId = try await wallet.walletEntity?
+                                .ethSendSignedTransactionByCadence(
+                                    chainId: currentNetwork,
+                                    account: .init(hex: mainAddress),
+                                    rlpEncodedTransaction: signedTransaction.encoded,
+                                    coinbaseAddr: address,
+                                    signers: wallet.defaultSigners,
+                                    payer: payer
+                                ) else {
+                                self.cancel(id: id)
+                                return
+                            }
+                            log.info("[EOA] Cadence tx submitted: \(flowTxId)")
+
+                            let txResult = try await flowTxId.onceSealed()
+                            guard !txResult.isFailed else {
+                                log.error("[EOA] Cadence tx failed on-chain")
+                                self.cancel(id: id)
+                                return
+                            }
+
+                            let evmTxResult = try await FlowNetwork.fetchEVMTransactionResult(txid: flowTxId.hex)
+                            let evmTXID = evmTxResult.hashString ?? ""
+                            log.debug("[EOA] EVM txid: \(evmTXID)")
+                            await MainActor.run {
+                                self.webVC?.webView.tw.send(
+                                    network: .ethereum,
+                                    result: evmTXID,
+                                    to: id
+                                )
+                            }
+                            EventTrack.Transaction
+                                .evmSigned(
+                                    txId: evmTXID,
+                                    success: true
+                                )
+                        } else {
+                            let result = try await web3.eth.send(raw: signedTransaction.encoded)
+                            let evmTXID = result.hash
+                            log.debug("[EOA] EVM txid: \(evmTXID)")
+                            // Return the transaction hash to frontend
+                            await MainActor.run {
+                                self.webVC?.webView.tw.send(
+                                    network: .ethereum,
+                                    result: evmTXID.addHexPrefix(),
+                                    to: id
+                                )
+                            }
+                            EventTrack.Transaction
+                                .evmSigned(
+                                    txId: evmTXID.addHexPrefix(),
+                                    success: true
+                                )
+                        }
                     }
-                  }
-                    
                 } catch {
                     log.error("\(error)")
                     HUD.error(title: "\(error.localizedDescription)")
@@ -646,27 +700,27 @@ extension TrustJSMessageHandler {
             self.webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
         }
     }
-  
+
     private func handleECRecover(network: ProviderNetwork, id: Int64, json: [String: Any]) {
-      guard let message = json["message"] as? String, let signature = json["signature"] as? String else {
-          log.error("[Trust] message or signature is nil")
-          cancel(id: id)
-          return
-      }
-      guard let signatureData = Data(hexString: signature) else {
-        log.error("[Trust] signature decode failed")
-        cancel(id: id)
-        return
-      }
-      let messageData = Data(message.utf8)
-      let recovered = try? FlowWalletKit.Wallet.ethRecoverAddress(signature: signatureData, message: messageData)
-      if let result = recovered {
-        self.webVC?.webView.tw.send(network: .ethereum, result: result, to: id)
-      } else {
-        self.webVC?.webView.tw.send(network: .ethereum, error: "Invalid signature v value", to: id)
-      }
+        guard let message = json["message"] as? String, let signature = json["signature"] as? String else {
+            log.error("[Trust] message or signature is nil")
+            cancel(id: id)
+            return
+        }
+        guard let signatureData = Data(hexString: signature) else {
+            log.error("[Trust] signature decode failed")
+            cancel(id: id)
+            return
+        }
+        let messageData = Data(message.utf8)
+        let recovered = try? FlowWalletKit.Wallet.ethRecoverAddress(signature: signatureData, message: messageData)
+        if let result = recovered {
+            self.webVC?.webView.tw.send(network: .ethereum, result: result, to: id)
+        } else {
+            self.webVC?.webView.tw.send(network: .ethereum, error: "Invalid signature v value", to: id)
+        }
     }
-  
+
     private func handleWatchAsset(network: ProviderNetwork, id: Int64, json: [String: Any]) {
         let manager = WalletManager.shared.customTokenManager
         guard let contract = json["contract"] as? String else {
@@ -696,13 +750,13 @@ extension TrustJSMessageHandler {
 }
 
 extension TrustJSMessageHandler {
-  func currentIsCoa(_ EVMAddress: String?) -> Bool {
+    func currentIsCoa(_ EVMAddress: String?) -> Bool {
 
-    guard let EVMAddress else {
-      return true
+        guard let EVMAddress else {
+            return true
+        }
+        return WalletManager.shared.coa?.address.lowercased() == EVMAddress.lowercased()
     }
-    return WalletManager.shared.coa?.address.lowercased() == EVMAddress.lowercased()
-  }
 }
 
 extension TrustJSMessageHandler {
@@ -735,12 +789,11 @@ extension TrustJSMessageHandler {
 }
 
 extension TrustJSMessageHandler {
-    
-  
+
     private func getTransactionNonce(for address: String) async throws -> BigUInt {
 
         guard let web3 = try await web3() else {
-          throw NSError(domain: "InvalidRPC", code: -1)
+            throw NSError(domain: "InvalidRPC", code: -1)
         }
         guard let ethAddress = EthereumAddress(address) else {
             throw NSError(domain: "InvalidAddress", code: -2)
@@ -751,21 +804,31 @@ extension TrustJSMessageHandler {
         )
         return nonce
     }
+
+    private func cachedEVMAddress(for dappURL: String) -> String? {
+        guard let uid = LocalUserDefaults.shared.activatedUID,
+              let url = URL(string: dappURL),
+              let host = url.host else {
+            return nil
+        }
+        return LocalUserDefaults.shared.getAuthnAddress(for: uid, host: host)
+    }
 }
 
 extension String {
-  // Helper function to normalize hex strings for Data conversion
-  func normalizeHexString() -> String {
-      // Remove "0x" prefix if present
-      var normalizedHex = self.hasPrefix("0x") || self.hasPrefix("0X")
-          ? String(self.dropFirst(2))
-          : self
+    // Helper function to normalize hex strings for Data conversion
+    func normalizeHexString() -> String {
+        // Remove "0x" prefix if present
+        var normalizedHex =
+            self.hasPrefix("0x") || self.hasPrefix("0X")
+            ? String(self.dropFirst(2))
+            : self
 
-      // Ensure even length by padding with leading zero
-      if normalizedHex.count % 2 != 0 {
-          normalizedHex = "0" + normalizedHex
-      }
+        // Ensure even length by padding with leading zero
+        if normalizedHex.count % 2 != 0 {
+            normalizedHex = "0" + normalizedHex
+        }
 
-      return normalizedHex
-  }
+        return normalizedHex
+    }
 }

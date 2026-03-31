@@ -41,9 +41,12 @@ const Header = ({ _loading = false }) => {
     mainAddressLoading,
     profileIds,
     noAddress,
+    pendingAccountTransactions,
   } = useProfiles();
 
   const { occupied: pendingTransactions } = useTransferList();
+  const hasPendingAccountCreation = (pendingAccountTransactions?.length ?? 0) > 0;
+  const shouldShowPendingSpinner = pendingTransactions || hasPendingAccountCreation;
   const [drawer, setDrawer] = useState(false);
 
   const [ispop, setPop] = useState(false);
@@ -194,7 +197,7 @@ const Header = ({ _loading = false }) => {
             }
             parentColor={parentWallet.color}
             active={true}
-            spinning={pendingTransactions}
+            spinning={shouldShowPendingSpinner}
             onClick={toggleDrawer}
           />
         </Box>
@@ -269,7 +272,7 @@ const Header = ({ _loading = false }) => {
 
         <Box sx={{ flex: '0 0 68px' }}>
           <Tooltip
-            title={pendingTransactions ? chrome.i18n.getMessage('Pending__Transaction') : ''}
+            title={shouldShowPendingSpinner ? chrome.i18n.getMessage('Pending__Transaction') : ''}
             arrow
           >
             <Box style={{ position: 'relative' }}>

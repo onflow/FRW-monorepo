@@ -29,6 +29,7 @@ extension FRWAPI {
         case updateDevice(String)
         case checkimport(String)
         case loginWithImport(RestoreImportRequest)
+        case addAccount(AddAccountRequest)
     }
 }
 
@@ -79,6 +80,8 @@ extension FRWAPI.User: TargetType, AccessTokenAuthorizable {
             return "/v3/checkimport"
         case .loginWithImport:
             return "/v3/import"
+        case .addAccount:
+            return "/v2/user/manualaddress"
         }
     }
 
@@ -87,7 +90,7 @@ extension FRWAPI.User: TargetType, AccessTokenAuthorizable {
         case .checkUsername, .userInfo, .userWallet, .search, .keys, .devices, .checkimport:
             return .get
         case .login, .register, .userAddress, .userAddressV2, .manualCheck, .crescendo, .syncDevice, .addSigned,
-             .updateDevice, .loginWithImport:
+            .updateDevice, .loginWithImport, .addAccount:
             return .post
         }
     }
@@ -96,37 +99,39 @@ extension FRWAPI.User: TargetType, AccessTokenAuthorizable {
         switch self {
         case .userAddress, .userInfo, .userWallet, .manualCheck, .keys, .userAddressV2:
             return .requestPlain
-        case let .checkUsername(username):
+        case .checkUsername(let username):
             return .requestParameters(
                 parameters: ["username": username],
                 encoding: URLEncoding.queryString
             )
-        case let .register(request):
+        case .register(let request):
             return .requestCustomJSONEncodable(request, encoder: FRWAPI.jsonEncoder)
-        case let .login(request):
+        case .login(let request):
             return .requestCustomJSONEncodable(request, encoder: FRWAPI.jsonEncoder)
-        case let .search(keyword):
+        case .search(let keyword):
             return .requestParameters(
                 parameters: ["keyword": keyword],
                 encoding: URLEncoding.queryString
             )
-        case let .devices(uuid):
+        case .devices(let uuid):
             return .requestParameters(
                 parameters: ["device_id": uuid],
                 encoding: URLEncoding.queryString
             )
-        case let .syncDevice(request):
+        case .syncDevice(let request):
             return .requestCustomJSONEncodable(request, encoder: FRWAPI.jsonEncoder)
-        case let .addSigned(request):
+        case .addSigned(let request):
             return .requestCustomJSONEncodable(request, encoder: FRWAPI.jsonEncoder)
-        case let .crescendo(request):
+        case .crescendo(let request):
             return .requestCustomJSONEncodable(request, encoder: FRWAPI.jsonEncoder)
-        case let .updateDevice(uuid):
+        case .updateDevice(let uuid):
             return .requestJSONEncodable(["device_id": uuid])
-        case let .checkimport(key):
+        case .checkimport(let key):
             return .requestParameters(parameters: ["key": key], encoding: URLEncoding.queryString)
-        case let .loginWithImport(request):
+        case .loginWithImport(let request):
             return .requestCustomJSONEncodable(request, encoder: FRWAPI.jsonEncoder)
+        case .addAccount(let request):
+            return .requestJSONEncodable(request)
         }
     }
 

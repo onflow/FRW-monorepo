@@ -3,6 +3,7 @@ import { activityService } from '@onflow/frw-services';
 import {
   FlatQueryDomain,
   addressType,
+  type ActivityDetailResponse,
   type ActivityItem,
   type ActivityGroup,
   type ActivityListResponse,
@@ -18,12 +19,34 @@ export const activityQueryKeys = {
     [...activityQueryKeys.all, address, network] as const,
   list: (address: string, network: string = 'mainnet', offset: number = 0, limit: number = 15) =>
     [...activityQueryKeys.address(address, network), 'list', offset, limit] as const,
+  detail: (txId: string, network: string = 'mainnet') =>
+    [...activityQueryKeys.all, 'detail', txId, network] as const,
 };
 
 /**
  * Query Functions - Pure data fetching logic
  */
 export const activityQueries = {
+  /**
+   * Fetch detailed information for a single transaction
+   */
+  fetchActivityDetail: async (
+    txId: string,
+    address: string,
+    network: string = 'mainnet'
+  ): Promise<ActivityDetailResponse | null> => {
+    if (!txId || !address) return null;
+
+    try {
+      const walletType = addressType(address);
+      const service = activityService(walletType);
+      return await service.getActivityDetail(txId, network);
+    } catch (error: unknown) {
+      logger.error('[ActivityQuery] Error fetching activity detail:', error);
+      throw error;
+    }
+  },
+
   /**
    * Fetch activity list for an address
    */

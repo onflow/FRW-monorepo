@@ -359,7 +359,7 @@ extension WalletConnectManager {
         var address = WalletManager.shared.getPrimaryWalletAddress()
         let isEVM = handler.currentTypes(sessionProposal: sessionProposal).contains(.evm)
         if isEVM {
-          address = cachedEVMAddress(for: info.dappURL) ?? WalletManager.shared.EOAs?.first?.address ?? WalletManager.shared.coa?.address
+            address = cachedEVMAddress(for: info.dappURL) ?? WalletManager.shared.selectedEOAAccount?.hexAddr ?? WalletManager.shared.coa?.address
         }
         guard network == currentNetwork else {
             rejectSession(proposal: sessionProposal)
@@ -1172,7 +1172,8 @@ extension WalletConnectSign.Request {
             expiryTime: .distantFuture,
             displayType: .click,
             flag: .walletconnect,
-            conditions: nil
+            conditions: nil,
+            localIcon: nil
         )
     }
 }

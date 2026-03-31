@@ -44,6 +44,7 @@ export interface UpdateDialogProps {
    * Callback when bottom button is clicked
    */
   onButtonClick?: () => void;
+  onActionPress?: (action: WhatsNewAction) => void;
   /**
    * Callback when dialog is closed
    */
@@ -58,6 +59,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   actions,
   buttonText,
   onButtonClick,
+  onActionPress,
   onClose,
 }) => {
   const theme = useTheme();
@@ -98,6 +100,8 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   };
 
   const handleActions = (action: WhatsNewAction) => {
+    onActionPress?.(action);
+
     if (action.type === 'external') {
       if (action.url && typeof window !== 'undefined') {
         window.open(action.url, '_blank', 'noopener,noreferrer');
@@ -105,6 +109,8 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
     } else if (action.type === 'internal') {
       // todo for inner url
       onButtonClick?.();
+      onClose();
+    } else if (action.type === 'deeplink') {
       onClose();
     }
   };

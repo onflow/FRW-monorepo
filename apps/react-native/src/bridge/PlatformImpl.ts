@@ -1,3 +1,4 @@
+import Luciq from '@luciq/react-native';
 import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type { AccountKeySignature, NewKeyInfo } from '@onflow/frw-types';
@@ -15,7 +16,6 @@ import { Platform } from '@onflow/frw-types';
 import { extractUidFromJwt, isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import { Buffer } from 'buffer';
-import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
 
@@ -98,17 +98,17 @@ class PlatformImpl implements PlatformSpec {
           case 'debug':
             // Only send debug logs in debug mode to avoid spam
             if (this.debugMode) {
-              Instabug.logDebug(instabugMessage);
+              Luciq.logDebug(instabugMessage);
             }
             break;
           case 'info':
-            Instabug.logInfo(instabugMessage);
+            Luciq.logInfo(instabugMessage);
             break;
           case 'warn':
-            Instabug.logWarn(instabugMessage);
+            Luciq.logWarn(instabugMessage);
             break;
           case 'error':
-            Instabug.logError(instabugMessage);
+            Luciq.logError(instabugMessage);
             break;
         }
       } catch (error) {
@@ -245,6 +245,11 @@ class PlatformImpl implements PlatformSpec {
     return env.GO_API_URL;
   }
 
+  async getCadenceInbox(): Promise<boolean> {
+    const env = NativeFRWBridge.getEnv();
+    return env.CADENCE_INBOX || false;
+  }
+
   getInstabugToken(): string {
     try {
       const env = NativeFRWBridge.getEnv();
@@ -279,13 +284,13 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.getSignKeyIndex();
   }
 
-  async ethSign(signData: Uint8Array): Promise<Uint8Array> {
+  async ethSign(signData: Uint8Array, address?: string): Promise<Uint8Array> {
     if (!(signData instanceof Uint8Array)) {
       throw new Error('signData must be a Uint8Array');
     }
 
     const hexPayload = `0x${bytesToHex(signData)}`;
-    const signatureHex = await NativeFRWBridge.ethSign(hexPayload);
+    const signatureHex = await NativeFRWBridge.ethSign(hexPayload, address ?? null);
     return hexToBytes(signatureHex);
   }
 
@@ -309,8 +314,32 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.signRotationRequest(address, signatureData);
   }
 
-  closeRN(): void {
-    NativeFRWBridge.closeRN(null);
+  async keystoreMigration(): Promise<void> {
+    if (this.getPlatform() === Platform.Android && NativeFRWBridge.keystoreMigration) {
+      return NativeFRWBridge.keystoreMigration();
+    }
+    this.log('warn', '[PlatformImpl] keystoreMigration not implemented or not Android');
+    return Promise.resolve();
+  }
+
+  closeRN(id?: string | null): void {
+    NativeFRWBridge.closeRN(id ?? null);
+  }
+
+  closeRNWithNFT(id?: string | null): void {
+    NativeFRWBridge.closeRNWithNFT(id ?? null);
+  }
+
+  onUpdateDialogActionPress(
+    actionType: 'external' | 'internal' | 'deeplink',
+    actionUrl?: string | null,
+    actionText?: string | null
+  ): void {
+    try {
+      NativeFRWBridge.onUpdateDialogActionPress(actionType, actionUrl ?? null, actionText ?? null);
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] Failed to pass update dialog action to native:', error);
+    }
   }
 
   getWalletProfiles(): Promise<WalletProfilesResponse> {

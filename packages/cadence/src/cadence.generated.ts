@@ -3314,6 +3314,146 @@ transaction(vaultIdentifier: String, amount: UInt256, recipient: Address) {
   }
 
 
+  public async bridgeTokensFromEvmToFlowWithPayer(vaultIdentifier: string, amount: string, recipient: string) {
+    const code = `
+import MetadataViews from 0xMetadataViews
+import ViewResolver from 0xMetadataViews
+import NonFungibleToken from 0xNonFungibleToken
+
+import FungibleToken from 0xFungibleToken
+import FlowToken from 0xFlowToken
+import FungibleTokenMetadataViews from 0xFungibleToken
+
+import ScopedFTProviders from 0xFlowEVMBridge
+
+import EVM from 0xEVM
+
+import FlowEVMBridgeUtils from 0xFlowEVMBridge
+import FlowEVMBridge from 0xFlowEVMBridge
+import FlowEVMBridgeConfig from 0xFlowEVMBridge
+import StorageRent from 0xStorageRent
+
+/// This transaction bridges fungible tokens from EVM to Cadence assuming it has already been onboarded to the
+/// FlowEVMBridge. The full amount to be transferred is sourced from EVM, so it's assumed the signer has sufficient
+/// balance of the ERC20 to bridging into Cadence. Also know that the recipient Flow account must have a Receiver
+/// capable of receiving the bridged tokens accessible via published Capability at the token's standard path.
+///
+/// NOTE: The ERC20 must have first been onboarded to the bridge. This can be checked via the method
+///     FlowEVMBridge.evmAddressRequiresOnboarding(address: self.evmContractAddress)
+///
+/// @param vaultIdentifier: The Cadence type identifier of the FungibleToken Vault to bridge
+///     - e.g. vault.getType().identifier
+/// @param amount: The amount of tokens to bridge from EVM and transfer to the recipient
+/// @param recipient: The Flow account address to receive the bridged tokens
+///
+transaction(vaultIdentifier: String, amount: UInt256, recipient: Address) {
+
+    let vaultType: Type
+    let receiver: &{FungibleToken.Vault}
+    let scopedProvider: @ScopedFTProviders.ScopedFTProvider
+    let coa: auth(EVM.Bridge) &EVM.CadenceOwnedAccount
+
+    prepare(signer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account, payer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account) {
+        /* --- Reference the signer's CadenceOwnedAccount --- */
+        //
+        // Borrow a reference to the signer's COA
+        self.coa = signer.storage.borrow<auth(EVM.Bridge) &EVM.CadenceOwnedAccount>(from: /storage/evm)
+            ?? panic("Could not borrow COA from provided gateway address")
+
+        /* --- Construct the Vault type --- */
+        //
+        // Construct the Vault type from the provided identifier
+        self.vaultType = CompositeType(vaultIdentifier)
+            ?? panic("Could not construct Vault type from identifier: ".concat(vaultIdentifier))
+        // Parse the Vault identifier into its components
+        let tokenContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: self.vaultType)
+            ?? panic("Could not get contract address from identifier: ".concat(vaultIdentifier))
+        let tokenContractName = FlowEVMBridgeUtils.getContractName(fromType: self.vaultType)
+            ?? panic("Could not get contract name from identifier: ".concat(vaultIdentifier))
+
+        /* --- Reference the signer's Vault --- */
+        //
+        // Borrow a reference to the FungibleToken Vault, configuring if necessary
+        let viewResolver = getAccount(tokenContractAddress).contracts.borrow<&{ViewResolver}>(name: tokenContractName)
+            ?? panic("Could not borrow ViewResolver from FungibleToken contract")
+        let vaultData = viewResolver.resolveContractView(
+                resourceType: self.vaultType,
+                viewType: Type<FungibleTokenMetadataViews.FTVaultData>()
+            ) as! FungibleTokenMetadataViews.FTVaultData? ?? panic("Could not resolve FTVaultData view")
+        // If the vault does not exist, create it and publish according to the contract's defined configuration
+        if signer.storage.borrow<&{FungibleToken.Vault}>(from: vaultData.storagePath) == nil {
+            signer.storage.save(<-vaultData.createEmptyVault(), to: vaultData.storagePath)
+
+            signer.capabilities.unpublish(vaultData.receiverPath)
+            signer.capabilities.unpublish(vaultData.metadataPath)
+
+            let receiverCap = signer.capabilities.storage.issue<&{FungibleToken.Vault}>(vaultData.storagePath)
+            let metadataCap = signer.capabilities.storage.issue<&{FungibleToken.Vault}>(vaultData.storagePath)
+
+            signer.capabilities.publish(receiverCap, at: vaultData.receiverPath)
+            signer.capabilities.publish(metadataCap, at: vaultData.metadataPath)
+        }
+        self.receiver = getAccount(recipient).capabilities.borrow<&{FungibleToken.Vault}>(vaultData.receiverPath)
+            ?? panic("Could not borrow Vault from recipient's account")
+
+        /* --- Configure a ScopedFTProvider --- */
+        //
+        // Calculate the bridge fee - bridging from EVM consumes no storage, so flat fee
+        let approxFee = FlowEVMBridgeUtils.calculateBridgeFee(bytes: 400_000)
+        // Issue and store bridge-dedicated Provider Capability in storage if necessary
+        if payer.storage.type(at: FlowEVMBridgeConfig.providerCapabilityStoragePath) == nil {
+            let providerCap = payer.capabilities.storage.issue<auth(FungibleToken.Withdraw) &{FungibleToken.Provider}>(
+                /storage/flowTokenVault
+            )
+            payer.storage.save(providerCap, to: FlowEVMBridgeConfig.providerCapabilityStoragePath)
+        }
+        // Copy the stored Provider capability and create a ScopedFTProvider
+        let providerCapCopy = payer.storage.copy<Capability<auth(FungibleToken.Withdraw) &{FungibleToken.Provider}>>(
+                from: FlowEVMBridgeConfig.providerCapabilityStoragePath
+            ) ?? panic("Invalid Provider Capability found in storage.")
+        let providerFilter = ScopedFTProviders.AllowanceFilter(approxFee)
+        self.scopedProvider <- ScopedFTProviders.createScopedFTProvider(
+                provider: providerCapCopy,
+                filters: [ providerFilter ],
+                expiration: getCurrentBlock().timestamp + 1.0
+            )
+    }
+
+    execute {
+        // Execute the bridge request
+        let vault: @{FungibleToken.Vault} <- self.coa.withdrawTokens(
+            type: self.vaultType,
+            amount: amount,
+            feeProvider: &self.scopedProvider as auth(FungibleToken.Withdraw) &{FungibleToken.Provider}
+        )
+        // Ensure the bridged vault is the correct type
+        assert(vault.getType() == self.vaultType, message: "Bridged vault type mismatch")
+        // Deposit the bridged token into the signer's vault
+        self.receiver.deposit(from: <-vault)
+        // Destroy the ScopedFTProvider
+        destroy self.scopedProvider
+        StorageRent.tryRefill(recipient)
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "bridgeTokensFromEvmToFlowWithPayer",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(vaultIdentifier, t.String),
+        arg(amount, t.UInt256),
+        arg(recipient, t.Address),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
   public async bridgeTokensToEvmAddressV2(vaultIdentifier: string, amount: string, recipient: string) {
     const code = `
 import MetadataViews from 0xMetadataViews
@@ -3443,8 +3583,202 @@ transaction(vaultIdentifier: String, amount: UFix64, recipient: String) {
     return result.response;
   }
 
+
+  public async bridgeTokensToEvmAddressWithPayer(vaultIdentifier: string, amount: string, recipient: string) {
+    const code = `
+import MetadataViews from 0xMetadataViews
+import ViewResolver from 0xMetadataViews
+import NonFungibleToken from 0xNonFungibleToken
+
+import FungibleToken from 0xFungibleToken
+import FlowToken from 0xFlowToken
+import FungibleTokenMetadataViews from 0xFungibleToken
+
+import ScopedFTProviders from 0xFlowEVMBridge
+
+import EVM from 0xEVM
+
+import FlowEVMBridgeUtils from 0xFlowEVMBridge
+import FlowEVMBridge from 0xFlowEVMBridge
+import FlowEVMBridgeConfig from 0xFlowEVMBridge
+
+
+transaction(vaultIdentifier: String, amount: UFix64, recipient: String) {
+    let sentVault: @{FungibleToken.Vault}
+    let requiresOnboarding: Bool
+    let scopedProvider: @ScopedFTProviders.ScopedFTProvider
+
+    prepare(signer: auth(CopyValue, BorrowValue, IssueStorageCapabilityController, PublishCapability, SaveValue) &Account, payer: auth(CopyValue, BorrowValue, IssueStorageCapabilityController, PublishCapability, SaveValue) &Account) {
+        /* --- Construct the Vault type --- */
+        //
+        // Construct the Vault type from the provided identifier
+        let vaultType = CompositeType(vaultIdentifier)
+            ?? panic("Could not construct Vault type from identifier: ".concat(vaultIdentifier))
+        // Parse the Vault identifier into its components
+        let tokenContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: vaultType)
+            ?? panic("Could not get contract address from identifier: ".concat(vaultIdentifier))
+        let tokenContractName = FlowEVMBridgeUtils.getContractName(fromType: vaultType)
+            ?? panic("Could not get contract name from identifier: ".concat(vaultIdentifier))
+        
+        /* --- Retrieve the funds --- */
+        //
+        // Borrow a reference to the FungibleToken Vault
+        let viewResolver = getAccount(tokenContractAddress).contracts.borrow<&{ViewResolver}>(name: tokenContractName)
+            ?? panic("Could not borrow ViewResolver from FungibleToken contract")
+        let vaultData = viewResolver.resolveContractView(
+                resourceType: nil,
+                viewType: Type<FungibleTokenMetadataViews.FTVaultData>()
+            ) as! FungibleTokenMetadataViews.FTVaultData? ?? panic("Could not resolve FTVaultData view")
+        let vault = signer.storage.borrow<auth(FungibleToken.Withdraw) &{FungibleToken.Vault}>(
+                from: vaultData.storagePath
+            ) ?? panic("Could not access signer's FungibleToken Vault")
+
+        // Withdraw the requested balance & calculate the approximate bridge fee based on storage usage
+        let currentStorageUsage = signer.storage.used
+        self.sentVault <- vault.withdraw(amount: amount)
+        let withdrawnStorageUsage = signer.storage.used
+        // Approximate the bridge fee based on the difference in storage usage with some buffer
+        var approxFee = FlowEVMBridgeUtils.calculateBridgeFee(
+                bytes: currentStorageUsage - withdrawnStorageUsage
+            ) * 1.10
+        // Determine if the Vault requires onboarding - this impacts the fee required
+        self.requiresOnboarding = FlowEVMBridge.typeRequiresOnboarding(self.sentVault.getType())
+            ?? panic("Bridge does not support this asset type")
+        if self.requiresOnboarding {
+            approxFee = approxFee + FlowEVMBridgeConfig.onboardFee
+        }
+
+        /* --- Configure a ScopedFTProvider --- */
+        //
+        // Issue and store bridge-dedicated Provider Capability in storage if necessary
+        if payer.storage.type(at: FlowEVMBridgeConfig.providerCapabilityStoragePath) == nil {
+            let providerCap = payer.capabilities.storage.issue<auth(FungibleToken.Withdraw) &{FungibleToken.Provider}>(
+                /storage/flowTokenVault
+            )
+            payer.storage.save(providerCap, to: FlowEVMBridgeConfig.providerCapabilityStoragePath)
+        }
+        // Copy the stored Provider capability and create a ScopedFTProvider
+        let providerCapCopy = payer.storage.copy<Capability<auth(FungibleToken.Withdraw) &{FungibleToken.Provider}>>(
+                from: FlowEVMBridgeConfig.providerCapabilityStoragePath
+            ) ?? panic("Invalid Provider Capability found in storage.")
+        let providerFilter = ScopedFTProviders.AllowanceFilter(approxFee)
+        self.scopedProvider <- ScopedFTProviders.createScopedFTProvider(
+                provider: providerCapCopy,
+                filters: [ providerFilter ],
+                expiration: getCurrentBlock().timestamp + 1.0
+            )
+    }
+
+    pre {
+        self.sentVault.getType().identifier == vaultIdentifier:
+            "Attempting to send invalid vault type - requested: ".concat(vaultIdentifier)
+            .concat(", sending: ").concat(self.sentVault.getType().identifier)
+        self.sentVault.balance == amount: "Amount to be transferred does not match the requested amount"
+    }
+
+    execute {
+        if self.requiresOnboarding {
+            // Onboard the Vault to the bridge
+            FlowEVMBridge.onboardByType(
+                self.sentVault.getType(),
+                feeProvider: &self.scopedProvider as auth(FungibleToken.Withdraw) &{FungibleToken.Provider}
+            )
+        }
+        // Execute the bridge transaction
+        let recipientEVMAddress = EVM.addressFromString(recipient)
+        FlowEVMBridge.bridgeTokensToEVM(
+            vault: <-self.sentVault,
+            to: recipientEVMAddress,
+            feeProvider: &self.scopedProvider as auth(FungibleToken.Withdraw) &{FungibleToken.Provider}
+        )
+        // Destroy the ScopedFTProvider
+        destroy self.scopedProvider
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "bridgeTokensToEvmAddressWithPayer",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(vaultIdentifier, t.String),
+        arg(amount, t.UFix64),
+        arg(recipient, t.String),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
   // Tag: SrcCadenceCollectionTransactions
-  public async batchSendNbaNftV3(identifier: string, recipient: string, ids: number[]) {
+  public async batchSendNbaNftV3(identifier: string, recipientAddr: string, ids: number[]) {
+    const code = `
+import NonFungibleToken from 0xNonFungibleToken
+import StorageRent from 0xStorageRent
+import ViewResolver from 0xMetadataViews
+import MetadataViews from 0xMetadataViews
+
+
+
+transaction(identifier: String, recipientAddr: Address, ids: [UInt64]) {
+    prepare(signer: auth(Storage, BorrowValue) &Account) {
+        let type = CompositeType(identifier)
+        let identifierSplit = identifier.split(separator: ".")
+        let address = Address.fromString("0x".concat(identifierSplit[1]))!
+        let name = identifierSplit[2]!
+        let viewResolver = getAccount(address).contracts.borrow<&{ViewResolver}>(name: name)
+        ?? panic("Could not borrow ViewResolver from NFT contract")
+
+        let collectionData = viewResolver.resolveContractView(
+        resourceType: nil,
+        viewType: Type<MetadataViews.NFTCollectionData>()
+        ) as! MetadataViews.NFTCollectionData? ?? panic("Could not resolve NFTCollectionData view")
+        // get the recipients public account object
+        let recipient = getAccount(recipientAddr)
+        // borrow a reference to the signer''s NFT collection
+        let collectionRef = signer.storage
+        .borrow<auth(NonFungibleToken.Withdraw) &{NonFungibleToken.Collection}>(from: /storage/MomentCollection)
+        ?? panic("Could not borrow a reference to the owner''s collection")
+        let senderRef = signer
+        .capabilities
+        .borrow<&{NonFungibleToken.CollectionPublic}>(/public/MomentCollection)
+        // borrow a public reference to the receivers collection
+        let recipientRef = recipient
+        .capabilities
+        .borrow<&{NonFungibleToken.CollectionPublic}>(/public/MomentCollection) ?? panic("Unable to borrow receiver reference")
+        
+        for withdrawID in ids {
+            // withdraw the NFT from the owner''s collection
+            let nft <- collectionRef.withdraw(withdrawID: withdrawID)
+            // Deposit the NFT in the recipient''s collection
+            recipientRef!.deposit(token: <-nft)
+        }
+        StorageRent.tryRefill(recipientAddr)
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "batchSendNbaNftV3",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(identifier, t.String),
+        arg(recipientAddr, t.Address),
+        arg(ids, t.Array(t.UInt64)),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
+  public async batchSendNbaNftV4(identifier: string, recipient: string, ids: number[]) {
     const code = `
 import NonFungibleToken from 0xNonFungibleToken
 import ViewResolver from 0xMetadataViews
@@ -3503,7 +3837,7 @@ transaction(identifier: String, recipient: Address, ids: [UInt64]) {
             let display = nft.resolveView(Type<MetadataViews.Display>()) as! MetadataViews.Display?
 
             let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <- nft, memo: "Send NFTs backup", display: display)
-            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee * 1.1)
             let item <- depositEstimate.withdraw()
             // withdraw the NFT from the owner''s collection
             // let nft <- collectionRef.withdraw(withdrawID: withdrawID)
@@ -3527,7 +3861,7 @@ transaction(identifier: String, recipient: Address, ids: [UInt64]) {
 `;
     let config = {
       cadence: code.trim(),
-      name: "batchSendNbaNftV3",
+      name: "batchSendNbaNftV4",
       type: "transaction",
       args: (arg: any, t: any) => [
         arg(identifier, t.String),
@@ -3543,7 +3877,76 @@ transaction(identifier: String, recipient: Address, ids: [UInt64]) {
   }
 
 
-  public async batchSendNftV3(identifier: string, recipient: string, ids: number[]) {
+  public async batchSendNftV3(identifier: string, recipientAddr: string, ids: number[]) {
+    const code = `
+import NonFungibleToken from 0xNonFungibleToken
+import StorageRent from 0xStorageRent
+import ViewResolver from 0xMetadataViews
+import MetadataViews from 0xMetadataViews
+
+
+// This transaction is for transferring and NFT from
+// one account to another
+
+transaction(identifier: String, recipientAddr: Address, ids: [UInt64]) {
+
+    prepare(signer: auth(Storage, BorrowValue) &Account) {
+
+        let type = CompositeType(identifier)
+        let identifierSplit = identifier.split(separator: ".")
+        let address = Address.fromString("0x".concat(identifierSplit[1]))!
+        let name = identifierSplit[2]!
+        let viewResolver = getAccount(address).contracts.borrow<&{ViewResolver}>(name: name)
+        ?? panic("Could not borrow ViewResolver from NFT contract")
+        // get the recipients public account object
+        let recipient = getAccount(recipientAddr)
+
+        let collectionData = viewResolver.resolveContractView(
+            resourceType: type,
+            viewType: Type<MetadataViews.NFTCollectionData>()
+        ) as! MetadataViews.NFTCollectionData? ?? panic("Could not resolve NFTCollectionData view")
+        // borrow a reference to the signer's NFT collection
+        let collectionRef = signer.storage.borrow<auth(NonFungibleToken.Withdraw) &{NonFungibleToken.Provider}>(from: collectionData.storagePath)
+            ?? panic("Could not borrow a reference to the owner's collection")
+
+        // borrow a public reference to the receivers collection
+        let depositRef = recipient
+            .capabilities
+            .borrow<&{NonFungibleToken.Collection}>(collectionData.publicPath)
+            ?? panic("Could not borrow a reference to the receiver's collection")
+
+        for withdrawID in ids {
+            // withdraw the NFT from the owner's collection
+            let nft <- collectionRef.withdraw(withdrawID: withdrawID)
+
+            // Deposit the NFT in the recipient's collection
+            depositRef.deposit(token: <-nft)
+        }
+       
+        StorageRent.tryRefill(recipientAddr)
+
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "batchSendNftV3",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(identifier, t.String),
+        arg(recipientAddr, t.Address),
+        arg(ids, t.Array(t.UInt64)),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
+  public async batchSendNftV4(identifier: string, recipient: string, ids: number[]) {
     const code = `
 import NonFungibleToken from 0xNonFungibleToken
 import ViewResolver from 0xMetadataViews
@@ -3596,7 +3999,7 @@ transaction(identifier: String, recipient: Address, ids: [UInt64]) {
             let display = nft.resolveView(Type<MetadataViews.Display>()) as! MetadataViews.Display?
 
             let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <- nft, memo: "Send NFTs backup", display: display)
-            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee * 1.1)
             let item <- depositEstimate.withdraw()
             // withdraw the NFT from the owner''s collection
             // let nft <- collectionRef.withdraw(withdrawID: withdrawID)
@@ -3620,7 +4023,7 @@ transaction(identifier: String, recipient: Address, ids: [UInt64]) {
 `;
     let config = {
       cadence: code.trim(),
-      name: "batchSendNftV3",
+      name: "batchSendNftV4",
       type: "transaction",
       args: (arg: any, t: any) => [
         arg(identifier, t.String),
@@ -7030,19 +7433,74 @@ transaction(vaultIdentifier:String, sender: Address, amount: UFix64 ) {
   }
 
   // Tag: SrcCadenceLostandfoundQuery
+  public async batchQueryUnclaimedNumber(addrs: string[]): Promise<number> {
+    const code = `
+import LostAndFound from 0xLostAndFound
+
+access(all) fun main(addrs: [Address]): Int {
+    let shelfManager = LostAndFound.borrowShelfManager()
+    var unclaimedNumber = 0
+    for addr in addrs {
+        let shelf = shelfManager.borrowShelf(redeemer: addr)
+        if shelf == nil {
+            continue
+        } else {
+            unclaimedNumber = unclaimedNumber + shelf!.getRedeemableTypes().length
+        }
+        
+    }
+    return unclaimedNumber
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "batchQueryUnclaimedNumber",
+      type: "script",
+      args: (arg: any, t: any) => [
+        arg(addrs, t.Array(t.Address)),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let response = await fcl.query(config);
+    const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
+
   public async queryUnclaimedFts(addr: string): Promise<any | undefined[]> {
     const code = `
 import LostAndFound from 0xLostAndFound
 import MetadataViews from 0xMetadataViews
 import FungibleToken from 0xFungibleToken
 
+import FungibleTokenMetadataViews from 0xFungibleTokenMetadataViews
+import ViewResolver from 0xViewResolver
+import FlowEVMBridgeUtils from 0xFlowEVMBridgeUtils
+
 access(all) fun main(addr: Address): [AnyStruct?] {
     let tickets = LostAndFound.borrowAllTickets(addr: addr)
     
     let displayArr: [AnyStruct?]  = []
     for ticket in tickets {
+    
         if ticket.type.isSubtype(of: Type<@{FungibleToken.Vault}>()) { 
-            displayArr.append({"display": ticket.display, "balance": ticket.getFungibleTokenBalance()})
+            let vaultIdentifier = ticket.type.identifier
+            let vaultType = CompositeType(vaultIdentifier)
+            ?? panic("Could not construct Vault type from identifier: ".concat(vaultIdentifier))
+            // Parse the Vault identifier into its components
+            let tokenContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: vaultType)
+                ?? panic("Could not get contract address from identifier: ".concat(vaultIdentifier))
+            let tokenContractName = FlowEVMBridgeUtils.getContractName(fromType: vaultType)
+                ?? panic("Could not get contract name from identifier: ".concat(vaultIdentifier))
+            let viewResolver = getAccount(tokenContractAddress).contracts.borrow<&{ViewResolver}>(name: tokenContractName)
+                ?? panic("Could not borrow ViewResolver from FungibleToken contract")
+            let FTDisplay = viewResolver.resolveContractView(
+                    resourceType: vaultType,
+                    viewType: Type<FungibleTokenMetadataViews.FTDisplay>()
+                ) as! FungibleTokenMetadataViews.FTDisplay? ?? panic("Could not resolve FTDisplay view")
+
+            displayArr.append({"display": ticket.display, "balance": ticket.getFungibleTokenBalance(), "identifier": vaultIdentifier, "FTDisplay": FTDisplay})
         }
     }
     return displayArr
@@ -7068,15 +7526,32 @@ access(all) fun main(addr: Address): [AnyStruct?] {
     const code = `
 import LostAndFound from 0xLostAndFound
 import MetadataViews from 0xMetadataViews
+import ViewResolver from 0xMetadataViews
 import NonFungibleToken from 0xNonFungibleToken
+import FlowEVMBridgeUtils from 0xFlowEVMBridge
+
 
 access(all) fun main(addr: Address): [AnyStruct?] {
     let tickets = LostAndFound.borrowAllTickets(addr: addr)
     
-    let displayArr: [&MetadataViews.Display?]  = []
+    let displayArr: [AnyStruct?]  = []
     for ticket in tickets {
         if ticket.type.isSubtype(of: Type<@{NonFungibleToken.NFT}>()) { 
-            displayArr.append(ticket.display)
+            let nftIdentifier = ticket.type.identifier
+            let nftContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: ticket.type)
+            ?? panic("Could not get contract address from identifier: ".concat(nftIdentifier))
+            let nftContractName = FlowEVMBridgeUtils.getContractName(fromType: ticket.type)
+            ?? panic("Could not get contract name from identifier: ".concat(nftIdentifier))
+
+            // resolveView
+            let viewResolver = getAccount(nftContractAddress).contracts.borrow<&{ViewResolver}>(name: nftContractName)
+            ?? panic("Could not borrow ViewResolver from NFT contract")
+            let collectionData = viewResolver.resolveContractView(
+                resourceType: nil,
+                viewType: Type<MetadataViews.NFTCollectionDisplay>()
+            ) as! MetadataViews.NFTCollectionDisplay? ?? panic("Could not resolve NFTCollectionDisplay view")
+            
+            displayArr.append({"display":ticket.display, "identifier": nftIdentifier, "collectionData": collectionData})
         }
     }
     
@@ -7588,6 +8063,66 @@ import FungibleToken from 0xFungibleToken
 import StorageRent from 0xStorageRent
 import ViewResolver from 0xMetadataViews
 import FungibleTokenMetadataViews from 0xFungibleTokenMetadataViews
+
+
+transaction(vaultIdentifier:String, recipient: Address, amount: UFix64) {
+
+    prepare(signer: auth(Storage, BorrowValue) &Account) {
+
+        let type = CompositeType(vaultIdentifier)
+        let identifierSplit = vaultIdentifier.split(separator: ".")
+        let address = Address.fromString("0x".concat(identifierSplit[1]))!
+        let name = identifierSplit[2]!
+
+        let viewResolver = getAccount(address).contracts.borrow<&{ViewResolver}>(name: name)
+            ?? panic("Could not borrow ViewResolver from FungibleToken contract")
+        let vaultData = viewResolver.resolveContractView(
+                resourceType: type,
+                viewType: Type<FungibleTokenMetadataViews.FTVaultData>()
+            ) as! FungibleTokenMetadataViews.FTVaultData? ?? panic("Could not resolve FTVaultData view")
+
+         // Get a reference to the signer's stored vault
+        let vaultRef = signer.storage.borrow<auth(FungibleToken.Withdraw) &{FungibleToken.Vault}>(from: vaultData.storagePath)
+            ?? panic("Could not borrow reference to the owner's Vault!")
+
+
+           // Get the recipient's public account object
+        let recipientAccount = getAccount(recipient)
+
+        // Get a reference to the recipient's Receiver
+        let receiverRef = recipientAccount.capabilities.borrow<&{FungibleToken.Vault}>(vaultData.receiverPath)!
+            
+        // Deposit the withdrawn tokens in the recipient's receiver
+        receiverRef.deposit(from: <- vaultRef.withdraw(amount: amount))
+        StorageRent.tryRefill(recipient)
+    }
+
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "transferTokensV3",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(vaultIdentifier, t.String),
+        arg(recipient, t.Address),
+        arg(amount, t.UFix64),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
+  public async transferTokensV4(vaultIdentifier: string, recipient: string, amount: string) {
+    const code = `
+import FungibleToken from 0xFungibleToken
+import StorageRent from 0xStorageRent
+import ViewResolver from 0xMetadataViews
+import FungibleTokenMetadataViews from 0xFungibleTokenMetadataViews
 import LostAndFound from 0xLostAndFound
 import MetadataViews from 0xMetadataViews
 import FlowToken from 0xFlowToken
@@ -7652,7 +8187,7 @@ transaction(vaultIdentifier:String, recipient: Address, amount: UFix64) {
         // Deposit the withdrawn tokens in the recipient's receiver
         // lostandfound.deposit(from: <- sentVault)
         let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <-sentVault, memo: "Send Tokens Backup", display: display)
-        let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+        let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee * 1.2)
         let item <- depositEstimate.withdraw()
 
          LostAndFound.trySendResource(
@@ -7672,7 +8207,7 @@ transaction(vaultIdentifier:String, recipient: Address, amount: UFix64) {
 `;
     let config = {
       cadence: code.trim(),
-      name: "transferTokensV3",
+      name: "transferTokensV4",
       type: "transaction",
       args: (arg: any, t: any) => [
         arg(vaultIdentifier, t.String),

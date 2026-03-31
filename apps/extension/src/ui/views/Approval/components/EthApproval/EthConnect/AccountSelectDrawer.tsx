@@ -27,6 +27,7 @@ export const AccountSelectDrawer = ({
   showCoaFirst = false,
 }: AccountSelectDrawerProps) => {
   const evmAccount = parentWallet?.evmAccount;
+  const allEoaAccounts = parentWallet?.eoaAccounts ?? [];
 
   const handleAccountClick = (account: WalletAccount, parentAccount?: WalletAccount) => {
     onAccountSelect(account, parentAccount);
@@ -38,33 +39,34 @@ export const AccountSelectDrawer = ({
     account: WalletAccount;
     parentAccount?: WalletAccount;
   }> = [];
+  const seenAccountAddresses = new Set<string>();
+
+  const pushIfValid = (account?: WalletAccount) => {
+    if (!account || !isValidEthereumAddress(account.address)) {
+      return;
+    }
+    const normalizedAddress = account.address.toLowerCase();
+    if (seenAccountAddresses.has(normalizedAddress)) {
+      return;
+    }
+    seenAccountAddresses.add(normalizedAddress);
+    availableAccounts.push({
+      account,
+      parentAccount: parentWallet,
+    });
+  };
+
+  const eoaCandidates: WalletAccount[] = [...allEoaAccounts];
+  if (eoaAccount) {
+    eoaCandidates.push(eoaAccount);
+  }
 
   if (showCoaFirst) {
-    if (evmAccount && isValidEthereumAddress(evmAccount.address)) {
-      availableAccounts.push({
-        account: evmAccount,
-        parentAccount: parentWallet,
-      });
-    }
-    if (eoaAccount && isValidEthereumAddress(eoaAccount.address)) {
-      availableAccounts.push({
-        account: eoaAccount,
-        parentAccount: parentWallet,
-      });
-    }
+    pushIfValid(evmAccount);
+    eoaCandidates.forEach(pushIfValid);
   } else {
-    if (eoaAccount && isValidEthereumAddress(eoaAccount.address)) {
-      availableAccounts.push({
-        account: eoaAccount,
-        parentAccount: parentWallet,
-      });
-    }
-    if (evmAccount && isValidEthereumAddress(evmAccount.address)) {
-      availableAccounts.push({
-        account: evmAccount,
-        parentAccount: parentWallet,
-      });
-    }
+    eoaCandidates.forEach(pushIfValid);
+    pushIfValid(evmAccount);
   }
 
   return (

@@ -45,6 +45,11 @@ struct AddTokenView: RouteableView {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 5).onChanged { _ in
+                dismissKeyboard()
+            }
+        )
         .halfSheet(
             showSheet: $vm.confirmSheetIsPresented,
             autoResizing: true,
@@ -126,9 +131,12 @@ extension AddTokenView {
         let action: () -> Void
         @EnvironmentObject
         var vm: AddTokenViewModel
+        @Environment(\.dismissSearch)
+        var dismissSearch
 
         var body: some View {
             Button {
+                dismissSearch()
                 if isEVMAccount && vm.mode == .addToken {
                     return
                 }

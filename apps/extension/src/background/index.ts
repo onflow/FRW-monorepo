@@ -1,10 +1,12 @@
 import 'reflect-metadata';
 
+import { ServiceContext, logger } from '@onflow/frw-context';
 import { ethErrors } from 'eth-rpc-errors';
 
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
 import walletController, { type WalletController } from '@/background/controller/wallet';
+import { initializePlatform } from '@/bridge/PlatformImpl';
 import {
   authenticationService,
   addressBookService,
@@ -52,6 +54,16 @@ const FB_FUNCTIONS_URL = process.env.FB_FUNCTIONS;
 const SCRIPTS_PUBLIC_KEY = process.env.SCRIPTS_PUBLIC_KEY;
 
 async function restoreAppState() {
+  // Initialize ServiceContext in background runtime so shared logger/cadence proxies are active.
+  // Without this, logger.info/warn/error from background services may become no-op.
+  try {
+    const platform = initializePlatform();
+    platform.setWalletController(walletController);
+    ServiceContext.initialize(platform as any);
+  } catch (error) {
+    logger.error('[background] ServiceContext initialize failed:', error);
+  }
+
   // 1. Initialize storage first
   initializeStorage({ implementation: chromeStorage });
   // 2. Initialize version service to use the extension version
@@ -239,6 +251,24 @@ chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
 
     const sessionId = port.sender?.tab?.id;
     const session = sessionService.getOrCreateSession(sessionId);
+    const senderUrl = port.sender?.url || port.sender?.tab?.url || '';
+    let senderOrigin = '';
+    if (senderUrl) {
+      try {
+        senderOrigin = new URL(senderUrl).origin;
+      } catch {
+        senderOrigin = '';
+      }
+    }
+    if (senderOrigin) {
+      // Security: always bind session origin to the actual sender URL origin.
+      // This prevents dapps from spoofing origin via tabCheckin params.
+      session.setProp({
+        origin: senderOrigin,
+        icon: session.icon,
+        name: session.name,
+      });
+    }
 
     const req = { data, session };
     // for background push to respective page

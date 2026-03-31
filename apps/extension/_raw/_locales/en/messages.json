@@ -1543,6 +1543,18 @@
   "Add_Account_Sidebar": {
     "message": "Add Account"
   },
+  "Add_Flow_Address_Sidebar": {
+    "message": "Add Flow Address"
+  },
+  "Add_EOA_Address_Sidebar": {
+    "message": "Add EOA Address"
+  },
+  "Create_Flow_Address_Sidebar": {
+    "message": "Create a new Flow Cadence account"
+  },
+  "Create_EOA_Address_Sidebar": {
+    "message": "Create a new Flow EVM Account"
+  },
   "Mobile_overview": {
     "message": "Mobile overview"
   },

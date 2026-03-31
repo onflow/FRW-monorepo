@@ -18,10 +18,10 @@ struct RegisterRequest: Codable {
 
 ///for v4
 struct RegisterParam: Codable {
-  let flowAccountInfo: FlowAccountInfo
-  let evmAccountInfo: EVMAccountInfo?
-  let username: String
-  let deviceInfo: DeviceInfoRequest
+    let flowAccountInfo: FlowAccountInfo
+    let evmAccountInfo: EVMAccountInfo?
+    let username: String
+    let deviceInfo: DeviceInfoRequest
 }
 
 // MARK: - AccountKey
@@ -34,13 +34,13 @@ struct AccountKey: Codable {
 }
 
 struct FlowAccountInfo: Codable {
-  let accountKey: AccountKey
-  let signature: String
+    let accountKey: AccountKey
+    let signature: String
 }
 
 struct EVMAccountInfo: Codable {
-  let eoaAddress: String
-  let signature: String
+    let eoaAddress: String
+    let signature: String
 }
 
 // MARK: - LoginRequest
@@ -119,4 +119,12 @@ extension DeviceInfoRequest {
 struct NetworkRequest: Codable {
     let accountKey: AccountKey
     let network: String
+}
+
+// MARK: - add account
+struct AddAccountRequest: Codable {
+    let hashAlgorithm: Int
+    let publicKey: String
+    let signatureAlgorithm: Int
+    let weight: Int
 }

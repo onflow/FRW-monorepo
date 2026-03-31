@@ -97,6 +97,25 @@ export default defineConfig({
       fullyParallel: false,
     },
 
+    // inbox
+    // {
+    //   name: 'inbox-setup',
+    //   testMatch: /.*inbox\.setup\.ts/,
+    //   teardown: 'inbox-teardown',
+    //   fullyParallel: false,
+    // },
+    // {
+    //   name: 'inbox-test',
+    //   testMatch: /inbox\/.*\.test\.ts/,
+    //   dependencies: ['inbox-setup'],
+    //   fullyParallel: false,
+    // },
+    // {
+    //   name: 'inbox-teardown',
+    //   testMatch: /.*inbox\.teardown\.ts/,
+    //   fullyParallel: false,
+    // },
+
     // apps
 
     // {

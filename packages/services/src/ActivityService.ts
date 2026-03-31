@@ -1,6 +1,7 @@
-import { AccountService, EvmService } from '@onflow/frw-api';
+import { AccountService, ActivityDetailService, EvmService } from '@onflow/frw-api';
 import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import {
+  type ActivityDetailResponse,
   type ActivityItem,
   type ActivityListResponse,
   type ActivityType,
@@ -242,6 +243,23 @@ export class ActivityService {
     limit: number = 15
   ): Promise<ActivityListResponse> {
     return this.activityProvider.getData(address, network, offset, limit);
+  }
+
+  /**
+   * Get detailed information for a single transaction
+   */
+  async getActivityDetail(
+    txId: string,
+    network: string = 'mainnet'
+  ): Promise<ActivityDetailResponse | null> {
+    try {
+      const type = this.walletType === WalletType.EVM ? 'evm' : 'flow';
+      const response = await ActivityDetailService.getDetail({ trxId: txId, network, type });
+      return response?.data ?? response;
+    } catch (error) {
+      logger.error('[ActivityService] failed to fetch activity detail', error);
+      return null;
+    }
   }
 
   /**

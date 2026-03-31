@@ -28,11 +28,9 @@ struct AuthnView: View {
       }
       .padding(.bottom, 16)
       .padding(.horizontal, 16)
-      .background(Color.Brain.Core.cards)
       
       accountSelectionOverlay
     }
-    .background(Color.blue)
   }
 }
 
@@ -103,7 +101,7 @@ extension AuthnView {
     }
     .padding(16)
     .frame(maxWidth: .infinity)
-    .background(Color.Brain.Light.lines5)
+    .background(Color.Brain.Light.lines10)
     .cornerRadius(16)
   }
   // MARK: - Permissions Card
@@ -126,7 +124,7 @@ extension AuthnView {
       }
       .padding(16)
       .frame(maxWidth: .infinity)
-      .background(Color.Brain.Light.lines5)
+      .background(Color.Brain.Light.lines10)
       .cornerRadius(16)
 
       // Permissions list
@@ -147,7 +145,7 @@ extension AuthnView {
     }
     .padding(16)
     .frame(maxWidth: .infinity)
-    .background(Color.Brain.Light.lines5)
+    .background(Color.Brain.Light.lines10)
     .cornerRadius(16)
   }
 
@@ -195,7 +193,7 @@ extension AuthnView {
         )
       }
     }
-    .background(Color.Brain.Light.lines5)
+    .background(Color.Brain.Light.lines10)
     .cornerRadius(16)
   }
 

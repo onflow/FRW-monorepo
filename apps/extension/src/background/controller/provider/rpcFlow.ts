@@ -20,6 +20,9 @@ const isSignApproval = (type: string) => {
 const flow = new PromiseFlow();
 const flowContext = flow
   .use(async (ctx, next) => {
+    // Ensure permission cache is loaded before any permission checks during cold start.
+    await permissionService.ensureInitialized();
+
     // check method
     const {
       data: { method },
@@ -69,10 +72,10 @@ const flowContext = flow
       // Store approval result in context for controller to use
       ctx.approvalRes = approvalResult;
 
-      const { defaultChain } = approvalResult;
+      const { defaultChain, evmAddress } = approvalResult;
       // Store permission with current timestamp
       const timestamp = Date.now();
-      permissionService.addConnectedSite(origin, name, icon, defaultChain);
+      permissionService.addConnectedSite(origin, name, icon, defaultChain, false, evmAddress);
       // Update the site with timestamp and isConnected flag (site exists since we just added it)
       const site = permissionService.getConnectedSite(origin);
       if (site) {
@@ -104,14 +107,14 @@ const flowContext = flow
         !(await Wallet.isUnlocked())
       ) {
         ctx.request.requestedApproval = true;
-        const { defaultChain } = await notificationService.requestApproval(
+        const { defaultChain, evmAddress } = await notificationService.requestApproval(
           {
             params: { origin, name, icon },
             approvalComponent: 'EthConnect',
           },
           { height: 599 }
         );
-        permissionService.addConnectedSite(origin, name, icon, defaultChain);
+        permissionService.addConnectedSite(origin, name, icon, defaultChain, false, evmAddress);
       }
     }
 
@@ -130,7 +133,11 @@ const flowContext = flow
 
     const [{ height = 599 } = {}] =
       Reflect.getMetadata('APPROVAL', providerController, mapMethod) || [];
-    if (mapMethod === 'ethSendTransaction' || mapMethod === 'personalSign') {
+    if (
+      mapMethod === 'ethSendTransaction' ||
+      mapMethod === 'personalSign' ||
+      mapMethod === 'ethSign'
+    ) {
       ctx.request.requestedApproval = true;
 
       // Check if message is too long and show special popup

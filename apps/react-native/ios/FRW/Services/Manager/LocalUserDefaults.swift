@@ -63,6 +63,9 @@ extension LocalUserDefaults {
         // selected address for authn by uid and host [uid: [host: address]]
         case authnSelectedAddress
         case wrapEOAWithCadence
+        // EOA address to derivation index mapping per UID [uid: [eoaAddress: index]]
+        case eoaIndexMap
+        case hideCOAWithZero
     }
 }
 
@@ -137,6 +140,9 @@ class LocalUserDefaults: ObservableObject {
 
     @AppStorage(Keys.migrationFinished.rawValue)
     var migrationFinished: Bool = false
+
+    @AppStorage(Keys.hideCOAWithZero.rawValue)
+    var hideCOAWithZero: Bool = true
 
     var legacyUserInfo: UserInfo? {
         set {
@@ -583,5 +589,56 @@ extension LocalUserDefaults {
             hiddenAddresses = addresses
             NotificationCenter.default.post(name: .hiddenAddressesDidChanged, object: nil)
         }
+    }
+
+    // MARK: - EOA Index Map
+
+    // Storage format: [uid: [eoaAddress: index]]
+    private var eoaIndexMap: [String: [String: Int]] {
+        set {
+            if let data = try? JSONEncoder().encode(newValue) {
+                UserDefaults.standard.set(data, forKey: Keys.eoaIndexMap.rawValue)
+            }
+        }
+        get {
+            guard let data = UserDefaults.standard.data(forKey: Keys.eoaIndexMap.rawValue),
+                  let map = try? JSONDecoder().decode([String: [String: Int]].self, from: data) else {
+                return [:]
+            }
+            return map
+        }
+    }
+
+    // Get all EOA indices for a specific UID
+    func getEOAIndices(for uid: String) -> [String: Int] {
+        return eoaIndexMap[uid] ?? [:]
+    }
+
+    // Save EOA address with its derivation index
+    func setEOAIndex(_ index: Int, for address: String, uid: String) {
+        var map = eoaIndexMap
+        var uidMap = map[uid] ?? [:]
+        uidMap[address] = index
+        map[uid] = uidMap
+        eoaIndexMap = map
+    }
+
+    // Get the next available EOA index for a UID
+    func nextEOAIndex(for uid: String) -> Int {
+        let indices = getEOAIndices(for: uid)
+        guard let maxIndex = indices.values.max() else {
+            return 0
+        }
+        return maxIndex + 1
+    }
+
+    // Remove EOA index entry
+    func removeEOAIndex(for address: String, uid: String) {
+        var map = eoaIndexMap
+        map[uid]?.removeValue(forKey: address)
+        if map[uid]?.isEmpty == true {
+            map.removeValue(forKey: uid)
+        }
+        eoaIndexMap = map
     }
 }

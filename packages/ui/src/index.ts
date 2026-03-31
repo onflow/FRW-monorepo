@@ -10,6 +10,7 @@ export {
   Paragraph,
   Progress,
   ScrollView,
+  Sheet,
   Spinner,
   Stack,
   TamaguiProvider,
@@ -38,8 +39,22 @@ export * from './utils/clipboard';
 
 // Export specialized components
 export * from './components/AccountCard';
+export * from './components/AddTokenListItem';
+export * from './components/AlphabetIndex';
+export * from './components/ClaimAssetDrawer';
+export * from './components/ClaimNFTAssetDrawer';
+export * from './components/ClaimBanner';
+export * from './components/ClaimDateHeader';
+export * from './components/ClaimItemRow';
+export * from './components/ClaimNFTCollectionRow';
+export * from './components/ClaimReceiverRow';
+export * from './components/PriceChangeBadge';
+export * from './components/PriceChart';
+export * from './components/TokenSectionHeader';
 export * from './components/AccountSelector';
 export * from './components/ActivityCard';
+export * from './components/ActivityDetailRow';
+export * from './components/ActivityDetailSheet';
 export * from './components/ActivityGroupHeader';
 export * from './components/ActivitySkeleton';
 export * from './components/AddContactDialog';

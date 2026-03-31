@@ -26,8 +26,15 @@ import { useTransferList } from '@/ui/hooks/useTransferListHook';
 dayjs.extend(relativeTime);
 
 const TransferList = () => {
-  const { transactions, monitor, flowscanURL, viewSourceURL, loading, showButton } =
-    useTransferList();
+  const {
+    transactions,
+    monitor,
+    flowscanURL,
+    explorerRedirectBase,
+    viewSourceURL,
+    loading,
+    showButton,
+  } = useTransferList();
   const { currentWallet } = useProfiles();
 
   const timeConverter = (timeStamp: number) => {
@@ -170,8 +177,8 @@ const TransferList = () => {
           {transactions && transactions.length ? (
             <>
               {' '}
-              {(transactions || []).map((tx) => {
-                const txCombinedKey = `${tx.cadenceTxId || tx.hash}${tx.evmTxIds ? `_${tx.evmTxIds.join('_')}` : ''}_${tx.transferType}_${tx.additionalMessage}_${tx.interaction}`;
+              {(transactions || []).map((tx, index) => {
+                const txCombinedKey = `${tx.cadenceTxId || tx.hash || 'tx'}_${tx.time}_${tx.transferType}_${index}`;
                 return (
                   <ListItem
                     key={txCombinedKey}
@@ -199,9 +206,13 @@ const TransferList = () => {
                           return;
                         }
                         const txHash = tx.hash;
+                        const redirectTxUrl =
+                          explorerRedirectBase && txHash
+                            ? `${explorerRedirectBase}&type=tx&id=${encodeURIComponent(txHash)}`
+                            : null;
                         const url =
                           monitor === 'flowscan'
-                            ? `${flowscanURL}/tx/${txHash}`
+                            ? redirectTxUrl || `${flowscanURL}/tx/${txHash}`
                             : `${viewSourceURL}/${txHash}`;
                         window.open(url);
                       }}
@@ -243,7 +254,11 @@ const TransferList = () => {
                     variant="text"
                     endIcon={<ChevronRightRoundedIcon />}
                     onClick={() => {
-                      window.open(`${flowscanURL}/account/${currentWallet?.address}`, '_blank');
+                      const accountRedirectUrl =
+                        explorerRedirectBase && currentWallet?.address
+                          ? `${explorerRedirectBase}&type=address&id=${encodeURIComponent(currentWallet.address)}`
+                          : `${flowscanURL}/account/${currentWallet?.address}`;
+                      window.open(accountRedirectUrl, '_blank');
                     }}
                   >
                     <Typography variant="overline" color="text.secondary">

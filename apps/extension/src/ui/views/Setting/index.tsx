@@ -6,6 +6,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
 import { getLocalData, setLocalData } from '@/data-model';
+import { MAX_MAIN_ACCOUNTS_PER_PROFILE } from '@/shared/constant';
+import { hasReachedFlowAddressLimit } from '@/shared/utils';
 import { AboutIcon } from '@/ui/assets/icons/settings/About';
 import { AccountListIcon } from '@/ui/assets/icons/settings/AccountList';
 import { AddProfileIcon } from '@/ui/assets/icons/settings/AddProfile';
@@ -19,6 +21,7 @@ import { EditIcon } from '@/ui/assets/icons/settings/Edit';
 import { MobileIcon } from '@/ui/assets/icons/settings/Mobile';
 import { SecurityIcon } from '@/ui/assets/icons/settings/Security';
 import { LLHeader } from '@/ui/components';
+import AddAccountPopup from '@/ui/components/account-menu/AddAccountPopup';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { ProfileItem } from '@/ui/components/profile/profile-item';
 import AddProfilePopup from '@/ui/components/settings/add-profile-popup';
@@ -29,16 +32,55 @@ import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 // Feature flags
 const SHOW_DEVICES = false;
-
 const SettingTab = () => {
+  const MAX_EOA_ADDRESSES_PER_PROFILE = 5;
   const usewallet = useWallet();
-  const { profileIds, activeAccountType, userInfo } = useProfiles();
+  const {
+    profileIds,
+    activeAccountType,
+    userInfo,
+    network,
+    walletList,
+    pendingAccountTransactions,
+  } = useProfiles();
   const [isKeyphrase, setIsKeyphrase] = useState(false);
   const [isAddProfilePopupOpen, setIsAddProfilePopupOpen] = useState(false);
+  const [isAddAccountPopupOpen, setIsAddAccountPopupOpen] = useState(false);
   const [modeGas, setGasMode] = useState(false);
   const [gasKillSwitch, setGasKillSwitch] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [isCreatingEoaAddress, setIsCreatingEoaAddress] = useState(false);
+  const [createAccountError, setCreateAccountError] = useState('');
   const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
+  const canCreateNewAccount = useFeatureFlag('create_new_account');
+  const canAddMoreAccounts = !hasReachedFlowAddressLimit(
+    walletList ?? [],
+    MAX_MAIN_ACCOUNTS_PER_PROFILE
+  );
+  const hasPendingCreation = (pendingAccountTransactions?.length ?? 0) > 0;
+  const eoaAddressCount = React.useMemo(() => {
+    if (!walletList || walletList.length === 0) {
+      return 0;
+    }
+    const addressSet = new Set<string>();
+    for (const account of walletList) {
+      const eoas =
+        Array.isArray(account.eoaAccounts) && account.eoaAccounts.length > 0
+          ? account.eoaAccounts
+          : account.eoaAccount
+            ? [account.eoaAccount]
+            : [];
+      for (const eoa of eoas) {
+        if (eoa?.address) {
+          addressSet.add(eoa.address.toLowerCase());
+        }
+      }
+    }
+    return addressSet.size;
+  }, [walletList]);
+  const hasReachedEoaLimit = eoaAddressCount >= MAX_EOA_ADDRESSES_PER_PROFILE;
+  const canOpenAddAccountPopup = canCreateNewAccount && (canAddMoreAccounts || !hasReachedEoaLimit);
 
   const checkIsKeyphrase = useCallback(async () => {
     const keyrings = await usewallet.checkMnemonics();
@@ -50,6 +92,13 @@ const SettingTab = () => {
       return;
     }
     setShowError(false);
+  };
+
+  const handleCreateAccountErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setCreateAccountError('');
   };
 
   const loadGasMode = useCallback(async () => {
@@ -70,6 +119,50 @@ const SettingTab = () => {
     setGasMode(!modeGas);
     setLocalData('lilicoPayer', !modeGas);
     setShowError(true);
+  };
+
+  const createAccountFromSettings = async () => {
+    if (isCreatingAccount || hasPendingCreation) {
+      return;
+    }
+
+    setIsCreatingAccount(true);
+    try {
+      await usewallet.createNewAccount(network || 'mainnet');
+    } catch (error) {
+      setCreateAccountError(
+        error instanceof Error ? error.message : 'Failed to create account. Please try again.'
+      );
+    } finally {
+      setIsCreatingAccount(false);
+    }
+  };
+
+  const createAccountFromPopup = async () => {
+    setIsAddAccountPopupOpen(false);
+    await createAccountFromSettings();
+  };
+
+  const createEoaAddressFromSettings = async () => {
+    if (isCreatingEoaAddress) {
+      return;
+    }
+
+    setIsCreatingEoaAddress(true);
+    try {
+      await usewallet.addNewEOAAddress();
+    } catch (error) {
+      setCreateAccountError(
+        error instanceof Error ? error.message : 'Failed to create EOA address. Please try again.'
+      );
+    } finally {
+      setIsCreatingEoaAddress(false);
+    }
+  };
+
+  const createEoaAddressFromPopup = async () => {
+    setIsAddAccountPopupOpen(false);
+    await createEoaAddressFromSettings();
   };
 
   useEffect(() => {
@@ -323,6 +416,22 @@ const SettingTab = () => {
             text={chrome.i18n.getMessage('Add_Profile') || 'Add Profile'}
             endIcon={<IconEnd size={12} />}
           />
+          {canOpenAddAccountPopup && (
+            <>
+              <Divider sx={{ width: '90%' }} variant="middle" />
+              <SettingsListItem
+                onClick={
+                  isCreatingAccount || hasPendingCreation
+                    ? undefined
+                    : () => setIsAddAccountPopupOpen(true)
+                }
+                icon={<AddProfileIcon width={24} height={24} />}
+                text={chrome.i18n.getMessage('Add_Account_Sidebar') || 'Add Account'}
+                endIcon={<IconEnd size={12} />}
+                showArrow={true}
+              />
+            </>
+          )}
         </List>
       </Box>
 
@@ -337,9 +446,36 @@ const SettingTab = () => {
         </Alert>
       </Snackbar>
 
+      <Snackbar
+        open={Boolean(createAccountError)}
+        autoHideDuration={6000}
+        onClose={handleCreateAccountErrorClose}
+      >
+        <Alert
+          onClose={handleCreateAccountErrorClose}
+          variant="filled"
+          severity="error"
+          sx={{ width: '100%' }}
+        >
+          {createAccountError}
+        </Alert>
+      </Snackbar>
+
       <AddProfilePopup
         isOpen={isAddProfilePopupOpen}
         onClose={() => setIsAddProfilePopupOpen(false)}
+      />
+      <AddAccountPopup
+        isConfirmationOpen={isAddAccountPopupOpen}
+        handleCloseIconClicked={() => setIsAddAccountPopupOpen(false)}
+        handleCancelBtnClicked={() => setIsAddAccountPopupOpen(false)}
+        handleAddBtnClicked={() => setIsAddAccountPopupOpen(false)}
+        addAccount={createAccountFromPopup}
+        addEoaAddress={createEoaAddressFromPopup}
+        importExistingAccount={false}
+        modalVariant="profile"
+        disableCreateAccount={hasPendingCreation || !canAddMoreAccounts}
+        disableAddEoaAddress={isCreatingEoaAddress || hasReachedEoaLimit}
       />
     </div>
   );

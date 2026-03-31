@@ -20,16 +20,19 @@ export const useTransferList = () => {
 
   const [monitor, setMonitor] = useState<string | null>(null);
   const [flowscanURL, setFlowscanURL] = useState<string | null>(null);
+  const [explorerRedirectBase, setExplorerRedirectBase] = useState<string | null>(null);
   const [viewSourceURL, setViewSourceURL] = useState<string | null>(null);
   useEffect(() => {
     let mounted = true;
     const fetchSettings = async () => {
       const monitor = await wallet.getMonitor();
       const url = await wallet.getFlowscanUrl();
+      const redirectBase = await wallet.getExplorerRedirectBase();
       const viewSourceUrl = await wallet.getViewSourceUrl();
       if (mounted) {
         setMonitor(monitor);
         setFlowscanURL(url);
+        setExplorerRedirectBase(redirectBase ?? null);
         setViewSourceURL(viewSourceUrl);
       }
     };
@@ -44,6 +47,7 @@ export const useTransferList = () => {
     transactions: transferListStore?.list || [],
     monitor,
     flowscanURL,
+    explorerRedirectBase,
     viewSourceURL,
     loading: transferListStore === undefined,
     showButton: transferListStore && transferListStore.count > 15,

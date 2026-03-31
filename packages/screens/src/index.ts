@@ -1,5 +1,10 @@
 // Export screen components
-export { ActivityScreen } from './activity';
+export { ActivityScreen, ActivityDetailScreen } from './activity';
+export { AddTokensScreen, ClaimTokensScreen, ClaimTokenDetailScreen } from './tokens';
+export { AddNFTCollectionScreen, ClaimNFTDetailScreen } from './nfts';
+export type { ClaimNFTDetailScreenProps } from './nfts';
+export type { ClaimItem, ClaimReceiver, ClaimTokenDetailScreenProps } from './tokens';
+export type { ActivityDetailScreenProps } from './activity';
 export { SelectTokensScreen } from './send/SelectTokensScreen.query';
 export { SendToScreen } from './send/SendToScreen.query';
 export * from './send/NFTListScreen.query';
@@ -22,8 +27,14 @@ export { GenericErrorFallback } from './error/GenericErrorFallback';
 export { NetworkErrorFallback } from './error/NetworkErrorFallback';
 export { CriticalErrorFallback } from './error/CriticalErrorFallback';
 
+// Export what's new screens
+export * from './whatsnew';
+
 // Export key rotation screens
 export * from './keyrotation';
+
+// Export keystore migration screens
+export * from './keystoremigration';
 
 // Export hooks
 export * from './hooks';

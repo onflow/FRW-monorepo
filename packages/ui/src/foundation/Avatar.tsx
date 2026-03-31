@@ -1,5 +1,5 @@
 import { convertedSVGURL } from '@onflow/frw-utils';
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, Text, YStack } from 'tamagui';
 
 import type { AvatarProps } from '../types';
@@ -16,6 +16,10 @@ export function Avatar({
   borderRadius,
   style,
 }: AvatarProps): React.ReactElement {
+  const [imgError, setImgError] = useState(false);
+
+  const showImage = !!src && !imgError;
+
   return (
     <YStack
       width={size}
@@ -30,7 +34,7 @@ export function Avatar({
       borderWidth={borderWidth}
       style={style}
     >
-      {src ? (
+      {showImage ? (
         <Image
           src={convertedSVGURL(src)}
           alt={alt}
@@ -39,6 +43,7 @@ export function Avatar({
           objectFit="cover"
           borderRadius={borderRadius || size / 2}
           position="absolute"
+          onError={() => setImgError(true)}
         />
       ) : (
         <Text color={textColor || '$text'} fontSize={size * 0.5} fontWeight="600">

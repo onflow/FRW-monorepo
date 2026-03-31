@@ -342,6 +342,36 @@ export class AccountService {
   }
 }
 
+export class ActivityDetailService {
+  /**
+   * Get detailed information for a single transaction
+   */
+  static getDetail(
+    params: {
+      /** The transaction ID to fetch details for */
+      trxId: string;
+      /** Network: mainnet or testnet */
+      network?: string;
+      /** Wallet type: flow or evm */
+      type?: string;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/activityDetail';
+
+      const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
+      configs.params = {
+        trxId: params['trxId'],
+        network: params['network'],
+        type: params['type'],
+      };
+
+      axios(configs, resolve, reject);
+    });
+  }
+}
+
 export class NftService {
   /**
    * Get a list of NFTs from a specific collection under a FLOW address

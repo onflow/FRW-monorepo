@@ -27,6 +27,7 @@ interface EnvironmentVariables {
   GO_API_URL: string;
   INSTABUG_TOKEN: string;
   MIXPANEL_TOKEN?: string;
+  CADENCE_INBOX?: boolean;
 }
 
 interface Currency {
@@ -135,7 +136,7 @@ export interface Spec extends TurboModule {
   getLanguage(): string;
   // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead
   sign(hexData: string): Promise<string>;
-  ethSign(hexData: string): Promise<string>;
+  ethSign(hexData: string, address: string | null): Promise<string>;
   getRecentContacts(): Promise<RecentContactsResponse>;
   // Wallet accounts method
   getWalletAccounts(): Promise<WalletAccountsResponse>;
@@ -144,6 +145,17 @@ export interface Spec extends TurboModule {
   scanQRCode(): Promise<string>;
   // Close react native method
   closeRN(id?: string | null): void;
+
+  // Update dialog action click callback
+  onUpdateDialogActionPress(
+    actionType: 'external' | 'internal' | 'deeplink',
+    actionUrl?: string | null,
+    actionText?: string | null
+  ): void;
+
+  // Close react native and enable NFT collection storage
+  closeRNWithNFT(id?: string | null): void;
+
   // Free gas settings method
   isFreeGasEnabled(): Promise<boolean>;
   // Listen to a transaction
@@ -207,6 +219,10 @@ export interface Spec extends TurboModule {
   ): Promise<void>;
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;
+  // Keystore migration
+  keystoreMigration?(): Promise<void>;
+
+  // Screen security
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;
   // Launch native screen method - uses local NativeScreenName type for Codegen compatibility
   launchNativeScreen(screenName: NativeScreenName, params?: string | null): void;

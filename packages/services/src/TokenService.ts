@@ -1,7 +1,9 @@
 import {
+  FtService,
   UserFtTokensService,
   type CadenceFTApiResponseWithCurrency,
   type CurrencyEVMTokenData,
+  type Network,
 } from '@onflow/frw-api';
 import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import {
@@ -9,6 +11,7 @@ import {
   mapERC20TokenToTokenModel,
   WalletType,
   type TokenModel,
+  type FungibleTokenCatalogItem,
   FRWError,
   ErrorCode,
 } from '@onflow/frw-types';
@@ -140,6 +143,31 @@ export class TokenService {
     }
 
     return TokenService.instances.get(key)!;
+  }
+
+  /**
+   * Fetches the full Flow fungible token catalog (all available tokens, not just user's).
+   * Used by the Add Tokens screen to show discoverable tokens.
+   */
+  static async getAllTokenCatalog(
+    network: string = 'mainnet',
+    chainType: string = 'flow'
+  ): Promise<FungibleTokenCatalogItem[]> {
+    try {
+      const result = await FtService.full({ network: network as Network, chainType });
+      return (result?.tokens ?? []).map((token) => {
+        // Derive flowIdentifier from address + contractName if not provided by API
+        const flowIdentifier =
+          token.flowIdentifier ??
+          (token.address && token.contractName
+            ? `A.${token.address.replace(/^0x/, '')}.${token.contractName}`
+            : undefined);
+        return { ...token, flowIdentifier } as unknown as FungibleTokenCatalogItem;
+      });
+    } catch (error) {
+      logger.error('[TokenService] Failed to fetch token catalog:', error);
+      return [];
+    }
   }
 
   async getTokenInfo(address: string, network?: string, currency?: string): Promise<TokenModel[]> {

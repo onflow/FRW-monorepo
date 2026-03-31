@@ -7,7 +7,10 @@
     "sendTokens": "トークンを送信",
     "nftDetails": "NFT詳細",
     "colorDemo": "カラーデモ",
-    "receive": "資産を受け取る"
+    "receive": "資産を受け取る",
+    "addTokens": "トークンを追加",
+    "claimTokens": "クレーム",
+    "token": "トークン"
   },
   "common": {
     "cancel": "キャンセル",
@@ -152,7 +155,25 @@
     "sent": "送信済み",
     "received": "受信済み",
     "today": "今日",
-    "yesterday": "昨日"
+    "yesterday": "昨日",
+    "detail": {
+      "appInteraction": "アプリ操作",
+      "youSent": "送信額",
+      "youReceived": "受信額",
+      "from": "送信元",
+      "to": "送信先",
+      "date": "日付",
+      "status": "ステータス",
+      "network": "ネットワーク",
+      "account": "アカウント",
+      "transactionFee": "取引手数料",
+      "coveredByFlowWallet": "Flow Walletが負担",
+      "viewOnExplorer": "ブロックエクスプローラーで表示",
+      "networkFlow": "Flow",
+      "networkEvm": "Flow EVM",
+      "nftsFrom": "{{collection}}のNFTS",
+      "nftCount": "{{count}} NFTS"
+    }
   },
   "buttons": {
     "retry": "再試行",
@@ -509,5 +530,66 @@
     "success": {
       "rotation": "アカウントのアップグレードに成功しました！"
     }
+  },
+  "keystoreMigration": {
+    "tip": {
+      "title": "アカウントを\nアップグレード",
+      "description": "Flow Walletはアカウントのセキュリティをアップグレードする必要があります。このプロセスは数秒で完了します。",
+      "sectionTitle": "これはどういう意味ですか？",
+      "fullControl": {
+        "title": "アカウントとキーを完全に制御できます。バックアップには影響しません。"
+      },
+      "newKey": {
+        "title": "アカウントを保護するために新しいハードウェアキーを作成し、セキュリティを向上させます。"
+      },
+      "noChanges": {
+        "title": "何も変わりません。Flow Walletのハードウェアグレードのセキュリティを引き続きご利用いただけます。"
+      },
+      "start": "開始",
+      "notNow": "後で"
+    }
+  },
+  "claim": {
+    "searchPlaceholder": "検索",
+    "empty": "請求するアイテムがありません",
+    "sort": {
+      "title": "並び替え",
+      "date": "受取日",
+      "amount": "金額",
+      "name": "トークン名"
+    },
+    "detail": {
+      "security": "セキュリティ",
+      "verified": "認証済み",
+      "yes": "はい",
+      "no": "いいえ",
+      "contractAddress": "コントラクトアドレス",
+      "claim": "請求する",
+      "reject": "拒否する"
+    },
+    "drawer": {
+      "title": "資産を請求する",
+      "token": "トークン",
+      "from": "送信元",
+      "cta": "請求する",
+      "to": "宛先"
+    }
+  },
+  "addTokens": {
+    "claimBannerTitle": "受け取ったトークンを請求する",
+    "searchPlaceholder": "トークンを検索",
+    "verifiedOnly": "認証済みトークンのみ表示"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "受け取った NFT を請求する",
+    "searchPlaceholder": "NFT コレクションを検索"
+  },
+  "claimNFTDetail": {
+    "website": "ウェブサイト",
+    "items": "アイテム数",
+    "about": "概要",
+    "claimButton": "資産を受け取る",
+    "empty": "NFT なし",
+    "warningText": "この NFT コレクションを受け入れると、今後の入金も自動的に受け入れます"
   }
 }

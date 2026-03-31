@@ -59,8 +59,7 @@ struct DeveloperModeView: RouteableView {
 
                             Cell(
                                 sysImageTuple: (
-                                    isMainnet ? .checkmarkSelected :
-                                        .checkmarkUnselected,
+                                    isMainnet ? .checkmarkSelected : .checkmarkUnselected,
                                     isMainnet ? .LL.Primary.salmonPrimary : .LL.Neutrals.neutrals1
                                 ),
                                 title: "Mainnet",
@@ -73,10 +72,10 @@ struct DeveloperModeView: RouteableView {
                             Divider()
                             Cell(
                                 sysImageTuple: (
-                                    isTestnet ? .checkmarkSelected :
-                                        .checkmarkUnselected,
-                                    isTestnet ? Flow.ChainID.testnet
-                                        .color : .LL.Neutrals.neutrals1
+                                    isTestnet ? .checkmarkSelected : .checkmarkUnselected,
+                                    isTestnet
+                                        ? Flow.ChainID.testnet
+                                            .color : .LL.Neutrals.neutrals1
                                 ),
                                 title: "Testnet",
                                 desc: isTestnet ? "Selected" : ""
@@ -99,10 +98,11 @@ struct DeveloperModeView: RouteableView {
                             Cell(
                                 sysImageTuple: (
                                     vm
-                                        .isCustomAddress ? .checkmarkUnselected :
-                                        .checkmarkSelected,
-                                    vm.isCustomAddress ? .LL.Neutrals.neutrals1 : .LL.Primary
-                                        .salmonPrimary
+                                        .isCustomAddress ? .checkmarkUnselected : .checkmarkSelected,
+                                    vm.isCustomAddress
+                                        ? .LL.Neutrals.neutrals1
+                                        : .LL.Primary
+                                            .salmonPrimary
                                 ),
                                 title: "my_own_address".localized,
                                 desc: ""
@@ -117,8 +117,10 @@ struct DeveloperModeView: RouteableView {
                                 sysImageTuple: (
                                     vm
                                         .isDemoAddress ? .checkmarkSelected : .checkmarkUnselected,
-                                    vm.isDemoAddress ? .LL.Primary.salmonPrimary : .LL.Neutrals
-                                        .neutrals1
+                                    vm.isDemoAddress
+                                        ? .LL.Primary.salmonPrimary
+                                        : .LL.Neutrals
+                                            .neutrals1
                                 ),
                                 title: vm.demoAddress,
                                 desc: ""
@@ -132,10 +134,11 @@ struct DeveloperModeView: RouteableView {
                             Cell(
                                 sysImageTuple: (
                                     vm
-                                        .isSVGDemoAddress ? .checkmarkSelected :
-                                        .checkmarkUnselected,
-                                    vm.isSVGDemoAddress ? .LL.Primary.salmonPrimary : .LL.Neutrals
-                                        .neutrals1
+                                        .isSVGDemoAddress ? .checkmarkSelected : .checkmarkUnselected,
+                                    vm.isSVGDemoAddress
+                                        ? .LL.Primary.salmonPrimary
+                                        : .LL.Neutrals
+                                            .neutrals1
                                 ),
                                 title: vm.svgDemoAddress,
                                 desc: ""
@@ -152,8 +155,9 @@ struct DeveloperModeView: RouteableView {
                                         .isCustomAddress ? .checkmarkSelected : .checkmarkUnselected
                                 )
                                 .foregroundColor(
-                                    vm.isCustomAddress ? .LL.Primary
-                                        .salmonPrimary : .LL.Neutrals.neutrals1
+                                    vm.isCustomAddress
+                                        ? .LL.Primary
+                                            .salmonPrimary : .LL.Neutrals.neutrals1
                                 )
                                 Text("custom_address".localized)
                                     .font(.inter())
@@ -188,24 +192,37 @@ struct DeveloperModeView: RouteableView {
                     .cornerRadius(16)
 
                     Section {
-                      VStack {
-                        HStack {
-                            Toggle("Wrap EOA TX with Cadence",
-                                   isOn: $wrapEOAWithCadence
-                            )
-                            .toggleStyle(SwitchToggleStyle(tint: .LL.Primary.salmonPrimary))
-                            .onChange(of: wrapEOAWithCadence) { value in
-                                wrapEOAWithCadence.toggle()
+                        VStack {
+                            HStack {
+                                Toggle(
+                                    "Wrap EOA TX with Cadence",
+                                    isOn: $wrapEOAWithCadence
+                                )
+                                .toggleStyle(SwitchToggleStyle(tint: .LL.Primary.salmonPrimary))
+                                .onChange(of: wrapEOAWithCadence) { value in
+                                }
+                                .disabled(!RemoteConfigManager.shared.remoteWrapEOAWithCadence)
                             }
-                            .disabled(!RemoteConfigManager.shared.remoteWrapEOAWithCadence)
+                            .frame(height: 64)
+                            .padding(.horizontal, 16)
+
+                            HStack {
+                                Toggle(
+                                    "Hide COA With Zero Balance",
+                                    isOn: $hideCOAWithZero
+                                )
+                                .toggleStyle(SwitchToggleStyle(tint: .LL.Primary.salmonPrimary))
+                                .onChange(of: hideCOAWithZero) { value in
+                                    NotificationCenter.default.post(name: .hiddenAddressesDidChanged, object: nil)
+                                }
+                            }
+                            .frame(height: 64)
+                            .padding(.horizontal, 16)
                         }
-                        .frame(height: 64)
-                        .padding(.horizontal, 16)
-                      }
-                      .background(.LL.bgForIcon)
-                      .cornerRadius(16)
+                        .background(.LL.bgForIcon)
+                        .cornerRadius(16)
                     } header: {
-                      headView(title: "config".localized)
+                        headView(title: "config".localized)
                     }
 
                     Section {
@@ -224,14 +241,17 @@ struct DeveloperModeView: RouteableView {
                             }
                             .frame(height: 64)
                             .padding(.horizontal, 16)
-                            .onChange(of: openLogWindow, perform: { value in
-                                LocalUserDefaults.shared.openLogWindow = value
-                                if value {
-                                    DebugViewer.shared.show(theme: .dark)
-                                } else {
-                                    DebugViewer.shared.close()
+                            .onChange(
+                                of: openLogWindow,
+                                perform: { value in
+                                    LocalUserDefaults.shared.openLogWindow = value
+                                    if value {
+                                        DebugViewer.shared.show(theme: .dark)
+                                    } else {
+                                        DebugViewer.shared.close()
+                                    }
                                 }
-                            })
+                            )
 
                             Divider()
 
@@ -291,12 +311,12 @@ struct DeveloperModeView: RouteableView {
                             }
                             .frame(height: 64)
                             .padding(.horizontal, 16)
-                          
+
                             Divider()
                             HStack {
                                 Button {
                                     HUD.success(title: "done")
-                                  LocalUserDefaults.shared.walletAccount = nil
+                                    LocalUserDefaults.shared.walletAccount = nil
                                 } label: {
                                     Text("Reset User Emoji")
                                 }
@@ -305,27 +325,27 @@ struct DeveloperModeView: RouteableView {
                             .frame(height: 64)
                             .padding(.horizontal, 16)
 
-                          HStack {
-                            Text("Clear All Profiles (DEBUG)")
-                              .foregroundColor(.red)
-                            Spacer()
-                          }
-                          .frame(height: 64)
-                          .padding(.horizontal, 16)
-                          .onTapGesture {
-                            ProfileManager.shared.clearAllProfiles()
-                                  HUD.success(title: "All profiles cleared")
-                          }
-                          
-                          HStack {
-                            Text("reset UID(click)")
-                            Spacer()
-                          }
-                          .frame(height: 64)
-                          .padding(.horizontal, 16)
-                          .onTapGesture {
-                            UserManager.shared.activatedUID = nil
-                          }
+                            HStack {
+                                Text("Clear All Profiles (DEBUG)")
+                                    .foregroundColor(.red)
+                                Spacer()
+                            }
+                            .frame(height: 64)
+                            .padding(.horizontal, 16)
+                            .onTapGesture {
+                                ProfileManager.shared.clearAllProfiles()
+                                HUD.success(title: "All profiles cleared")
+                            }
+
+                            HStack {
+                                Text("reset UID(click)")
+                                Spacer()
+                            }
+                            .frame(height: 64)
+                            .padding(.horizontal, 16)
+                            .onTapGesture {
+                                UserManager.shared.activatedUID = nil
+                            }
                         }
                         .background(.LL.bgForIcon)
                         .cornerRadius(16)
@@ -448,49 +468,49 @@ struct DeveloperModeView: RouteableView {
                                     LocalUserDefaults.shared.customToken = []
                                     HUD.success(title: "done.")
                                 }
-                              
-                              HStack {
-                                Text("Copy all Profile Info. (click)")
-                                Spacer()
-                              }
-                              .frame(height: 64)
-                              .padding(.horizontal, 16)
-                              .onTapGesture {
-                                  copyProfile()
-                                  HUD.success(title: "done.")
-                              }
 
-                              HStack {
-                                Text("Clear All Profiles (DEBUG)")
-                                  .foregroundColor(.red)
-                                Spacer()
-                              }
-                              .frame(height: 64)
-                              .padding(.horizontal, 16)
-                              .onTapGesture {
-                                ProfileManager.shared.clearAllProfiles()
-                                      HUD.success(title: "All profiles cleared")
-                              }
-                              //MARK: -
-                              HStack {
-                                Text("Delete SE on Keychain")
-                                Spacer()
-                              }
-                              .frame(height: 64)
-                              .padding(.horizontal, 16)
-                              .onTapGesture {
-                                Router.route(to: RouteMap.Developer.deleteSE)
-                              }
-                              
-                              HStack {
-                                Text("reset UID(click)")
-                                Spacer()
-                              }
-                              .frame(height: 64)
-                              .padding(.horizontal, 16)
-                              .onTapGesture {
-                                UserManager.shared.activatedUID = nil
-                              }
+                                HStack {
+                                    Text("Copy all Profile Info. (click)")
+                                    Spacer()
+                                }
+                                .frame(height: 64)
+                                .padding(.horizontal, 16)
+                                .onTapGesture {
+                                    copyProfile()
+                                    HUD.success(title: "done.")
+                                }
+
+                                HStack {
+                                    Text("Clear All Profiles (DEBUG)")
+                                        .foregroundColor(.red)
+                                    Spacer()
+                                }
+                                .frame(height: 64)
+                                .padding(.horizontal, 16)
+                                .onTapGesture {
+                                    ProfileManager.shared.clearAllProfiles()
+                                    HUD.success(title: "All profiles cleared")
+                                }
+                                //MARK: -
+                                HStack {
+                                    Text("Delete SE on Keychain")
+                                    Spacer()
+                                }
+                                .frame(height: 64)
+                                .padding(.horizontal, 16)
+                                .onTapGesture {
+                                    Router.route(to: RouteMap.Developer.deleteSE)
+                                }
+
+                                HStack {
+                                    Text("reset UID(click)")
+                                    Spacer()
+                                }
+                                .frame(height: 64)
+                                .padding(.horizontal, 16)
+                                .onTapGesture {
+                                    UserManager.shared.activatedUID = nil
+                                }
                             }
                             .background(.LL.bgForIcon)
                             .cornerRadius(16)
@@ -507,12 +527,16 @@ struct DeveloperModeView: RouteableView {
         .background(
             Color.LL.Neutrals.background.ignoresSafeArea()
         )
-        .onTapGesture(count: 6, disabled: false, perform: {
-            log.info("click 6 times")
-            if !isDeveloperMode {
-                showTool = true
+        .onTapGesture(
+            count: 6,
+            disabled: false,
+            perform: {
+                log.info("click 6 times")
+                if !isDeveloperMode {
+                    showTool = true
+                }
             }
-        })
+        )
         .applyRouteable(self)
         .tracedView(self)
     }
@@ -537,6 +561,9 @@ struct DeveloperModeView: RouteableView {
     @AppStorage(LocalUserDefaults.Keys.wrapEOAWithCadence.rawValue)
     private var wrapEOAWithCadence: Bool = true
 
+    @AppStorage(LocalUserDefaults.Keys.hideCOAWithZero.rawValue)
+    private var hideCOAWithZero: Bool = true
+
     private func headView(title: String) -> some View {
         Text(title)
             .font(.inter())
@@ -547,10 +574,10 @@ struct DeveloperModeView: RouteableView {
 }
 
 extension DeveloperModeView {
-  private func copyProfile() {
-    let result = ProfileManager.shared.profiles.map { "\($0.username ?? $0.uid):" + $0.wallets.reduce("", { $0 + ($1.address ?? "") + "," }) }
-    UIPasteboard.general.string = result.reduce("", { $0 + $1 + "###" })
-  }
+    private func copyProfile() {
+        let result = ProfileManager.shared.profiles.map { "\($0.username ?? $0.uid):" + $0.wallets.reduce("", { $0 + ($1.address ?? "") + "," }) }
+        UIPasteboard.general.string = result.reduce("", { $0 + $1 + "###" })
+    }
 }
 
 // MARK: DeveloperModeView.Cell

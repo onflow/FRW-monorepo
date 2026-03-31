@@ -115,7 +115,7 @@ struct InputMnemonicView: RouteableView {
                             .stroke(lineWidth: 1)
                             .foregroundColor(viewModel.state.hasError ? .LL.error : .LL.text)
                     }
-                    .instabug_privateView()
+                    .luciq_privateView()
             }
             .padding(.horizontal, 28)
 

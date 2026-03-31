@@ -13,8 +13,17 @@ import {
   KeyRotationMnemonicScreen,
   SendToScreen,
   ReceiveScreen,
-  // Activity screen
+  // Activity screens
   ActivityScreen,
+  ActivityDetailScreen,
+  // Token screens
+  AddTokensScreen,
+  ClaimTokensScreen,
+  ClaimTokenDetailScreen,
+  // NFT screens
+  AddNFTCollectionScreen,
+  type ClaimItem,
+  type ClaimSender,
   // Onboarding screens
   GetStartedScreen,
   ProfileTypeSelectionScreen,
@@ -29,12 +38,17 @@ import {
   ImportOtherMethodsScreen,
   ConfirmImportProfileScreen,
   type ImportCloudBackupLoadingParams,
+  // What's new screen
+  WhatsNewScreen,
+  type WhatsNewData,
+  KeystoreMigrationTipScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
   createTokenModelFromConfig,
   createWalletAccountFromConfig,
+  type ActivityItem,
   type InitialProps,
   type NewKeyInfo,
   type NFTModel,
@@ -56,6 +70,7 @@ import { HomeScreen } from '@/screens';
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
+  WhatsNew: WhatsNewData | undefined;
   ColorDemo: undefined;
   NFTDetail: {
     nft: NFTModel;
@@ -74,6 +89,11 @@ export type RootStackParamList = {
   SendSummary: undefined;
   Receive: undefined;
   Activity: undefined;
+  ActivityDetail: { item: ActivityItem };
+  AddTokens: undefined;
+  AddNFTCollection: undefined;
+  ClaimTokens: { initialTab?: 'token' | 'nft' } | undefined;
+  ClaimTokenDetail: { item: ClaimItem; sender?: ClaimSender };
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -109,6 +129,7 @@ export type RootStackParamList = {
   KeyRotationMnemonic: {
     newKeyInfo: NewKeyInfo;
   };
+  KeystoreMigrationTip: undefined;
   // Migration screens
   MigrationInfo: undefined;
   Migration: MigrationScreenProps | undefined;
@@ -120,6 +141,7 @@ interface AppNavigatorProps {
   initialRoute?: string;
   embedded?: boolean;
   initialProps?: InitialProps;
+  whatsNewData?: WhatsNewData;
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -127,7 +149,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { address, network, initialRoute, initialProps } = props;
+  const { address, network, initialRoute, initialProps, whatsNewData } = props;
   const navigationRef = useRef<any>(null);
 
   // Send store actions
@@ -356,12 +378,93 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               }}
             />
             <Stack.Screen
+              name="AddTokens"
+              options={{
+                headerTitle: t('navigation.addTokens', 'Add Tokens'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ navigation: nav }) => (
+                <AddTokensScreen onClaimPress={() => nav.navigate('ClaimTokens')} />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="AddNFTCollection"
+              options={{
+                headerTitle: t('navigation.addNFTCollection', 'Add Collection'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ navigation: nav }) => (
+                <AddNFTCollectionScreen
+                  onClaimPress={() => nav.navigate('ClaimTokens', { initialTab: 'nft' })}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="ClaimTokens"
+              options={{
+                headerTitle: t('navigation.claimTokens', 'Claim'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ route, navigation: nav }) => (
+                <ClaimTokensScreen
+                  initialTab={route.params?.initialTab}
+                  onItemPress={item => nav.navigate('ClaimTokenDetail', { item })}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="ClaimTokenDetail"
+              options={{
+                headerTitle: t('navigation.token', 'Token'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ route, navigation: nav }) => (
+                <ClaimTokenDetailScreen
+                  item={route.params.item}
+                  sender={route.params.sender}
+                  onClaim={() => nav.goBack()}
+                  onReject={() => nav.goBack()}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
               name="Activity"
-              component={ActivityScreen}
               options={{
                 headerShown: false, // No header for embedded tab view
               }}
-            />
+            >
+              {({ navigation: nav }) => (
+                <ActivityScreen
+                  onActivityPress={item => nav.navigate('ActivityDetail', { item })}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="ActivityDetail"
+              options={({ route }) => {
+                // Determine header title based on transaction type
+                const { item } = route.params;
+                let headerTitle = t('activity.detail.title', 'Details');
+                if (item.type === 'interaction') {
+                  headerTitle = t('activity.detail.appInteraction', 'App Interaction');
+                } else if (item.transferType === 'sent') {
+                  headerTitle = t('activity.sent', 'Sent');
+                } else if (item.transferType === 'received') {
+                  headerTitle = t('activity.received', 'Received');
+                }
+                return {
+                  headerTitle,
+                  headerRight: () => null,
+                  headerStyle: { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' },
+                };
+              }}
+            >
+              {({ route }) => <ActivityDetailScreen item={route.params.item} />}
+            </Stack.Screen>
           </Stack.Group>
 
           {/* Onboarding Screens Group */}
@@ -639,6 +742,48 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                   onBack={() => nav.goBack()}
                 />
               )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="KeystoreMigrationTip"
+              options={{
+                headerTitle: '',
+                headerLeft: () => null,
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            >
+              {() => (
+                <KeystoreMigrationTipScreen
+                  onContinue={async () => {
+                    await platform.keystoreMigration();
+                  }}
+                  onSkip={() => {
+                    platform.closeRN();
+                  }}
+                />
+              )}
+            </Stack.Screen>
+          </Stack.Group>
+
+          <Stack.Group
+            screenOptions={{
+              headerShown: false,
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => null,
+            }}
+          >
+            <Stack.Screen
+              name="WhatsNew"
+              options={{
+                headerShown: false,
+                animation: 'fade',
+                contentStyle: { backgroundColor: 'transparent' },
+              }}
+            >
+              {({ route }) => <WhatsNewScreen data={route.params ?? whatsNewData} />}
             </Stack.Screen>
           </Stack.Group>
         </Stack.Navigator>
