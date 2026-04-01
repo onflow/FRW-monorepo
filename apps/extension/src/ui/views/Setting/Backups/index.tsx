@@ -1,6 +1,7 @@
 import DescriptionIcon from '@mui/icons-material/Description';
+import InfoIcon from '@mui/icons-material/Info';
 import { Box, Button, Typography } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import { consoleError } from '@/shared/utils';
@@ -25,6 +26,8 @@ const ManageBackups = () => {
   const [loading, setLoading] = useState(true);
   const [deleteBackupPop, setDeleteBackupPop] = useState(false);
   const [hasMnemonic, setHasMnemonic] = useState<boolean | null>(null);
+  const [migrateResultText, setMigrateResultText] = useState('');
+  const actionExecutedRef = useRef<string | null>(null);
 
   const checkBackup = useCallback(async () => {
     try {
@@ -47,13 +50,13 @@ const ManageBackups = () => {
 
   const syncBackup = useCallback(async () => {
     try {
-      if (!location.state?.password) {
+      if (!location.state?.actionToken) {
         // Navigate to the password page
-        navigate('/dashboard/setting/backups/password');
+        navigate('/dashboard/setting/backups/password?action=sync');
         return;
       }
       setLoading(true);
-      await wallet.syncBackup(location.state.password);
+      await wallet.syncBackupWithActionToken(location.state.actionToken);
 
       await checkBackup();
     } catch {
@@ -61,7 +64,29 @@ const ManageBackups = () => {
     } finally {
       setLoading(false);
     }
-  }, [checkBackup, navigate, location.state?.password, wallet]);
+  }, [checkBackup, navigate, location.state?.actionToken, wallet]);
+
+  const migrateLegacyBackups = useCallback(async () => {
+    try {
+      if (!location.state?.actionToken) {
+        navigate('/dashboard/setting/backups/password?action=migrate');
+        return;
+      }
+      setLoading(true);
+      const result = await wallet.migrateLegacyBackupsToV2WithActionToken(
+        location.state.actionToken
+      );
+      setMigrateResultText(
+        `Migrated ${result.migrated.length}, failed ${result.failed.length}, skipped ${result.skipped.length}`
+      );
+      await checkBackup();
+    } catch (error) {
+      consoleError('An error occurred while migrating backups to V2', error);
+      setMigrateResultText('Migration failed. Please verify password and try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [checkBackup, location.state?.actionToken, navigate, wallet]);
 
   const deleteBackup = async () => {
     try {
@@ -112,11 +137,22 @@ const ManageBackups = () => {
 
   useEffect(() => {
     setLoading(true);
+    const action = new URLSearchParams(location.search).get('action');
+    const actionKey = `${action || 'none'}:${location.state?.actionToken || ''}`;
     Promise.all([checkPermissions(), checkMnemonic()])
       .then(([hasGooglePermission]) => {
-        if (hasGooglePermission && location.state?.password) {
-          // Set the state to true to prevent multiple syncs
-          return syncBackup();
+        if (hasGooglePermission && location.state?.actionToken) {
+          if (actionExecutedRef.current === actionKey) {
+            return;
+          }
+          if (action === 'migrate') {
+            actionExecutedRef.current = actionKey;
+            return migrateLegacyBackups();
+          }
+          if (action === 'sync') {
+            actionExecutedRef.current = actionKey;
+            return syncBackup();
+          }
         }
       })
       .catch((err) => {
@@ -126,7 +162,14 @@ const ManageBackups = () => {
         // Set the loading to false after checking permissions and syncing backup is complete
         setLoading(false);
       });
-  }, [checkPermissions, checkMnemonic, location.state?.password, syncBackup]);
+  }, [
+    checkPermissions,
+    checkMnemonic,
+    location.search,
+    location.state?.actionToken,
+    migrateLegacyBackups,
+    syncBackup,
+  ]);
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -222,6 +265,45 @@ const ManageBackups = () => {
           </Button>
         )}
       </Box>
+      {hasPermission && (
+        <Box
+          sx={{
+            width: 'auto',
+            margin: '0px 20px 20px 20px',
+            display: 'flex',
+            gap: '8px',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <Button
+            variant="outlined"
+            size="small"
+            disabled={loading}
+            onClick={() => migrateLegacyBackups()}
+          >
+            Migrate Legacy to V2
+          </Button>
+        </Box>
+      )}
+      {migrateResultText ? (
+        <Box
+          sx={{
+            width: 'auto',
+            margin: '0px 20px 12px 20px',
+            backgroundColor: '#282828',
+            borderRadius: '12px',
+            p: '10px 12px',
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'center',
+          }}
+        >
+          <InfoIcon sx={{ fontSize: 18, color: '#41CC5D' }} />
+          <Typography variant="body2" color="text.secondary">
+            {migrateResultText}
+          </Typography>
+        </Box>
+      ) : null}
       <BrowserWarning />
 
       <Box sx={{ flexGrow: 1 }} />

@@ -11,9 +11,13 @@ type PassMatch = 'match' | 'no-match' | 'unverified';
 const SettingsPassword = ({
   verifiedUrl,
   children = null,
+  buildVerifiedState,
 }: {
   verifiedUrl: string;
   children?: ReactNode;
+  buildVerifiedState?: (
+    password: string
+  ) => Promise<Record<string, unknown>> | Record<string, unknown>;
 }) => {
   const wallet = useWallet();
   const navigate = useNavigate();
@@ -37,8 +41,9 @@ const SettingsPassword = ({
   }, [password, wallet]);
 
   const handleNavigate = useCallback(async () => {
-    navigate(verifiedUrl, { state: { password } });
-  }, [navigate, verifiedUrl, password]);
+    const state = buildVerifiedState ? await buildVerifiedState(password) : { password };
+    navigate(verifiedUrl, { state });
+  }, [navigate, verifiedUrl, password, buildVerifiedState]);
 
   const goBack = useCallback(async () => {
     navigate({

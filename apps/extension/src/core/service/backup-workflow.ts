@@ -3,6 +3,7 @@ import {
   BackupError,
   BackupErrorCode,
   BackupVersion,
+  type MigrationResult,
   type BackupType,
   BackupWorkflow,
   CloudProvider,
@@ -12,18 +13,40 @@ import {
   type BackupApi,
   type BackupEntry,
 } from '@onflow/frw-workflow';
+import * as bip39 from 'bip39';
 
 import authenticationService from './authentication-service';
+import googleDriveService from './googleDrive';
 import openapiService from './openapi';
 import userWalletService from './userWallet';
 
 type GetAuthToken = (interactive?: boolean) => Promise<string>;
 
 class ExtensionBackupApiAdapter implements BackupApi {
-  async registerBackup(backupInfo: { type: BackupType; name: string }): Promise<void> {
+  async registerBackup(
+    accountKey: {
+      public_key: string;
+      sign_algo: number;
+      hash_algo: number;
+      weight: number;
+    },
+    signatures: Array<{
+      public_key: string;
+      sign_algo: number;
+      hash_algo: number;
+      signature: string;
+      sign_message?: string;
+      weight?: number;
+    }>,
+    backupInfo: { type: BackupType; name: string }
+  ): Promise<void> {
     // Extension legacy flow does not have a dedicated "register backup" endpoint yet.
     // Keep this non-blocking so cloud backup still succeeds.
-    logger.info('[BackupWorkflow] registerBackup adapter is currently no-op', backupInfo);
+    logger.info('[BackupWorkflow] registerBackup adapter is currently no-op', {
+      accountKey,
+      signatures,
+      backupInfo,
+    });
   }
 
   async syncDeviceKey(
@@ -60,6 +83,7 @@ class ExtensionBackupApiAdapter implements BackupApi {
 class BackupWorkflowService {
   private workflow: BackupWorkflow | null = null;
   private googleProvider: GoogleDriveProvider | null = null;
+  private legacyIV: string | null = null;
 
   init = async ({
     getAuthToken,
@@ -76,6 +100,7 @@ class BackupWorkflowService {
     legacyIV: string;
     walletConnectProjectId?: string;
   }) => {
+    this.legacyIV = legacyIV;
     this.googleProvider = new GoogleDriveProvider({
       getAuthToken,
       backupName,
@@ -251,6 +276,98 @@ class BackupWorkflowService {
       throw new Error('Failed to update password on selected profile backups');
     }
     return true;
+  };
+
+  migrateLegacyBackupsToV2 = async (
+    password: string,
+    usernames?: string[]
+  ): Promise<MigrationResult> => {
+    const provider = this.getGoogleProvider();
+    const legacyCrypto = createBackupCrypto(BackupVersion.V1, this.legacyIV ?? undefined);
+    const keystoreCrypto = createBackupCrypto(BackupVersion.V2);
+    const result: MigrationResult = { migrated: [], failed: [], skipped: [] };
+
+    const existingEntries = await this.listBackups();
+    const mergedEntries: BackupEntry[] = [...existingEntries];
+
+    // Extension-only fallback: read raw legacy file so migration still works
+    // even when v2 file already exists (provider.loadBackups is v2-first).
+    try {
+      const legacyItems = await googleDriveService.loadBackupAccountLists();
+      for (const item of legacyItems) {
+        const username = (item as any).userName || item.username;
+        const exists = mergedEntries.some(
+          (entry) => entry.username === username && entry.version === BackupVersion.V1
+        );
+        if (!exists) {
+          mergedEntries.push({
+            username,
+            uid: item.uid ?? null,
+            data: item.data,
+            version: BackupVersion.V1,
+            timestamp: item.time ? Number(item.time) : Date.now(),
+            keyWeight: KeyWeight.Full,
+          });
+        }
+      }
+    } catch (error) {
+      logger.warn('[BackupWorkflow] failed to load legacy raw backup list', error);
+    }
+
+    const updatedEntries: BackupEntry[] = [];
+    const existingV2Usernames = new Set(
+      mergedEntries
+        .filter((entry) => entry.version === BackupVersion.V2)
+        .map((entry) => entry.username)
+        .filter(Boolean)
+    );
+    for (const entry of mergedEntries) {
+      if (entry.version === BackupVersion.V2) {
+        result.skipped.push(entry.username);
+        updatedEntries.push(entry);
+        continue;
+      }
+
+      // If this username already has a V2 backup, skip migrating legacy copy
+      // to avoid creating duplicate V2 entries for the same profile.
+      if (existingV2Usernames.has(entry.username)) {
+        result.skipped.push(entry.username);
+        continue;
+      }
+
+      if (usernames && !usernames.includes(entry.username)) {
+        updatedEntries.push(entry);
+        continue;
+      }
+
+      try {
+        const mnemonic = await legacyCrypto.decrypt(entry.data, password);
+        if (!bip39.validateMnemonic(mnemonic)) {
+          result.failed.push(entry.username);
+          updatedEntries.push(entry);
+          continue;
+        }
+
+        const keystoreData = await keystoreCrypto.encrypt(mnemonic, password);
+        updatedEntries.push({
+          ...entry,
+          data: keystoreData,
+          version: BackupVersion.V2,
+          timestamp: Date.now(),
+        });
+        existingV2Usernames.add(entry.username);
+        result.migrated.push(entry.username);
+      } catch {
+        result.failed.push(entry.username);
+        updatedEntries.push(entry);
+      }
+    }
+
+    if (result.migrated.length > 0) {
+      await provider.saveBackups(updatedEntries);
+    }
+    logger.info('[BackupWorkflow] migrateLegacyBackupsToV2 completed', result);
+    return result;
   };
 }
 

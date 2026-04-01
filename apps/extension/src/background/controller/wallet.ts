@@ -112,6 +112,11 @@ interface TokenTransaction {
 export class WalletController extends BaseController {
   openapi = openapiService;
   private loaded = false;
+  private readonly backupActionTokenTtlMs = 2 * 60 * 1000;
+  private readonly backupActionSecrets = new Map<
+    string,
+    { action: 'sync' | 'migrate'; password: string; expiresAt: number }
+  >();
 
   constructor() {
     super();
@@ -1669,6 +1674,26 @@ export class WalletController extends BaseController {
     return this.uploadMnemonicToGoogleDrive(mnemonic, username, password);
   };
 
+  createBackupActionToken = async (password: string, action: 'sync' | 'migrate') => {
+    // Defense in depth: verify again in background before issuing token.
+    await keyringService.verifyPassword(password);
+    const token =
+      typeof crypto?.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    this.backupActionSecrets.set(token, {
+      action,
+      password,
+      expiresAt: Date.now() + this.backupActionTokenTtlMs,
+    });
+    return token;
+  };
+
+  syncBackupWithActionToken = async (token: string) => {
+    const password = this.consumeBackupActionToken(token, 'sync');
+    return this.syncBackup(password);
+  };
+
   uploadMnemonicToGoogleDrive = async (mnemonic: string, username: string, password: string) => {
     return await accountManagementService.uploadMnemonicToGoogleDrive(mnemonic, username, password);
   };
@@ -1698,6 +1723,33 @@ export class WalletController extends BaseController {
     logger.info('[BackupRoute] restoreAccountV2 -> workflow strict-v2 route', { username });
     return backupWorkflowService.restoreBackupV2Only(username, password);
   };
+
+  migrateLegacyBackupsToV2 = async (password: string, usernames?: string[]) => {
+    logger.info('[BackupRoute] migrateLegacyBackupsToV2 -> workflow migration route', {
+      usernames: usernames?.length ?? 0,
+    });
+    return backupWorkflowService.migrateLegacyBackupsToV2(password, usernames);
+  };
+
+  migrateLegacyBackupsToV2WithActionToken = async (token: string, usernames?: string[]) => {
+    const password = this.consumeBackupActionToken(token, 'migrate');
+    return this.migrateLegacyBackupsToV2(password, usernames);
+  };
+
+  private consumeBackupActionToken(token: string, expectedAction: 'sync' | 'migrate'): string {
+    const payload = this.backupActionSecrets.get(token);
+    this.backupActionSecrets.delete(token);
+    if (!payload) {
+      throw new Error('Invalid or already-used backup action token');
+    }
+    if (payload.expiresAt < Date.now()) {
+      throw new Error('Backup action token expired');
+    }
+    if (payload.action !== expectedAction) {
+      throw new Error('Backup action token does not match requested action');
+    }
+    return payload.password;
+  }
 
   getPayerAddressAndKeyId = async () => {
     return userWalletService.getPayerAddressAndKeyId();
