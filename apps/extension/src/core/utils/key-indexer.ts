@@ -1,6 +1,6 @@
 import { type PublicKeyAccount } from '@/shared/types';
 
-export const fetchAccountsByPublicKey = async (
+export const fetchAccountsByPublicKeyRaw = async (
   publicKey: string,
   network: string
 ): Promise<PublicKeyAccount[]> => {
@@ -23,9 +23,9 @@ export const fetchAccountsByPublicKey = async (
     }[];
   };
 
-  // Now massage the data to match the type we want
-  const accounts: PublicKeyAccount[] = json.accounts
-    .filter((account) => !account.isRevoked && account.weight >= 1000)
+  // Massage the data to match the type we want, but keep all non-revoked keys (any weight).
+  return (json.accounts ?? [])
+    .filter((account) => !account.isRevoked)
     .map((account) => ({
       address: account.address,
       publicKey: json.publicKey,
@@ -36,6 +36,12 @@ export const fetchAccountsByPublicKey = async (
       hashAlgo: account.hashAlgo,
       hashAlgoString: account.hashing,
     }));
+};
 
-  return accounts;
+export const fetchAccountsByPublicKey = async (
+  publicKey: string,
+  network: string
+): Promise<PublicKeyAccount[]> => {
+  const accounts = await fetchAccountsByPublicKeyRaw(publicKey, network);
+  return accounts.filter((account) => account.weight >= 1000);
 };

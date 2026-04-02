@@ -11,6 +11,7 @@ export { default as userWalletService } from './userWallet';
 export { default as nftService } from './nft';
 export { default as googleDriveService } from './googleDrive';
 export { default as backupWorkflowService } from './backup-workflow';
+export { default as dropboxService } from './dropbox';
 export { default as googleSafeHostService } from './googleSafeHost';
 export { default as signTextHistoryService } from './signTextHistory';
 export { default as newsService } from './news';

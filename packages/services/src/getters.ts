@@ -4,6 +4,7 @@ import { type WalletType } from '@onflow/frw-types';
 import { ActivityService } from './ActivityService';
 import { AddressBookService } from './AddressBookService';
 import FlowService from './FlowService';
+import { KeystoreService } from './KeystoreService';
 import { NFTService } from './NFTService';
 import { ProfileService } from './ProfileService';
 import { RecentRecipientsService } from './RecentRecipientsService';
@@ -42,4 +43,8 @@ export const nftService = (type: WalletType): NFTService => {
 
 export const profileService = (): ProfileService => {
   return ProfileService.getInstance();
+};
+
+export const keystoreService = (): KeystoreService => {
+  return KeystoreService.getInstance();
 };

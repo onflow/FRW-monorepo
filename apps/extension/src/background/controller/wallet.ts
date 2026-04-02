@@ -661,6 +661,48 @@ export class WalletController extends BaseController {
     );
   };
 
+  getPublicKeyFromMnemonic = async (
+    mnemonic: string,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<string> => {
+    return await accountManagementService.getPublicKeyFromMnemonic(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+  };
+
+  getPublicKeyTupleFromMnemonic = async (
+    mnemonic: string,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<{ P256: string; SECP256K1: string }> => {
+    return await accountManagementService.getPublicKeyTupleFromMnemonic(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+  };
+
+  /** Key-indexer lookup without weight >= 1000 filter. */
+  fetchAccountsByPublicKeyRaw = async (
+    publicKey: string,
+    network: 'mainnet' | 'testnet' = 'mainnet'
+  ) => {
+    return await accountManagementService.fetchAccountsByPublicKeyRaw(publicKey, network);
+  };
+
+  /**
+   * @deprecated Use fetchAccountsByPublicKeyRaw instead.
+   */
+  fetchAccountsByPublicKeyRawForDebug = async (
+    publicKey: string,
+    network: 'mainnet' | 'testnet' = 'mainnet'
+  ) => {
+    return await this.fetchAccountsByPublicKeyRaw(publicKey, network);
+  };
+
   /**
    * @deprecated not used anymore
    */
@@ -1698,6 +1740,7 @@ export class WalletController extends BaseController {
     return await accountManagementService.uploadMnemonicToGoogleDrive(mnemonic, username, password);
   };
 
+  /** Legacy (Google Drive tab): uses default backup from service init (GD_BACKUP_NAME). */
   loadBackupAccounts = async (): Promise<string[]> => {
     logger.info('[BackupRoute] loadBackupAccounts -> default route');
     return backupWorkflowService.loadBackupAccounts();
@@ -1706,6 +1749,79 @@ export class WalletController extends BaseController {
   loadBackupAccountLists = async () => {
     logger.info('[BackupRoute] loadBackupAccountLists -> default route');
     return backupWorkflowService.loadBackupAccountLists();
+  };
+
+  /** Multi Backup file name (same as iOS). Separate from legacy outblock_backup. */
+  static readonly DEFAULT_MULTI_BACKUP_FILE_NAME = 'outblock_multi_backup';
+
+  /**
+   * Multi Backup tab: load from the multi-backup file only (not legacy).
+   * 1) If GD_MULTI_BACKUP_ID is set, use that file id.
+   * 2) Else look for file named "outblock_multi_backup" (or GD_MULTI_BACKUP_NAME) in appDataFolder.
+   */
+  loadBackupAccountsForMultiBackup = async (): Promise<string[]> => {
+    const name =
+      process.env.GD_MULTI_BACKUP_NAME ?? WalletController.DEFAULT_MULTI_BACKUP_FILE_NAME;
+    if (process.env.GD_MULTI_BACKUP_ID) {
+      const list = await googleDriveService.loadBackupMultiBackup(
+        undefined,
+        process.env.GD_MULTI_BACKUP_ID
+      );
+      return list.map((item) => item.username);
+    }
+    const list = await googleDriveService.loadBackupMultiBackup(name);
+    return list.map((item) => item.username);
+  };
+
+  loadBackupAccountListsForMultiBackup = async () => {
+    const name =
+      process.env.GD_MULTI_BACKUP_NAME ?? WalletController.DEFAULT_MULTI_BACKUP_FILE_NAME;
+    if (process.env.GD_MULTI_BACKUP_ID) {
+      return googleDriveService.loadBackupMultiBackup(undefined, process.env.GD_MULTI_BACKUP_ID);
+    }
+    return googleDriveService.loadBackupMultiBackup(name);
+  };
+
+  /**
+   * Multi Backup via Dropbox: load iOS-compatible multi-backup file from Dropbox.
+   * Uses the same file name as iOS unless overridden (DB_MULTI_BACKUP_NAME).
+   */
+  loadDropboxBackupAccountsForMultiBackup = async (): Promise<string[]> => {
+    logger.warn('[BackupRoute] Dropbox multi-backup load is disabled on workflow(v2)');
+    return [];
+  };
+
+  loadDropboxBackupAccountListsForMultiBackup = async () => {
+    logger.warn('[BackupRoute] Dropbox multi-backup list is disabled on workflow(v2)');
+    return [];
+  };
+
+  /**
+   * Debug: return configured backup names and ids (from env).
+   */
+  getGoogleDriveBackupConfigForDebug = async (): Promise<{
+    defaultBackupName: string;
+    multiBackupName: string;
+    multiBackupId: string;
+  }> => ({
+    defaultBackupName: process.env.GD_BACKUP_NAME ?? '',
+    multiBackupName:
+      process.env.GD_MULTI_BACKUP_NAME ?? WalletController.DEFAULT_MULTI_BACKUP_FILE_NAME,
+    multiBackupId: process.env.GD_MULTI_BACKUP_ID ?? '',
+  });
+
+  /**
+   * Debug: list file names in Google Drive app data folder.
+   */
+  listGoogleDriveAppDataFileNamesForDebug = async (): Promise<string[]> => {
+    return googleDriveService.listAppDataFileNames();
+  };
+
+  /**
+   * Debug: list files in app data folder with id and name (to find which folder/file to use).
+   */
+  listGoogleDriveAppDataFilesForDebug = async (): Promise<{ id: string; name: string }[]> => {
+    return googleDriveService.listAppDataFilesForDebug();
   };
 
   restoreAccount = async (username, password): Promise<string | null> => {
@@ -1750,6 +1866,32 @@ export class WalletController extends BaseController {
     }
     return payload.password;
   }
+
+  restoreMultiBackupAccount = async (
+    username: string,
+    password?: string,
+    uid?: string
+  ): Promise<string | null> => {
+    // Multi-backup restore depends on googleDriveService.fileList being populated.
+    // If the user refreshed/navigated, reload the multi-backup file first.
+    if (!googleDriveService.fileList || googleDriveService.fileList.length === 0) {
+      await this.loadBackupAccountListsForMultiBackup();
+    }
+    return googleDriveService.restoreMultiBackupAccount(username, uid ?? null, password);
+  };
+
+  restoreDropboxMultiBackupAccount = async (
+    username: string,
+    password?: string,
+    uid?: string
+  ): Promise<string | null> => {
+    logger.warn('[BackupRoute] Dropbox multi-backup restore is disabled on workflow(v2)', {
+      username,
+      hasPassword: Boolean(password),
+      hasUid: Boolean(uid),
+    });
+    return null;
+  };
 
   getPayerAddressAndKeyId = async () => {
     return userWalletService.getPayerAddressAndKeyId();

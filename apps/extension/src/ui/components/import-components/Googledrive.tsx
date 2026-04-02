@@ -12,12 +12,15 @@ import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 const Googledrive = ({
   setErrorMessage,
   setShowError,
-  handleGoogleAccountsFound,
+  handleBackupAccountsFound,
   useV2 = false,
 }: {
   setErrorMessage: (message: string) => void;
   setShowError: (show: boolean) => void;
-  handleGoogleAccountsFound: (accounts: string[], flowType: 'legacy' | 'workflow') => void;
+  handleBackupAccountsFound: (
+    accounts: string[],
+    flow: { kind: 'legacy_google' } | { kind: 'workflow_google' }
+  ) => void;
   useV2?: boolean;
 }) => {
   const wallets = useWallet();
@@ -44,7 +47,10 @@ const Googledrive = ({
       localStorage.setItem('backupAccounts', JSON.stringify(accounts));
 
       if (accounts.length > 0) {
-        handleGoogleAccountsFound(accounts, useV2 ? 'workflow' : 'legacy');
+        handleBackupAccountsFound(
+          accounts,
+          useV2 ? { kind: 'workflow_google' } : { kind: 'legacy_google' }
+        );
       } else {
         setShowError(true);
         setErrorMessage(chrome.i18n.getMessage('No__backup__found'));

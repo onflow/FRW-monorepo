@@ -8,6 +8,7 @@ import Googledrive from '@/ui/components/import-components/Googledrive';
 import JsonImport from '@/ui/components/import-components/JsonImport';
 import KeyImport from '@/ui/components/import-components/KeyImport';
 import MobileAppImportSteps from '@/ui/components/import-components/mobile-app-import-steps';
+import MultiBackupConnect from '@/ui/components/import-components/MultiBackupConnect';
 import SeedPhraseImport from '@/ui/components/import-components/SeedPhraseImport';
 import ErrorModel from '@/ui/components/PopupModal/errorModel';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -42,7 +43,7 @@ const ImportTabs = ({
   handleSwitchTab,
   setErrorMessage,
   setShowError,
-  handleGoogleAccountsFound,
+  handleBackupAccountsFound,
   path,
   setPath,
   phrase,
@@ -59,7 +60,13 @@ const ImportTabs = ({
   handleSwitchTab: () => void;
   setErrorMessage: (errorMessage: string) => void;
   setShowError: (showError: boolean) => void;
-  handleGoogleAccountsFound: (accounts: string[], flowType: 'legacy' | 'workflow') => void;
+  handleBackupAccountsFound: (
+    accounts: string[],
+    flow:
+      | { kind: 'legacy_google' }
+      | { kind: 'workflow_google' }
+      | { kind: 'multi_backup'; sources: Array<'google' | 'dropbox' | 'seed'> }
+  ) => void;
   path: string;
   setPath: (path: string) => void;
   phrase: string;
@@ -77,6 +84,7 @@ const ImportTabs = ({
   const [isLogin, setIsLogin] = useState(false);
   const [keystoreJson, setKeystoreJson] = useState<string>('');
   const usewallet = useWallet();
+
   useEffect(() => {
     const checkIsBooted = async () => {
       const isBooted = await usewallet.isBooted();
@@ -126,7 +134,7 @@ const ImportTabs = ({
     // Pass the import data and auto username to register page
     let importData: any = null;
 
-    if (selectedTab === 3) {
+    if (selectedTab === 4) {
       // Recovery Phrase tab
 
       importData = {
@@ -135,14 +143,14 @@ const ImportTabs = ({
         path: path,
         passphrase: phrase, // This is the BIP39 passphrase
       };
-    } else if (selectedTab === 4) {
+    } else if (selectedTab === 5) {
       // Private Key tab
 
       importData = {
         type: 'privateKey',
         privateKey: pk || '',
       };
-    } else if (selectedTab === 2) {
+    } else if (selectedTab === 3) {
       // Keystore tab
 
       importData = {
@@ -208,6 +216,7 @@ const ImportTabs = ({
           sx={sxStyles}
           label={chrome.i18n.getMessage('Import_Existing_Backup') || 'Backup V2'}
         />
+        <Tab sx={sxStyles} label={chrome.i18n.getMessage('Multi_Backup')} />
         <Tab sx={sxStyles} label={chrome.i18n.getMessage('Keystore')} />
         <Tab sx={sxStyles} label={chrome.i18n.getMessage('Recovery_Phrase')} />
         <Tab sx={sxStyles} label={chrome.i18n.getMessage('Private_Key')} />
@@ -228,18 +237,25 @@ const ImportTabs = ({
         <Googledrive
           setErrorMessage={setErrorMessage}
           setShowError={setShowError}
-          handleGoogleAccountsFound={handleGoogleAccountsFound}
+          handleBackupAccountsFound={handleBackupAccountsFound}
         />
       </TabPanel>
       <TabPanel value={selectedTab} index={1}>
         <Googledrive
           setErrorMessage={setErrorMessage}
           setShowError={setShowError}
-          handleGoogleAccountsFound={handleGoogleAccountsFound}
+          handleBackupAccountsFound={handleBackupAccountsFound}
           useV2={true}
         />
       </TabPanel>
       <TabPanel value={selectedTab} index={2}>
+        <MultiBackupConnect
+          setErrorMessage={setErrorMessage}
+          setShowError={setShowError}
+          handleBackupAccountsFound={handleBackupAccountsFound}
+        />
+      </TabPanel>
+      <TabPanel value={selectedTab} index={3}>
         <JsonImport
           onOpen={handleRegisterNewProfile}
           onImport={handleImport}
@@ -248,7 +264,7 @@ const ImportTabs = ({
           initialJson={keystoreJson}
         />
       </TabPanel>
-      <TabPanel value={selectedTab} index={3}>
+      <TabPanel value={selectedTab} index={4}>
         <SeedPhraseImport
           onOpen={handleRegisterNewProfile}
           onImport={handleImport}
@@ -260,17 +276,17 @@ const ImportTabs = ({
           setPhrase={setPhrase}
         />
       </TabPanel>
-      <TabPanel value={selectedTab} index={4}>
+      <TabPanel value={selectedTab} index={5}>
         <KeyImport
           onOpen={handleRegisterNewProfile}
           onImport={handleImport}
           setPk={setPk}
           isSignLoading={isSignLoading}
-          onSwitchToKeystoreTab={() => setSelectedTab(1)}
+          onSwitchToKeystoreTab={() => setSelectedTab(3)}
           onSetKeystoreJson={(json) => setKeystoreJson(json)}
         />
       </TabPanel>
-      <TabPanel value={selectedTab} index={5}>
+      <TabPanel value={selectedTab} index={6}>
         <MobileAppImportSteps isLogin={isLogin} />
       </TabPanel>
       {!newKey && (

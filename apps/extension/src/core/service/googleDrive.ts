@@ -1,7 +1,19 @@
+import {
+  MultiBackupService,
+  parseEncryptedHexPayload,
+  toPasswordIOS,
+  type MultiBackupDriveItem,
+} from '@onflow/frw-services';
 import aesjs from 'aes-js';
 import * as bip39 from 'bip39';
 
-import { consoleError, consoleWarn, getErrorMessage } from '@/shared/utils';
+import { seedWithPathAndPhrase2PublicPrivateKey } from '@/core/utils/modules/publicPrivateKey';
+import {
+  FLOW_BIP44_PATH,
+  SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
+} from '@/shared/constant';
+import { consoleError } from '@/shared/utils';
 
 interface GoogleDriveFileModel {
   kind: string;
@@ -15,6 +27,13 @@ interface DriveItem {
   version: string;
   uid: string | null;
   time: string | null;
+  code?: string;
+  /** Multi-backup (iOS) metadata (optional for legacy backups). */
+  publicKey?: string;
+  address?: string;
+  keyIndex?: number;
+  signAlgo?: number;
+  hashAlgo?: number;
 }
 
 // https://developers.google.com/drive/api/v3/reference/files/list
@@ -29,9 +48,14 @@ class GoogleDriveService {
   getAuthTokenWrapper: (interactive?: boolean) => Promise<string> = async () => {
     throw new Error('getAuthTokenWrapper not implemented');
   };
+  /** Optional. When set, used only for listFilesInDriveRoot (Multi Backup from mobile). */
+  getAuthTokenWrapperWithDriveReadonly?: (interactive?: boolean) => Promise<string>;
+  multiBackupService: MultiBackupService | null = null;
 
   fileList: DriveItem[] | null = null;
   fileId: string | null = null;
+  /** When true, restoreAccount decrypts item.data using iOS IV (toPasswordIOS(password)). */
+  fileListIsMultiBackup = false;
 
   init = async ({
     baseURL,
@@ -41,6 +65,7 @@ class GoogleDriveService {
     AES_KEY,
     IV,
     getAuthTokenWrapper,
+    getAuthTokenWrapperWithDriveReadonly,
   }: {
     baseURL: string;
     backupName: string;
@@ -49,6 +74,7 @@ class GoogleDriveService {
     AES_KEY: string;
     IV: string;
     getAuthTokenWrapper: (interactive?: boolean) => Promise<string>;
+    getAuthTokenWrapperWithDriveReadonly?: (interactive?: boolean) => Promise<string>;
   }) => {
     this.baseURL = baseURL;
     this.backupName = backupName;
@@ -57,6 +83,7 @@ class GoogleDriveService {
     this.AES_KEY = AES_KEY;
     this.IV = aesjs.utils.utf8.toBytes(IV);
     this.getAuthTokenWrapper = getAuthTokenWrapper;
+    this.getAuthTokenWrapperWithDriveReadonly = getAuthTokenWrapperWithDriveReadonly;
   };
 
   hasBackup = async () => {
@@ -111,24 +138,41 @@ class GoogleDriveService {
   };
 
   parseGoogleText = (encryptedData: string) => {
-    let encryptedHex;
+    return parseEncryptedHexPayload(encryptedData);
+  };
 
-    // Attempt to parse the data as JSON
-    try {
-      const sanitizedData = encryptedData.replace(/\s+/g, '');
-      const parsedData = JSON.parse(sanitizedData);
-      encryptedHex = parsedData?.hex || parsedData;
-    } catch (error) {
-      consoleWarn('JSON parsing failed, checking if raw hex string:', getErrorMessage(error));
-
-      const rawHex = encryptedData.replace(/\s+/g, '');
-      if (/^[0-9a-fA-F]+$/.test(rawHex)) {
-        encryptedHex = rawHex;
-      } else {
-        throw new Error('Invalid input: not JSON and not a valid hex string');
-      }
+  private getMultiBackupService = (): MultiBackupService => {
+    if (!this.AES_KEY) {
+      throw new Error('Multi-backup failed, missing AES_KEY');
     }
-    return encryptedHex;
+
+    if (!this.multiBackupService) {
+      this.multiBackupService = new MultiBackupService({
+        appBackupKey: this.AES_KEY,
+        mnemonicMetadataMatcher: async (mnemonic: string, item: MultiBackupDriveItem) => {
+          const normalizeHex = (value?: string) => (value || '').replace(/^0x/i, '').toLowerCase();
+          const expectedPublicKey = normalizeHex(item.publicKey);
+          const expectedSignAlgo = item.signAlgo;
+
+          // If the backup item didn't carry key metadata, fall back to "valid mnemonic" only.
+          if (!expectedPublicKey || !expectedSignAlgo) return true;
+
+          // Mobile multi-backup uses Flow derivation path with empty passphrase.
+          const tuple = await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, FLOW_BIP44_PATH, '');
+          const derived =
+            expectedSignAlgo === SIGN_ALGO_NUM_ECDSA_P256
+              ? tuple.P256.pubK
+              : expectedSignAlgo === SIGN_ALGO_NUM_ECDSA_secp256k1
+                ? tuple.SECP256K1.pubK
+                : '';
+
+          if (!derived) return false;
+          return normalizeHex(derived) === expectedPublicKey;
+        },
+      });
+    }
+
+    return this.multiBackupService;
   };
 
   uploadMnemonicToGoogleDrive = async (
@@ -172,11 +216,104 @@ class GoogleDriveService {
     return await this.updateFile(fileId, updateContent);
   };
 
-  loadBackup = async (): Promise<DriveItem[]> => {
+  /**
+   * Load backup by file id (use when two files have the same name – legacy vs multi-backup).
+   */
+  loadBackupByFileId = async (fileId: string): Promise<DriveItem[]> => {
     if (!this.AES_KEY) {
       throw new Error('Load backup failed, missing AES_KEY');
     }
-    const files = await this.listFiles();
+    this.fileListIsMultiBackup = false;
+    this.fileId = fileId;
+    const text = await this.getFile(fileId);
+    const parsedText = this.parseGoogleText(text);
+    const decodeContent = await this.decrypt(parsedText, this.AES_KEY);
+    const content: DriveItem[] = JSON.parse(decodeContent);
+    this.fileList = content;
+    return content;
+  };
+
+  /**
+   * Load backup file in iOS MultiBackup format (encrypted list of StoreItem; IV = first 16 chars of SHA256(key) hex).
+   * Sets fileList, fileId, fileListIsMultiBackup=true so restoreAccount uses iOS mnemonic decryption.
+   */
+  loadBackupMultiBackup = async (
+    backupNameOverride?: string,
+    backupIdOverride?: string
+  ): Promise<DriveItem[]> => {
+    if (!this.AES_KEY) {
+      throw new Error('Load backup failed, missing AES_KEY');
+    }
+    if (backupIdOverride) {
+      this.fileId = backupIdOverride;
+    } else {
+      const name = backupNameOverride ?? this.backupName;
+      const files = await this.listFiles(name);
+      if (files) {
+        this.fileId = files.id;
+      } else {
+        // No file named outblock_multi_backup: try each file in appDataFolder and use the first that decrypts as multi-backup (StoreItem list).
+        const found = await this.tryLoadMultiBackupFromAnyAppDataFile();
+        if (found) return found;
+        this.fileList = [];
+        this.fileListIsMultiBackup = true;
+        return [];
+      }
+    }
+    if (!this.fileId) {
+      throw new Error('Load backup failed, missing file id');
+    }
+    const content = await this.fetchAndDecryptMultiBackup(this.fileId);
+    this.fileList = content;
+    this.fileListIsMultiBackup = true;
+    return content;
+  };
+
+  /** Try each file in appDataFolder; return first that decrypts as multi-backup (StoreItem list). */
+  private tryLoadMultiBackupFromAnyAppDataFile = async (): Promise<DriveItem[] | null> => {
+    const all = await this.listAppDataFilesForDebug();
+    for (const f of all) {
+      try {
+        const content = await this.fetchAndDecryptMultiBackup(f.id);
+        if (content.length > 0) {
+          this.fileId = f.id;
+          this.fileList = content;
+          this.fileListIsMultiBackup = true;
+          return content;
+        }
+      } catch {
+        continue;
+      }
+    }
+    return null;
+  };
+
+  private fetchAndDecryptMultiBackup = async (fileId: string): Promise<DriveItem[]> => {
+    const multiBackupService = this.getMultiBackupService();
+    const text = await this.getFile(fileId);
+    return await multiBackupService.decodeMultiBackupPayload(text);
+  };
+
+  /**
+   * Decrypt mnemonic encrypted with iOS format (IV = first 16 chars of SHA256(password) hex).
+   */
+  decryptMnemonicIOS = async (encryptedHex: string, password: string): Promise<string> => {
+    const ivIOS = await toPasswordIOS(password);
+    return this.decrypt(encryptedHex, password, ivIOS);
+  };
+
+  loadBackup = async (
+    backupNameOverride?: string,
+    backupIdOverride?: string
+  ): Promise<DriveItem[]> => {
+    this.fileListIsMultiBackup = false;
+    if (backupIdOverride) {
+      return this.loadBackupByFileId(backupIdOverride);
+    }
+    if (!this.AES_KEY) {
+      throw new Error('Load backup failed, missing AES_KEY');
+    }
+    const files = await this.listFiles(backupNameOverride);
     if (!files) {
       return [];
     }
@@ -190,13 +327,19 @@ class GoogleDriveService {
     return content;
   };
 
-  loadBackupAccounts = async (): Promise<string[]> => {
-    const fileList = await this.loadBackup();
+  loadBackupAccounts = async (
+    backupNameOverride?: string,
+    backupIdOverride?: string
+  ): Promise<string[]> => {
+    const fileList = await this.loadBackup(backupNameOverride, backupIdOverride);
     return fileList.map((item) => item.username);
   };
 
-  loadBackupAccountLists = async (): Promise<DriveItem[]> => {
-    const fileList = await this.loadBackup();
+  loadBackupAccountLists = async (
+    backupNameOverride?: string,
+    backupIdOverride?: string
+  ): Promise<DriveItem[]> => {
+    const fileList = await this.loadBackup(backupNameOverride, backupIdOverride);
     return fileList.map((file) => {
       if (file['userName']) {
         return {
@@ -206,6 +349,34 @@ class GoogleDriveService {
       }
       return file;
     });
+  };
+
+  /**
+   * Load backup account list from a different backup file (by name or id).
+   * Sets this.fileList and this.fileId so subsequent restoreAccount() uses this file.
+   */
+  loadBackupAccountListsWithBackupName = async (
+    backupFileName: string,
+    backupId?: string
+  ): Promise<DriveItem[]> => {
+    return this.loadBackupAccountLists(backupFileName, backupId);
+  };
+
+  /**
+   * Restore mnemonic from Multi Backup using the app key (iOS-compatible).
+   * Uses item.code (if present) to derive the password; otherwise uses AES_KEY.
+   */
+  restoreMultiBackupAccount = async (
+    username: string,
+    uid: string | null = null,
+    passwordOverride?: string
+  ): Promise<string | null> => {
+    const multiBackupService = this.getMultiBackupService();
+    const files = await this.fileList;
+    if (!files || files.length === 0) {
+      return null;
+    }
+    return await multiBackupService.restoreMnemonic(files, { username, uid, passwordOverride });
   };
 
   restoreAccount = async (
@@ -225,24 +396,101 @@ class GoogleDriveService {
         result = files.find((file) => file.username === username);
       }
       if (result) {
+        if (this.fileListIsMultiBackup) {
+          return await this.decryptMnemonicIOS(result.data, password);
+        }
         return this.decrypt(result.data, password);
       }
     }
     return null;
   };
 
-  listFiles = async (): Promise<GoogleDriveFileModel | undefined> => {
+  /**
+   * List files in appDataFolder (same API as iOS: drive/v3/files, spaces=appDataFolder).
+   * iOS: getFileId(fileName) uses spaces "appDataFolder", fields "nextPageToken, files(id, name)", pageSize 10.
+   */
+  listFiles = async (backupNameOverride?: string): Promise<GoogleDriveFileModel | undefined> => {
+    const name = backupNameOverride ?? this.backupName;
     const { files } = (await this.sendRequest('drive/v3/files/', 'GET', {
       spaces: 'appDataFolder',
+      fields: 'nextPageToken, files(id, name)',
+      pageSize: '10',
     }).then((response) => response.json())) as { files: GoogleDriveFileModel[] };
-    const firstOutblockBackup = files.find((file) => file.name === this.backupName);
-    return firstOutblockBackup;
+    const firstMatch = (files ?? []).find((file) => file.name === name);
+    return firstMatch;
   };
 
-  getFile = async (fileId: string) => {
-    const result = await this.sendRequest(`drive/v3/files/${fileId}/`, 'GET', { alt: 'media' });
-    const text = await result.text();
-    return text;
+  /**
+   * List file by name in the user's My Drive root. Requires drive.readonly scope (used only for
+   * Multi Backup when file was created by mobile). If token is provided, use it; else get one
+   * (caller can pass the same token to getFile when loading content).
+   */
+  listFilesInDriveRoot = async (
+    backupNameOverride?: string,
+    tokenOverride?: string
+  ): Promise<GoogleDriveFileModel | undefined> => {
+    if (!this.getAuthTokenWrapperWithDriveReadonly) {
+      return undefined;
+    }
+    const token = tokenOverride ?? (await this.getAuthTokenWrapperWithDriveReadonly(true));
+    const name = backupNameOverride ?? this.backupName;
+    const q = `'root' in parents and name = '${name}' and trashed = false`;
+    const res = await this.sendRequest(
+      'drive/v3/files/',
+      'GET',
+      { q, fields: 'files(id, name, mimeType)' },
+      {},
+      null,
+      token
+    );
+    const { files } = (await res.json()) as { files: GoogleDriveFileModel[] };
+    return (files ?? []).find((file) => file.name === name);
+  };
+
+  /**
+   * List all files in the appDataFolder (for debug UI – find which folder/file name to use).
+   */
+  listAppDataFileNames = async (): Promise<string[]> => {
+    const items = await this.listAppDataFilesForDebug();
+    return items.map((f) => f.name);
+  };
+
+  /**
+   * List all files in appDataFolder with id and name. Matches iOS getFileId() list params.
+   */
+  listAppDataFilesForDebug = async (): Promise<{ id: string; name: string }[]> => {
+    const { files } = (await this.sendRequest('drive/v3/files/', 'GET', {
+      spaces: 'appDataFolder',
+      fields: 'nextPageToken, files(id, name)',
+      pageSize: '10',
+    }).then((response) => response.json())) as { files: GoogleDriveFileModel[] };
+    return (files ?? []).map((f) => ({ id: f.id, name: f.name }));
+  };
+
+  /**
+   * When two files have the same name (e.g. legacy + multi-backup), return the second file's id.
+   * Legacy uses the first match; multi-backup can use this to get the other file.
+   */
+  getSecondFileIdWithSameName = async (backupName?: string): Promise<string | undefined> => {
+    const name = backupName ?? this.backupName;
+    const all = await this.listAppDataFilesForDebug();
+    const sameName = all.filter((f) => f.name === name);
+    return sameName.length >= 2 ? sameName[1].id : undefined;
+  };
+
+  /**
+   * Get file content by id. Same as iOS getFileData(): Drive API files.get with alt=media (raw body).
+   */
+  getFile = async (fileId: string, tokenOverride?: string) => {
+    const result = await this.sendRequest(
+      `drive/v3/files/${fileId}`,
+      'GET',
+      { alt: 'media' },
+      {},
+      null,
+      tokenOverride
+    );
+    return result.text();
   };
 
   createFile = async (content: string) => {
@@ -333,9 +581,10 @@ class GoogleDriveService {
     method = 'GET',
     params: Record<string, string> = {},
     data = {},
-    form: FormData | null = null
+    form: FormData | null = null,
+    tokenOverride?: string
   ) => {
-    const token = await this.getAuthTokenWrapper();
+    const token = tokenOverride ?? (await this.getAuthTokenWrapper());
     const init = {
       method,
       async: true,

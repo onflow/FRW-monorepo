@@ -1,5 +1,5 @@
 // Shared types for all stores
-import type { TransactionSession } from '@onflow/frw-analytics';
+import type { AnalyticsContext, TransactionSession } from '@onflow/frw-analytics';
 import type { CollectionModel, NFTModel, TokenModel, WalletAccount } from '@onflow/frw-types';
 import type { SendPayload } from '@onflow/frw-workflow';
 
@@ -88,6 +88,12 @@ export interface BalanceData {
   lastFetched: number | null;
 }
 
+export interface SendAnalyticsConfig {
+  token: string;
+  debug?: boolean;
+  context?: Partial<AnalyticsContext>;
+}
+
 export interface SendState {
   // Current flow data
   selectedToken: TokenModel | null;
@@ -152,8 +158,8 @@ export interface SendState {
   clearAccessibleAssetStore: (address: string) => void;
   clearAllAccessibleAssetStores: () => void;
 
-  // create transaction tracker (uses pre-initialized analytics from context)
-  createTransactionSession: () => Promise<TransactionSession | null>;
+  // Create transaction tracker
+  createTransactionSession: (config?: SendAnalyticsConfig) => Promise<TransactionSession | null>;
 
   // Transaction payload creation
   createSendPayload: (session: TransactionSession | null) => Promise<SendPayload | null>;

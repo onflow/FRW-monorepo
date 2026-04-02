@@ -1,0 +1,12 @@
+import { IconWrapper, type IconWrapperProps } from '../IconWrapper';
+
+const Dropbox = (props: IconWrapperProps) => (
+  <IconWrapper viewBox="0 0 32 32" {...props}>
+    <path
+      d="M9.437 1.12036L0 7.20035L6.533 12.4633L16 6.62634M0 17.6263L9.437 23.8264L16 18.3214L6.533 12.4533M16 18.3214L22.594 23.8264L32 17.6863L25.497 12.4533M32 7.25034L22.594 1.11035L16 6.61536L25.497 12.4533M16.03 19.4994L9.436 24.9734L6.59299 23.1284V25.2154L16.03 30.8713L25.467 25.2154V23.1284L22.624 24.9734"
+      fill="#007EE5"
+    />
+  </IconWrapper>
+);
+
+export default Dropbox;

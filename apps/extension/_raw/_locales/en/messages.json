@@ -1195,6 +1195,45 @@
   "Import_12_or_24_words": {
     "message": "Import 12 or 24 words split with whitespace"
   },
+  "Multi_Backup": {
+    "message": "Multi Backup"
+  },
+  "Select_Backup_Method": {
+    "message": "Select backup method"
+  },
+  "Select_Two_Options": {
+    "message": "Select two options"
+  },
+  "Dropbox": {
+    "message": "Dropbox"
+  },
+  "Backup_Method_Not_Supported": {
+    "message": "This backup method is not supported yet."
+  },
+  "Google_Drive_and_Recovery_Phrase": {
+    "message": "Cloud Backup + Recovery Phrase"
+  },
+  "Multi_Backup_Restore_Title": {
+    "message": "Restore with backup and recovery phrase"
+  },
+  "Multi_Backup_Restore_Subtitle": {
+    "message": "Choose a backup method, then verify with your 12 or 24 word recovery phrase."
+  },
+  "Enter_Recovery_Phrase": {
+    "message": "Enter Recovery Phrase"
+  },
+  "Enter_seed_phrase_to_verify_backup": {
+    "message": "Enter your 12 or 24 word recovery phrase to verify it matches your backup."
+  },
+  "Seed_phrase_does_not_match_backup": {
+    "message": "Seed phrase does not match the backup. Please check and try again."
+  },
+  "Verify_and_Continue": {
+    "message": "Verify and Continue"
+  },
+  "Invalid_mnemonic_format": {
+    "message": "Invalid recovery phrase. Please enter a valid 12 or 24 word phrase."
+  },
   "OK": {
     "message": "OK"
   },
@@ -1638,5 +1677,8 @@
   },
   "Scan_to_receive": {
     "message": "Scan to receive"
+  },
+  "Decrypting_backup_with_app_key": {
+    "message": "This will decrypt your Multi Backup."
   }
 }

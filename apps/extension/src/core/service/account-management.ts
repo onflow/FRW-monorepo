@@ -3,7 +3,7 @@ import type { Account as FclAccount } from '@onflow/fcl';
 import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { waitForExecuted } from '@onflow/frw-cadence';
 import { logger, ServiceContext } from '@onflow/frw-context';
-import { profileService } from '@onflow/frw-services';
+import { keystoreService, profileService, validateKeystoreStructure } from '@onflow/frw-services';
 import { BIP44_PATHS, WalletCoreProvider } from '@onflow/frw-wallet';
 import * as bip39 from 'bip39';
 import * as ethUtil from 'ethereumjs-util';
@@ -66,6 +66,7 @@ import {
   pubKeyAccountToAccountKey,
   pubKeySignAlgoToAccountKey,
   formPubKeyTuple,
+  fetchAccountsByPublicKeyRaw,
   jsonToKey,
   pk2PubKeyTuple,
   seedWithPathAndPhrase2PublicPrivateKey,
@@ -863,11 +864,81 @@ export class AccountManagement {
     return await findAddressWithSeed(seed, address, derivationPath, passphrase);
   }
 
+  /**
+   * Derive the Flow public key from a mnemonic (for verification only, e.g. Google restore + seed phrase match).
+   */
+  async getPublicKeyFromMnemonic(
+    mnemonic: string,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<string> {
+    const pubKTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+    return tupleToPubKey(formPubKeyTuple(pubKTuple), SIGN_ALGO_NUM_DEFAULT);
+  }
+
+  /**
+   * Derive both Flow public keys (P256 + secp256k1) from a mnemonic for debug/verification.
+   * This avoids confusion when comparing against on-chain keys (often P256) while the extension defaults to secp256k1.
+   */
+  async getPublicKeyTupleFromMnemonic(
+    mnemonic: string,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<{ P256: string; SECP256K1: string }> {
+    const pubKTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+    return {
+      P256: pubKTuple.P256.pubK,
+      SECP256K1: pubKTuple.SECP256K1.pubK,
+    };
+  }
+
+  /**
+   * Query key-indexer without filtering out weight < 1000 keys.
+   * (Some accounts use two keys with weight 500 each.)
+   */
+  async fetchAccountsByPublicKeyRaw(publicKey: string, network: 'mainnet' | 'testnet' = 'mainnet') {
+    return await fetchAccountsByPublicKeyRaw(publicKey, network);
+  }
+
+  /**
+   * @deprecated Use fetchAccountsByPublicKeyRaw instead.
+   */
+  async fetchAccountsByPublicKeyRawForDebug(
+    publicKey: string,
+    network: 'mainnet' | 'testnet' = 'mainnet'
+  ) {
+    return await this.fetchAccountsByPublicKeyRaw(publicKey, network);
+  }
+
   async findAddressWithPrivateKey(pk: string, address: string) {
     return await findAddressWithPK(pk, address);
   }
 
   async jsonToPrivateKeyHex(json: string, password: string): Promise<string | null> {
+    try {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(json);
+      } catch {
+        parsed = null;
+      }
+      if (parsed && validateKeystoreStructure(parsed)) {
+        const hex = await keystoreService().restorePrivateKeyFromKeystore(json, password);
+        if (hex && /^[0-9a-fA-F]{64}$/.test(hex.replace(/^0x/, ''))) {
+          return hex.replace(/^0x/, '');
+        }
+      }
+    } catch (_) {
+      // Fall through to TrustWallet path (e.g. wrong password or other format)
+    }
     const pk = await jsonToKey(json, password);
     return pk ? Buffer.from(pk.data()).toString('hex') : null;
   }

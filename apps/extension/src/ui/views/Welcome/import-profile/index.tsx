@@ -37,6 +37,14 @@ const ImportProfile = () => {
     INITIAL_IMPORT_STATE,
     initImportProfileState
   );
+  type MultiBackupSource = 'google' | 'dropbox' | 'seed';
+  type BackupImportFlow =
+    | { kind: 'legacy_google' }
+    | { kind: 'workflow_google' }
+    | { kind: 'multi_backup'; sources: MultiBackupSource[] };
+  const [backupImportFlow, setBackupImportFlow] = useState<BackupImportFlow>({
+    kind: 'legacy_google',
+  });
   const {
     activeTab,
     mnemonic,
@@ -136,8 +144,9 @@ const ImportProfile = () => {
     dispatch({ type: 'GO_BACK' });
   };
 
-  const handleGoogleAccountsFound = (accounts: string[], flowType: 'legacy' | 'workflow') => {
-    setGoogleImportFlow(flowType);
+  const handleBackupAccountsFound = (accounts: string[], flow: BackupImportFlow) => {
+    setBackupImportFlow(flow);
+    setGoogleImportFlow(flow.kind === 'workflow_google' ? 'workflow' : 'legacy');
     dispatch({ type: 'SET_GOOGLE_IMPORT', payload: { show: true, accounts } });
   };
 
@@ -157,6 +166,13 @@ const ImportProfile = () => {
   };
 
   if (showGoogleImport) {
+    const multiBackupProvider =
+      backupImportFlow.kind === 'multi_backup'
+        ? // If both are selected, prefer Google as primary for restore.
+          backupImportFlow.sources.includes('google')
+          ? 'google'
+          : 'dropbox'
+        : 'google';
     return (
       <Google
         accounts={googleAccounts}
@@ -166,6 +182,11 @@ const ImportProfile = () => {
             type: 'SET_GOOGLE_IMPORT',
             payload: { show: false, accounts: [] },
           })
+        }
+        isMultiBackup={backupImportFlow.kind === 'multi_backup'}
+        multiBackupProvider={multiBackupProvider}
+        multiBackupSources={
+          backupImportFlow.kind === 'multi_backup' ? backupImportFlow.sources : []
         }
       />
     );
@@ -210,7 +231,7 @@ const ImportProfile = () => {
             })
           }
           setShowError={(show) => dispatch({ type: 'SET_ERROR', payload: { message: '', show } })}
-          handleGoogleAccountsFound={handleGoogleAccountsFound}
+          handleBackupAccountsFound={handleBackupAccountsFound}
           initialTab={new URLSearchParams(location.search).get('backup') === 'workflow' ? 1 : 0}
           path={path}
           setPath={(p) => dispatch({ type: 'SET_DERIVATION_PATH', payload: p })}

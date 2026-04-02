@@ -108,7 +108,11 @@ const GoogleRecoverPassword = ({ handleSwitchTab, mnemonic, username, lastPasswo
 
     await usewallet.saveIndex(username);
     try {
-      await usewallet.importProfileUsingMnemonic(username, password, mnemonic);
+      // Backend import accepts only alphanumeric username.
+      const sanitizedUsername = (username || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      const usernameForImport = sanitizedUsername || `user${Date.now().toString(36)}`;
+
+      await usewallet.importProfileUsingMnemonic(usernameForImport, password, mnemonic);
       setLoading(false);
       handleSwitchTab();
     } catch (e) {

@@ -1213,6 +1213,45 @@
   "Import_12_or_24_words": {
     "message": "导入 12 或 24 个用空格分隔的单词"
   },
+  "Multi_Backup": {
+    "message": "多重备份"
+  },
+  "Select_Backup_Method": {
+    "message": "选择备份方式"
+  },
+  "Select_Two_Options": {
+    "message": "请选择两项"
+  },
+  "Dropbox": {
+    "message": "Dropbox"
+  },
+  "Backup_Method_Not_Supported": {
+    "message": "该备份方式暂不支持。"
+  },
+  "Google_Drive_and_Recovery_Phrase": {
+    "message": "云端备份 + 助记词"
+  },
+  "Multi_Backup_Restore_Title": {
+    "message": "通过备份和助记词恢复"
+  },
+  "Multi_Backup_Restore_Subtitle": {
+    "message": "选择备份方式，然后使用 12 或 24 个单词的助记词进行验证。"
+  },
+  "Enter_Recovery_Phrase": {
+    "message": "输入助记词"
+  },
+  "Enter_seed_phrase_to_verify_backup": {
+    "message": "请输入 12 或 24 个单词的助记词以验证与备份匹配。"
+  },
+  "Seed_phrase_does_not_match_backup": {
+    "message": "助记词与备份不匹配，请检查后重试。"
+  },
+  "Verify_and_Continue": {
+    "message": "验证并继续"
+  },
+  "Invalid_mnemonic_format": {
+    "message": "助记词无效，请输入有效的 12 或 24 个单词短语。"
+  },
   "OK": {
     "message": "OK"
   },
@@ -1626,5 +1665,8 @@
   },
   "Scan_to_receive": {
     "message": "扫描接收"
+  },
+  "Decrypting_backup_with_app_key": {
+    "message": "将使用应用密钥解密多重备份。"
   }
 }
