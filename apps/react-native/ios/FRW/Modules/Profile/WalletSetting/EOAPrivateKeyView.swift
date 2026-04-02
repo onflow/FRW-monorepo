@@ -19,15 +19,23 @@ struct EOAPrivateKeyView: RouteableView {
     }
 
     var privateKey: String {
+        guard let index = WalletManager.shared.eoaIndex() else {
+            log.error("[EOA] get index error")
+            return ""
+        }
       if let provider = WalletManager.shared.keyProvider as? EthereumKeyProtocol {
-        return (try? provider.ethPrivateKey())?.hexString ?? ""
+          return (try? provider.ethPrivateKey(index: index))?.hexString ?? ""
       }
       return  ""
     }
 
   var publickKey: String {
+      guard let index = WalletManager.shared.eoaIndex() else {
+          log.error("[EOA] get index error")
+          return ""
+      }
     if let provider = WalletManager.shared.keyProvider as? EthereumKeyProtocol {
-      return (try? provider.ethPublicKey())?.hexString ?? ""
+        return (try? provider.ethPublicKey(index: index))?.hexString ?? ""
     }
     return  ""
   }
@@ -78,7 +86,7 @@ struct EOAPrivateKeyView: RouteableView {
                     .cornerRadius(16)
                     .onTapGesture {}
                     .animation(.easeInOut, value: isBlur)
-                    .instabug_privateView()
+                    .luciq_privateView()
 
                 } header: {
                     HStack {

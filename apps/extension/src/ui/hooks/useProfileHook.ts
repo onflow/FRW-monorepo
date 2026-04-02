@@ -109,6 +109,14 @@ export const useProfiles = () => {
         if (parentWallet.eoaAccount?.address === activeAccounts?.currentAddress) {
           return parentWallet.eoaAccount;
         }
+        if (Array.isArray(parentWallet.eoaAccounts) && parentWallet.eoaAccounts.length > 0) {
+          const matchedEoa = parentWallet.eoaAccounts.find(
+            (account) => account.address === activeAccounts?.currentAddress
+          );
+          if (matchedEoa) {
+            return matchedEoa;
+          }
+        }
         return evmAccount ?? INITIAL_WALLET;
       case 'child':
         return (
@@ -133,7 +141,12 @@ export const useProfiles = () => {
     activeAccountType === 'child' ||
     (activeAccountType === 'main' && (!!evmAccount || !!childAccounts?.length));
 
-  const eoaAccount = parentWallet.eoaAccount;
+  const eoaAccount =
+    parentWallet.eoaAccounts?.find(
+      (account) => account.address === activeAccounts?.currentAddress
+    ) ||
+    parentWallet.eoaAccounts?.[parentWallet.eoaAccounts.length - 1] ||
+    parentWallet.eoaAccount;
 
   return {
     currentWallet,

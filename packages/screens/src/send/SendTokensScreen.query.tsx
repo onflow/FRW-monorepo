@@ -66,6 +66,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const network = bridge.getNetwork() || 'mainnet';
   const currency = bridge.getCurrency();
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
+  const [cadenceInbox, setCadenceInbox] = useState(false);
 
   // Get send store
   const {
@@ -108,6 +109,19 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     };
 
     checkFreeGasStatus();
+  }, []);
+
+  // Check cadenceInbox feature flag - when enabled, V4 LostAndFound handles incompatible recipients
+  useEffect(() => {
+    const checkCadenceInbox = async (): Promise<void> => {
+      try {
+        const isEnabled = await bridge.getCadenceInbox?.();
+        setCadenceInbox(isEnabled ?? false);
+      } catch {
+        setCadenceInbox(false);
+      }
+    };
+    checkCadenceInbox();
   }, []);
 
   // Reset amount and error when selected token changes
@@ -197,7 +211,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   });
 
   // Calculate account incompatibility (invert the compatibility result)
-  const isAccountIncompatible = !isResourceCompatible;
+  // When cadenceInbox is enabled, V4 LostAndFound handles missing vaults/collections
+  const isAccountIncompatible = !cadenceInbox && !isResourceCompatible;
 
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)

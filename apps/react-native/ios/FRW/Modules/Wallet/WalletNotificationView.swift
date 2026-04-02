@@ -7,6 +7,7 @@
 
 import Kingfisher
 import SwiftUI
+import UIKit
 
 // MARK: - WalletNotificationView
 
@@ -31,6 +32,13 @@ struct WalletNotificationView: View {
                         .frame(width: 32, height: 32)
 //                        .cornerRadius(12)
                         .clipped()
+                        .allowsHitTesting(false)
+                } else if let localIcon = item.localIcon {
+                    Image(localIcon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 24, height: 24)
+                        .clipShape(Circle())
                         .allowsHitTesting(false)
                 }
 
@@ -106,7 +114,8 @@ extension RemoteConfigManager.News {
         url: "https://port.flow.com/transaction?hash=a32bf0cabf37d52ca3c60daccc10b9ba79db5975d29e7a105d96983b918788e4",
         expiryTime: Calendar.current.date(byAdding: .day, value: 1, to: Date())!,
         displayType: .click,
-        conditions: nil
+        conditions: nil,
+        localIcon: nil
     )
 }
 
@@ -137,8 +146,10 @@ struct WalletNotificationView_Previews: PreviewProvider {
         url: "fw://buyFlow",
         expiryTime: Calendar.current.date(byAdding: .day, value: 1, to: Date())!,
         displayType: .expiry,
-        conditions: nil)
-    
+        conditions: nil,
+        localIcon: nil
+    )
+
     WalletNotificationView(
         item: insufficientStorage,
         onClose: {_ in },

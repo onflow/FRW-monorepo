@@ -7,7 +7,7 @@
 
 import Flow
 import Foundation
-import InstabugSDK
+import LuciqSDK
 import LogView
 import OSLog
 import SwiftyBeaver
@@ -51,7 +51,7 @@ class FlowLog {
         // Flow SDK Log
         FlowLogger.shared.addLogger(FlowLoggerReceiver())
         FlowLogger.shared.minimumLogLevel = .info
-        IBGLog.printsToConsole = false
+        LCQLog.printsToConsole = false
     }
 
     // MARK: Internal
@@ -111,7 +111,7 @@ extension FlowLog {
         )
 
         addLogModel(category: .debug, viewModel: DebugViewModel(name: "\(message())", detail: " "))
-        IBGLog.logDebug("\(fileNameWithoutSuffix(file)): \(stripParams(function)): \(line): \(message()) : \(context ?? "")")
+        LCQLog.logDebug("\(fileNameWithoutSuffix(file)): \(stripParams(function)): \(line): \(message()) : \(context ?? "")")
     }
 
     /// log something which you are really interested but which is not an issue or error (normal priority)
@@ -131,7 +131,7 @@ extension FlowLog {
             context: context
         )
         addLogModel(category: .info, viewModel: DebugViewModel(name: "\(message())", detail: " "))
-        IBGLog.logInfo("\(fileNameWithoutSuffix(file)): \(stripParams(function)): \(line): \(message()) : \(context ?? "")")
+        LCQLog.logInfo("\(fileNameWithoutSuffix(file)): \(stripParams(function)): \(line): \(message()) : \(context ?? "")")
     }
 
     /// log something which may cause big trouble soon (high priority)
@@ -155,7 +155,7 @@ extension FlowLog {
             category: .warning,
             viewModel: DebugViewModel(name: "\(message())", detail: " ")
         )
-        IBGLog.logWarn("\(fileNameWithoutSuffix(file)): \(stripParams(function)): \(line): \(message()) : \(context ?? "")")
+        LCQLog.logWarn("\(fileNameWithoutSuffix(file)): \(stripParams(function)): \(line): \(message()) : \(context ?? "")")
     }
     
     func error(
@@ -201,7 +201,7 @@ extension FlowLog {
             detail: (context as? Error)?
                 .localizedDescription ?? ""
         ))
-        IBGLog.logError("\(fileNameWithoutSuffix(file)): \(stripParams(function)): \(line): \(message()) : \(context ?? "")")
+        LCQLog.logError("\(fileNameWithoutSuffix(file)): \(stripParams(function)): \(line): \(message()) : \(context ?? "")")
     }
 
     func error(
@@ -257,7 +257,7 @@ extension FlowLog {
             detail: (context as? Error)?
                 .localizedDescription ?? ""
         ))
-        IBGLog.logError("\(fileNameWithoutSuffix(file)): \(stripParams(function)): \(line): \(error.localizedDescription) : \(context ?? "")")
+        LCQLog.logError("\(fileNameWithoutSuffix(file)): \(stripParams(function)): \(line): \(error.localizedDescription) : \(context ?? "")")
         if report {
             BugReport.build(error: error, level: level, group: group)?.report()
         }

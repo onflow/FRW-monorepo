@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Reset generated files
+        run: git checkout -- .
+
       - name: Build packages
         run: pnpm build:packages
 

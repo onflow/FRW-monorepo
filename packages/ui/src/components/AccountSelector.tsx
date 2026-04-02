@@ -1,5 +1,5 @@
 import { CheckCircle, Close, Edit, Link, ChevronRight, Copy } from '@onflow/frw-icons';
-import { type WalletAccount, shouldHideAccount } from '@onflow/frw-types';
+import type { WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
 
@@ -52,6 +52,8 @@ export interface AccountSelectorProps {
   actionIcon?: 'edit' | 'chevron'; // Icon to show when showEditButton is true
   showCopyButton?: boolean;
   onCopyAddress?: (address: string) => void;
+  /** Hide the balance line below the address */
+  hideBalance?: boolean;
 }
 
 export function AccountSelector({
@@ -64,6 +66,7 @@ export function AccountSelector({
   actionIcon = 'edit',
   showCopyButton = false,
   onCopyAddress,
+  hideBalance = false,
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
 
@@ -165,16 +168,18 @@ export function AccountSelector({
                 fontWeight="400"
               />
 
-              {/* Balance */}
-              <Text
-                color="$textMuted"
-                fontWeight="400"
-                fontSize={12}
-                lineHeight={17}
-                numberOfLines={1}
-              >
-                {formatBalance(currentAccount.balance || '0')}
-              </Text>
+              {/* Balance — only show when available and not hidden */}
+              {!hideBalance && currentAccount.balance ? (
+                <Text
+                  color="$textMuted"
+                  fontWeight="400"
+                  fontSize={12}
+                  lineHeight={17}
+                  numberOfLines={1}
+                >
+                  {formatBalance(currentAccount.balance)}
+                </Text>
+              ) : null}
             </YStack>
           </XStack>
 
@@ -231,7 +236,7 @@ export function AccountSelector({
           borderTopLeftRadius={16}
           borderTopRightRadius={16}
         >
-          <YStack gap={16}>
+          <YStack gap={16} flex={1}>
             {/* Header */}
             <XStack items="center" justify="space-between" pt={10}>
               <Text fontSize={14} fontWeight="400" color="$text">
@@ -247,109 +252,107 @@ export function AccountSelector({
             </XStack>
 
             {/* Account List */}
-            <ScrollView maxHeight={400}>
+            <ScrollView flex={1}>
               <YStack gap={2}>
-                {accounts
-                  .filter((account) => !shouldHideAccount(account))
-                  .map((account, index) => {
-                    const isSelected = currentAccount.address === account.address;
+                {accounts.map((account, index) => {
+                  const isSelected = currentAccount.address === account.address;
 
-                    return (
-                      <XStack
-                        key={account.address || index}
-                        items="center"
-                        justify="space-between"
-                        gap={8}
-                        py={12}
-                        px={8}
-                        pressStyle={{ opacity: 0.8 }}
-                        onPress={() => handleAccountSelect(account)}
-                        cursor="pointer"
-                        borderRadius={8}
-                        backgroundColor={isSelected ? '$bg2' : 'transparent'}
-                      >
-                        <XStack items="center" gap={16} flex={1}>
-                          {/* Account Avatar with parent emoji overlay */}
-                          <XStack position="relative" width={40} height={40}>
-                            <Avatar
-                              src={account.avatar}
-                              fallback={
-                                account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()
-                              }
-                              bgColor={account.emojiInfo?.color}
-                              textColor={account.emojiInfo?.color ? undefined : '$text'}
-                              size={40}
-                              borderColor={isSelected ? '$primary' : undefined}
-                              borderWidth={isSelected ? 1 : undefined}
-                            />
-                            {/* Parent emoji overlay bubble for linked accounts (hidden for EOA accounts) */}
-                            {account.parentEmoji && !isEOAAccount(account) && (
-                              <YStack
-                                position="absolute"
-                                style={{
-                                  left: -6,
-                                  top: -6,
-                                }}
-                                width={18}
-                                height={18}
-                                rounded={9}
-                                bg={(account.parentEmoji.color as any) || '$bg2'}
-                                borderWidth={2}
-                                borderColor="$bg2"
-                                items="center"
-                                justify="center"
-                                overflow="hidden"
-                              >
-                                <Text fontSize={8} fontWeight="600" lineHeight={12}>
-                                  {account.parentEmoji.emoji}
-                                </Text>
-                              </YStack>
-                            )}
-                          </XStack>
-
-                          {/* Account Details */}
-                          <YStack gap={2} flex={1} justify="center">
-                            <XStack items="center" gap={4}>
-                              {/* Link icon for linked accounts */}
-                              {(account.type === 'child' || account.parentEmoji) && (
-                                <Link size={12.8} color={iconColor} theme="outline" />
-                              )}
-                              <Text fontSize={14} fontWeight="600" color="$text" numberOfLines={1}>
-                                {account.name || 'Unnamed Account'}
-                              </Text>
-                              {(account.type === 'evm' || account.type === 'eoa') && (
-                                <EVMBadge variant={isEOAAccount(account) ? 'eoa' : 'coa'} />
-                              )}
-                            </XStack>
-                            <AddressText
-                              address={account.address}
-                              truncate={true}
-                              startLength={6}
-                              endLength={4}
-                              fontSize={12}
-                              fontWeight="400"
-                              color="$textSecondary"
-                            />
-                            <Text
-                              fontSize={12}
-                              fontWeight="400"
-                              color="$textSecondary"
-                              numberOfLines={1}
+                  return (
+                    <XStack
+                      key={account.address || index}
+                      items="center"
+                      justify="space-between"
+                      gap={8}
+                      py={12}
+                      px={8}
+                      pressStyle={{ opacity: 0.8 }}
+                      onPress={() => handleAccountSelect(account)}
+                      cursor="pointer"
+                      borderRadius={8}
+                      backgroundColor={isSelected ? '$bg2' : 'transparent'}
+                    >
+                      <XStack items="center" gap={16} flex={1}>
+                        {/* Account Avatar with parent emoji overlay */}
+                        <XStack position="relative" width={40} height={40}>
+                          <Avatar
+                            src={account.avatar}
+                            fallback={
+                              account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()
+                            }
+                            bgColor={account.emojiInfo?.color}
+                            textColor={account.emojiInfo?.color ? undefined : '$text'}
+                            size={40}
+                            borderColor={isSelected ? '$primary' : undefined}
+                            borderWidth={isSelected ? 1 : undefined}
+                          />
+                          {/* Parent emoji overlay bubble for linked accounts (hidden for EOA accounts) */}
+                          {account.parentEmoji && !isEOAAccount(account) && (
+                            <YStack
+                              position="absolute"
+                              style={{
+                                left: -6,
+                                top: -6,
+                              }}
+                              width={18}
+                              height={18}
+                              rounded={9}
+                              bg={(account.parentEmoji.color as any) || '$bg2'}
+                              borderWidth={2}
+                              borderColor="$bg2"
+                              items="center"
+                              justify="center"
+                              overflow="hidden"
                             >
-                              {formatBalance(account.balance || '0')}
-                            </Text>
-                          </YStack>
+                              <Text fontSize={8} fontWeight="600" lineHeight={12}>
+                                {account.parentEmoji.emoji}
+                              </Text>
+                            </YStack>
+                          )}
                         </XStack>
 
-                        {/* Selection Indicator */}
-                        {isSelected && (
-                          <YStack width={24} height={24} items="center" justify="center">
-                            <CheckCircle size={24} color="#00EF8B" theme="filled" />
-                          </YStack>
-                        )}
+                        {/* Account Details */}
+                        <YStack gap={2} flex={1} justify="center">
+                          <XStack items="center" gap={4}>
+                            {/* Link icon for linked accounts */}
+                            {(account.type === 'child' || account.parentEmoji) && (
+                              <Link size={12.8} color={iconColor} theme="outline" />
+                            )}
+                            <Text fontSize={14} fontWeight="600" color="$text" numberOfLines={1}>
+                              {account.name || 'Unnamed Account'}
+                            </Text>
+                            {(account.type === 'evm' || account.type === 'eoa') && (
+                              <EVMBadge variant={isEOAAccount(account) ? 'eoa' : 'coa'} />
+                            )}
+                          </XStack>
+                          <AddressText
+                            address={account.address}
+                            truncate={true}
+                            startLength={6}
+                            endLength={4}
+                            fontSize={12}
+                            fontWeight="400"
+                            color="$textSecondary"
+                          />
+                          <Text
+                            fontSize={12}
+                            fontWeight="400"
+                            color="$textSecondary"
+                            numberOfLines={1}
+                          >
+                            {formatBalance(account.balance || '0')}
+                          </Text>
+                        </YStack>
                       </XStack>
-                    );
-                  })}
+
+                      {/* Selection Indicator */}
+                      {isSelected && (
+                        <YStack width={24} height={24} items="center" justify="center">
+                          <CheckCircle size={24} color="#00EF8B" theme="filled" />
+                        </YStack>
+                      )}
+                    </XStack>
+                  );
+                })}
               </YStack>
             </ScrollView>
           </YStack>

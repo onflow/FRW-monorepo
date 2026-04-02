@@ -5,7 +5,7 @@
 //  Created by Hao Fu on 30/11/21.
 //
 
-import InstabugSDK
+import LuciqSDK
 import Kingfisher
 import SwiftUI
 
@@ -655,7 +655,7 @@ extension ProfileView.GeneralSectionView.Row {
 extension ProfileView {
   struct DeveloperSectionView: View {
     enum Row {
-      case instabug
+      case luciq
       case developerMode(LocalUserDefaults)
       case plugin
     }
@@ -669,12 +669,12 @@ extension ProfileView {
           let dm = Row.developerMode(lud)
 
           Button {
-            Instabug.show()
+            Luciq.show()
           } label: {
             ProfileView.SettingItemCell(
-              iconName: Row.instabug.iconName,
-              title: Row.instabug.title,
-              style: Row.instabug.style
+              iconName: Row.luciq.iconName,
+              title: Row.luciq.title,
+              style: Row.luciq.style
             )
           }
 
@@ -723,7 +723,7 @@ extension ProfileView {
 extension ProfileView.DeveloperSectionView.Row {
   var iconName: String {
     switch self {
-      case .instabug:
+      case .luciq:
         "icon-instabug"
       case .plugin:
         "icon-plugin"
@@ -734,7 +734,7 @@ extension ProfileView.DeveloperSectionView.Row {
 
   var title: String {
     switch self {
-      case .instabug:
+      case .luciq:
         "bug_report".localized
       case .plugin:
         "Chrome Extension"
@@ -745,7 +745,7 @@ extension ProfileView.DeveloperSectionView.Row {
 
   var style: ProfileView.SettingItemCell.Style {
     switch self {
-      case .instabug:
+      case .luciq:
         .none
       case .plugin:
         .sysImage
@@ -756,7 +756,7 @@ extension ProfileView.DeveloperSectionView.Row {
 
   var desc: String {
     switch self {
-      case .instabug:
+      case .luciq:
         ""
       case .plugin:
         ""
@@ -767,7 +767,7 @@ extension ProfileView.DeveloperSectionView.Row {
 
   var toggle: Bool {
     switch self {
-      case .instabug:
+      case .luciq:
         false
       case .plugin:
         false
@@ -778,7 +778,7 @@ extension ProfileView.DeveloperSectionView.Row {
 
   var imageName: String {
     switch self {
-      case .instabug:
+      case .luciq:
         ""
       case .plugin:
         "arrow.up.right"
@@ -789,7 +789,7 @@ extension ProfileView.DeveloperSectionView.Row {
 
   var sysImageColor: Color {
     switch self {
-      case .instabug:
+      case .luciq:
         Color.clear
       case .plugin:
         Color.LL.note

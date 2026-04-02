@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 
-import { type Contact, ContactType, type WalletAddress } from '@/shared/types';
+import { type Contact, ContactType, type WalletAddress, type WalletAccount } from '@/shared/types';
 import { isValidEthereumAddress, withPrefix } from '@/shared/utils';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -144,18 +144,45 @@ export function useContacts() {
         : []
     );
 
-    // List out evm accounts
-    if (mainAddress && isValidEthereumAddress(evmAddress) && evmWallet) {
-      const evmData: Contact = {
-        ...evmWallet,
-        address: evmAddress,
-        avatar: evmWallet.icon,
-        contact_name: evmWallet.name || '',
-      };
-      setEvmAccounts([evmData]);
-    } else {
-      setEvmAccounts([]);
-    }
+    // List out all EVM-linked accounts (COA + all EOAs) from profile wallet list.
+    const evmContactsMap = new Map<string, Contact>();
+    (walletList || []).forEach((mainAccount) => {
+      const evmCandidates: WalletAccount[] = [];
+
+      if (mainAccount?.evmAccount?.address) {
+        evmCandidates.push(mainAccount.evmAccount);
+      }
+      if (Array.isArray(mainAccount?.eoaAccounts) && mainAccount.eoaAccounts.length > 0) {
+        evmCandidates.push(...mainAccount.eoaAccounts);
+      } else if (mainAccount?.eoaAccount?.address) {
+        // Backward compatible fallback.
+        evmCandidates.push(mainAccount.eoaAccount);
+      }
+
+      evmCandidates.forEach((evmCandidate) => {
+        if (!evmCandidate?.address || !isValidEthereumAddress(evmCandidate.address)) {
+          return;
+        }
+        const normalized = evmCandidate.address.toLowerCase();
+        if (evmContactsMap.has(normalized)) {
+          return;
+        }
+        evmContactsMap.set(normalized, {
+          id: evmCandidate.id,
+          contact_name: evmCandidate.name || evmCandidate.address,
+          username: '',
+          avatar: evmCandidate.icon,
+          address: withPrefix(evmCandidate.address) || evmCandidate.address,
+          contact_type: ContactType.AddressBook,
+          bgColor: evmCandidate.color,
+          domain: {
+            domain_type: 999,
+            value: evmCandidate.name || evmCandidate.address,
+          },
+        });
+      });
+    });
+    setEvmAccounts(Array.from(evmContactsMap.values()));
   }, [childAccountsProfile, evmAddress, evmWallet, mainAddress, walletList]);
 
   return {

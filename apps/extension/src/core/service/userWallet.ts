@@ -2,6 +2,7 @@ import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
 import { CadenceService } from '@onflow/frw-cadence';
+import { logger } from '@onflow/frw-context';
 import { BIP44_PATHS } from '@onflow/frw-wallet';
 import { captureException } from '@sentry/react';
 import * as ethUtil from 'ethereumjs-util';
@@ -15,6 +16,7 @@ import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
   coinListKey,
+  inboxDataKey,
   evmNftCollectionsAndIdsKey,
   mainAccountsKey,
   mainAccountsRefreshRegex,
@@ -71,7 +73,6 @@ import {
   withPrefix,
   getCompatibleHashAlgo,
   consoleError,
-  consoleWarn,
   getEmojiByIndex,
   getActiveAccountTypeForAddress,
   tupleToPrivateKey,
@@ -117,6 +118,7 @@ interface TransactionMonitoringOptions {
   title?: string;
   body?: string;
   icon?: string;
+  sourceAddress?: string;
   notificationCallback?: (notification: TransactionNotification) => void;
   errorCallback?: (error: TransactionErrorInfo) => void;
 }
@@ -145,6 +147,14 @@ class UserWallet {
 
     // Initialize the account loaders
     initAccountLoaders();
+
+    // Startup hydration: when extension/background boots with an existing active profile,
+    // eagerly preload accounts so sidebar has EVM/EOA data on first open.
+    if (keyringService.isUnlocked() && this.store.currentPubkey) {
+      this.preloadAllAccounts(this.store.network, this.store.currentPubkey).catch((error) => {
+        logger.warn('Failed to preload accounts during userWallet init:', error);
+      });
+    }
   };
 
   clear = async () => {
@@ -340,6 +350,9 @@ class UserWallet {
     try {
       // Get the main accounts
       const allAccounts = await preloadAllAccountsWithPubKey(network, pubkey);
+
+      // Ensure UI hooks subscribed to cached data pick up the fresh startup preload immediately.
+      triggerRefresh(mainAccountsKey(network, pubkey));
 
       // Get the active accounts
       await this.loadActiveAccounts(network, pubkey);
@@ -620,103 +633,102 @@ class UserWallet {
 
     // Try to get EOA account info and add it to main accounts
     try {
-      let eoaAccountInfo: WalletAccount | undefined;
+      // Try to get all EOA account info (this won't require password if cached)
+      const eoaInfos = await walletManager.getEOAAccountsInfo(pubkey);
+      const checkEoaHasAssets = async (evmAddress: string): Promise<boolean> => {
+        if (!evmAddress) return false;
 
-      // Try to get EOA account info (this won't require password if cached)
-      const eoaInfo = await walletManager.getEOAAccountInfo(pubkey);
-      const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
-      if (eoaInfo) {
-        // Helper function to check if EOA account has assets (same logic as COA)
-        const checkEoaHasAssets = async (evmAddress: string): Promise<boolean> => {
-          if (!evmAddress) return false;
-
+        try {
+          // Check Flow balance - always fetch fresh to ensure we have latest balance
+          // Don't rely on cache as it might be stale after transactions
+          const balanceKey = accountBalanceKey(network, evmAddress);
+          let balance: string | null | undefined;
+          // Always fetch fresh balance for hasAssets check to avoid stale cache
           try {
-            // Check Flow balance - always fetch fresh to ensure we have latest balance
-            // Don't rely on cache as it might be stale after transactions
-            const balanceKey = accountBalanceKey(network, evmAddress);
-            let balance: string | null | undefined;
-            // Always fetch fresh balance for hasAssets check to avoid stale cache
-            try {
-              balance = await loadAccountBalance(network, evmAddress);
-              // Update cache with fresh balance
-              if (balance) {
-                await setCachedData(balanceKey, balance, 5_000);
-              }
-            } catch (error) {
-              // Fallback to cache if fetch fails
-              balance = await getCachedData<string>(balanceKey);
-              if (!balance) {
-                consoleError('Error fetching Flow balance for EOA:', error as Error);
-              }
-            }
-
+            balance = await loadAccountBalance(network, evmAddress);
+            // Update cache with fresh balance
             if (balance) {
-              const balanceValue = parseFloat(balance);
-              if (balanceValue > 0) {
-                return true;
-              }
+              await setCachedData(balanceKey, balance, 5_000);
             }
-
-            // Check ERC20 tokens - trigger refresh to get latest data
-            const tokenListKey = coinListKey(network, evmAddress, 'usd');
-            triggerRefresh(tokenListKey);
-            const cachedTokens =
-              await getCachedData<Array<{ balance?: string; rawBalance?: string }>>(tokenListKey);
-
-            if (cachedTokens && cachedTokens.length > 0) {
-              const hasTokenBalance = cachedTokens.some((token) => {
-                const balance = parseFloat(token.balance || token.rawBalance || '0');
-                return balance > 0;
-              });
-              if (hasTokenBalance) {
-                return true;
-              }
-            }
-
-            // Check NFTs - trigger refresh to get latest data
-            const nftKey = evmNftCollectionsAndIdsKey(network, evmAddress);
-            triggerRefresh(nftKey);
-            const cachedNfts =
-              await getCachedData<Array<{ count?: number; ids?: string[] }>>(nftKey);
-
-            if (cachedNfts && cachedNfts.length > 0) {
-              const hasNfts = cachedNfts.some((collection) => {
-                return (
-                  (collection.count && collection.count > 0) ||
-                  (collection.ids && collection.ids.length > 0)
-                );
-              });
-              if (hasNfts) {
-                return true;
-              }
-            }
-
-            // If no assets data found, return false
-            return false;
           } catch (error) {
-            consoleError('Error checking EOA assets:', error as Error);
-            return false;
+            // Fallback to cache if fetch fails
+            balance = await getCachedData<string>(balanceKey);
+            if (!balance) {
+              consoleError('Error fetching Flow balance for EOA:', error as Error);
+            }
           }
-        };
 
-        const hasAssets = await checkEoaHasAssets(eoaInfo.address);
+          if (balance) {
+            const balanceValue = parseFloat(balance);
+            if (balanceValue > 0) {
+              return true;
+            }
+          }
 
-        eoaAccountInfo = {
-          address: eoaInfo.address,
-          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
-          id: 99, // Special ID for EOA
-          name: eoaEmoji.name,
-          icon: eoaEmoji.emoji,
-          color: eoaEmoji.bgcolor,
-          balance: eoaInfo.balance || '0',
-          hasAssets: hasAssets,
-        };
-      }
+          // Check ERC20 tokens - trigger refresh to get latest data
+          const tokenListKey = coinListKey(network, evmAddress, 'usd');
+          triggerRefresh(tokenListKey);
+          const cachedTokens =
+            await getCachedData<Array<{ balance?: string; rawBalance?: string }>>(tokenListKey);
+
+          if (cachedTokens && cachedTokens.length > 0) {
+            const hasTokenBalance = cachedTokens.some((token) => {
+              const balance = parseFloat(token.balance || token.rawBalance || '0');
+              return balance > 0;
+            });
+            if (hasTokenBalance) {
+              return true;
+            }
+          }
+
+          // Check NFTs - trigger refresh to get latest data
+          const nftKey = evmNftCollectionsAndIdsKey(network, evmAddress);
+          triggerRefresh(nftKey);
+          const cachedNfts = await getCachedData<Array<{ count?: number; ids?: string[] }>>(nftKey);
+
+          if (cachedNfts && cachedNfts.length > 0) {
+            const hasNfts = cachedNfts.some((collection) => {
+              return (
+                (collection.count && collection.count > 0) ||
+                (collection.ids && collection.ids.length > 0)
+              );
+            });
+            if (hasNfts) {
+              return true;
+            }
+          }
+
+          // If no assets data found, return false
+          return false;
+        } catch (error) {
+          consoleError('Error checking EOA assets:', error as Error);
+          return false;
+        }
+      };
+
+      const eoaAccounts: WalletAccount[] = await Promise.all(
+        eoaInfos.map(async (eoaInfo) => {
+          const eoaEmoji = calculateEmojiIcon(eoaInfo.address ?? '');
+          const hasAssets = await checkEoaHasAssets(eoaInfo.address);
+          return {
+            address: eoaInfo.address,
+            chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+            id: 99 + eoaInfo.index, // Stable unique ID per derivation index
+            name: eoaEmoji.name,
+            icon: eoaEmoji.emoji,
+            color: eoaEmoji.bgcolor,
+            balance: eoaInfo.balance || '0',
+            hasAssets: hasAssets,
+          };
+        })
+      );
+      const primaryEoaAccount = eoaAccounts[eoaAccounts.length - 1];
 
       // Add EOA info to main accounts
       const enhancedMainAccounts: MainAccount[] = originalMainAccounts.map((account) => ({
         ...account,
-        eoaAccount: eoaAccountInfo,
+        eoaAccount: primaryEoaAccount,
+        eoaAccounts,
       }));
 
       return enhancedMainAccounts;
@@ -726,6 +738,7 @@ class UserWallet {
       return originalMainAccounts.map((account) => ({
         ...account,
         eoaAccount: undefined,
+        eoaAccounts: [],
       }));
     }
   };
@@ -998,6 +1011,7 @@ class UserWallet {
       title = '',
       body = '',
       icon = '',
+      sourceAddress,
       notificationCallback,
       errorCallback,
     } = options;
@@ -1006,25 +1020,136 @@ class UserWallet {
       return;
     }
 
-    const address = (await this.getCurrentAddress()) || '0x';
+    const currentAddress = (await this.getCurrentAddress()) || '0x';
+    const primaryAddress = sourceAddress || currentAddress;
+    const trackedAddresses = Array.from(
+      new Set([primaryAddress, currentAddress].filter(Boolean))
+    ).filter((address): address is string => {
+      return isValidFlowAddress(address) || isValidEthereumAddress(address);
+    });
+    if (trackedAddresses.length === 0) {
+      trackedAddresses.push(primaryAddress);
+    }
+
     const network = await this.getNetwork();
     const currency = (await preferenceService.getDisplayCurrency())?.code || 'USD';
     let txHash = txId;
+    const normalizedTxId = txId.replace(/^0x/i, '');
+
+    const fetchTransactionResult = async (): Promise<{
+      status?: string;
+      status_code?: number;
+      events?: any[];
+    }> => {
+      const response = await fetch(
+        `https://rest-${network}.onflow.org/v1/transaction_results/${normalizedTxId}`
+      );
+      if (!response.ok) {
+        throw new Error(`transaction_results request failed: ${response.status}`);
+      }
+      return (await response.json()) as {
+        status?: string;
+        status_code?: number;
+        events?: any[];
+      };
+    };
+
+    const waitForStatusWithRestFallback = async (target: 'executed' | 'sealed'): Promise<any> => {
+      const startTime = Date.now();
+      const timeoutMs = target === 'executed' ? 45_000 : 75_000;
+      while (Date.now() - startTime < timeoutMs) {
+        try {
+          const result = await fetchTransactionResult();
+          const status = (result.status || '').toUpperCase();
+          const isExecutedOrBeyond =
+            status === 'EXECUTED' ||
+            status === 'SEALED' ||
+            status === 'FINALIZED' ||
+            status === 'EXPIRED';
+          const isSealedOrTerminal = status === 'SEALED' || status === 'EXPIRED';
+          if (
+            (target === 'executed' && isExecutedOrBeyond) ||
+            (target === 'sealed' && isSealedOrTerminal)
+          ) {
+            logger.info('[userWallet] rest fallback status reached', {
+              txId,
+              target,
+              status: result.status,
+              status_code: result.status_code,
+            });
+            return {
+              status: result.status,
+              status_code: result.status_code,
+              events: result.events || [],
+            } as any;
+          }
+        } catch (error) {
+          logger.warn('[userWallet] rest fallback poll failed', { txId, target, error });
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+      throw new Error(`Timeout waiting for ${target} status via REST fallback`);
+    };
+
+    const waitForFclStatusWithFallback = async (
+      stage: 'executed' | 'sealed',
+      fclPromise: Promise<any>
+    ): Promise<any> => {
+      const timeoutMs = stage === 'executed' ? 20_000 : 30_000;
+      logger.info('[userWallet] waiting for fcl status', { txId, stage, timeoutMs });
+      try {
+        const result = await Promise.race([
+          fclPromise,
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error(`FCL ${stage} timeout after ${timeoutMs}ms`)),
+              timeoutMs
+            )
+          ),
+        ]);
+        logger.info('[userWallet] fcl status resolved', {
+          txId,
+          stage,
+          statusString: (result as any)?.statusString,
+          status: (result as any)?.status,
+          status_code: (result as any)?.status_code,
+        });
+        return result;
+      } catch (error) {
+        logger.warn('[userWallet] fcl status wait failed, switching to REST fallback', {
+          txId,
+          stage,
+          error,
+        });
+        return await waitForStatusWithRestFallback(stage);
+      }
+    };
 
     try {
-      transactionActivityService.setPending(network, address, txId, icon, title);
+      logger.info('[userWallet] listenTransaction start', {
+        txId,
+        network,
+        sourceAddress,
+        currentAddress,
+        trackedAddresses,
+      });
+      await Promise.all(
+        trackedAddresses.map((address) =>
+          transactionActivityService.setPending(network, address, txId, icon, title)
+        )
+      );
       const fclTx = fcl.tx(txId);
 
       // Wait for the transaction to be executed
-      const txStatusExecuted = await fclTx.onceExecuted();
+      const txStatusExecuted = await waitForFclStatusWithFallback('executed', fclTx.onceExecuted());
 
       // Update the pending transaction with the transaction status
-      txHash = await transactionActivityService.updatePending(
-        network,
-        address,
-        txId,
-        txStatusExecuted
+      const executedHashes = await Promise.all(
+        trackedAddresses.map((address) =>
+          transactionActivityService.updatePending(network, address, txId, txStatusExecuted)
+        )
       );
+      txHash = executedHashes.find(Boolean) || txHash;
 
       // Track the transaction result
       analyticsService.track('transaction_result', {
@@ -1040,7 +1165,8 @@ class UserWallet {
           const baseURL = await transactionActivityService.getFlowscanUrl(
             network,
             isEmulator,
-            isEvm
+            isEvm,
+            primaryAddress
           );
           let notificationUrl = '';
 
@@ -1075,20 +1201,26 @@ class UserWallet {
       }
 
       // Refresh the account balance
-      triggerRefresh(coinListKey(network, address, currency));
+      trackedAddresses.forEach((address) => {
+        triggerRefresh(coinListKey(network, address, currency));
+      });
       // Wait for the transaction to be sealed
-      const txStatusSealed = await fclTx.onceSealed();
+      const txStatusSealed = await waitForFclStatusWithFallback('sealed', fclTx.onceSealed());
 
       // Update the pending transaction with the transaction status
-      txHash = await transactionActivityService.updatePending(
-        network,
-        address,
-        txId,
-        txStatusSealed
+      const sealedHashes = await Promise.all(
+        trackedAddresses.map((address) =>
+          transactionActivityService.updatePending(network, address, txId, txStatusSealed)
+        )
       );
+      txHash = sealedHashes.find(Boolean) || txHash;
 
       // Refresh the account balance after sealed status - just to be sure
-      triggerRefresh(coinListKey(network, address, currency));
+      trackedAddresses.forEach((address) => {
+        triggerRefresh(coinListKey(network, address, currency));
+        // Refresh inbox data (unclaimed assets may have changed)
+        triggerRefresh(inboxDataKey(network, address));
+      });
     } catch (err: unknown) {
       // An error has occurred while listening to the transaction
       let errorMessage = 'unknown error';
@@ -1109,14 +1241,14 @@ class UserWallet {
         errorCode = match ? parseInt(match[1], 10) : undefined;
       }
 
-      consoleWarn({
-        msg: 'transactionError',
-        errorMessage,
-        errorCode,
-      });
+      logger.warn('transactionError', { errorMessage, errorCode });
 
       // Update the pending transaction to show error state
-      await transactionActivityService.updatePendingError(network, address, txId, errorMessage);
+      await Promise.all(
+        trackedAddresses.map((address) =>
+          transactionActivityService.updatePendingError(network, address, txId, errorMessage)
+        )
+      );
 
       // Track the transaction error
       analyticsService.track('transaction_result', {
@@ -1133,7 +1265,7 @@ class UserWallet {
         },
         extra: {
           txId,
-          address,
+          address: primaryAddress,
           errorMessage,
           errorCode,
         },
@@ -1149,7 +1281,11 @@ class UserWallet {
     } finally {
       if (txHash) {
         // Start polling for transfer list updates
-        await transactionActivityService.pollTransferList(address, txHash, network);
+        await Promise.all(
+          trackedAddresses.map((address) =>
+            transactionActivityService.pollTransferList(address, txHash, network)
+          )
+        );
       }
     }
   };
@@ -1609,6 +1745,7 @@ export default userWalletService;
 
 const MAX_LOAD_TIME = 120_000; // 2 minutes
 const POLL_INTERVAL = 2_000; // 2 seconds
+const FLOW_TX_ID_REGEX = /^(?:0x)?[0-9a-fA-F]{64}$/;
 
 /**
  * Load all accounts for a given public key
@@ -1646,7 +1783,7 @@ const preloadAllAccountsWithPubKey = async (
   }
 
   if (!mainAccounts || mainAccounts.length === 0) {
-    consoleWarn(`No main accounts loaded for pubkey: ${pubKey}`);
+    logger.warn(`No main accounts loaded for pubkey: ${pubKey}`);
     return [];
   }
 
@@ -1767,6 +1904,10 @@ const getMainAccountsWithPubKey = async (
   if (!network || !pubkey) {
     throw new Error('Network or pubkey is not set');
   }
+
+  // Keep pending account-creation spinner rows in sync with real tx status.
+  // This also heals stale pending state when background async watchers are interrupted.
+  await reconcilePendingAccountCreationTransactions(network);
 
   const mainAccounts = await getValidData<MainAccount[]>(mainAccountsKey(network, pubkey));
   if (!mainAccounts) {
@@ -1901,8 +2042,15 @@ const loadMainAccountsWithPubKey = async (
     mainAccounts.map((mainAccount) => mainAccount.address)
   );
 
-  // Try to get EOA account info (this won't require password if cached)
-  const eoaInfo = await walletManager.getEOAAccountInfo(pubKey);
+  // Try to get all EOA account info (index-aware).
+  // EOA discovery must not block Flow tx signing paths (e.g. key index resolution).
+  let eoaInfos: Awaited<ReturnType<typeof walletManager.getEOAAccountsInfo>> = [];
+  try {
+    eoaInfos = await walletManager.getEOAAccountsInfo(pubKey);
+  } catch (error) {
+    logger.warn('[userWallet] Failed to load EOA accounts info, fallback to empty list:', error);
+    eoaInfos = [];
+  }
 
   // Helper function to check if COA account has assets
   const checkCoaHasAssets = async (evmAddress: string): Promise<boolean> => {
@@ -2010,29 +2158,30 @@ const loadMainAccountsWithPubKey = async (
         }
       }
 
-      const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
-      let eoaAccountInfo: WalletAccount | undefined = undefined;
-
-      if (eoaInfo?.address) {
-        // Check if EOA account has assets (same logic as COA)
-        const hasAssets = await checkCoaHasAssets(eoaInfo.address);
-
-        eoaAccountInfo = {
-          address: eoaInfo.address,
-          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
-          id: 99, // Special ID for EOA
-          name: eoaEmoji.name,
-          icon: eoaEmoji.emoji,
-          color: eoaEmoji.bgcolor,
-          balance: eoaInfo.balance || '0',
-          hasAssets: hasAssets,
-        };
-      }
+      const eoaAccountInfos: WalletAccount[] = await Promise.all(
+        eoaInfos.map(async (eoaInfo) => {
+          const eoaEmoji = calculateEmojiIcon(eoaInfo.address ?? '');
+          const eoaCustomData = customMetadata[eoaInfo.address ?? ''];
+          const hasAssets = await checkCoaHasAssets(eoaInfo.address);
+          return {
+            address: eoaInfo.address,
+            chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+            id: 99 + eoaInfo.index, // Stable unique ID per derivation index
+            name: eoaCustomData?.name || eoaEmoji.name,
+            icon: eoaCustomData?.icon || eoaEmoji.emoji,
+            color: eoaCustomData?.background || eoaEmoji.bgcolor,
+            balance: eoaInfo.balance || '0',
+            hasAssets: hasAssets,
+          };
+        })
+      );
+      const primaryEoaAccount = eoaAccountInfos[eoaAccountInfos.length - 1];
 
       return {
         ...mainAccount,
         evmAccount,
-        eoaAccount: eoaAccountInfo,
+        eoaAccount: primaryEoaAccount,
+        eoaAccounts: eoaAccountInfos,
         childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
       };
     })
@@ -2294,6 +2443,58 @@ const clearPendingAccountCreationTransactions = async (network: string, pubkey: 
   // Get current user ID
   const userId = await getCurrentProfileId();
   await clearCachedData(pendingAccountCreationTransactionsKey(network, userId));
+};
+
+const reconcilePendingAccountCreationTransactions = async (network: string): Promise<void> => {
+  const userId = await getCurrentProfileId();
+  const pendingKey = pendingAccountCreationTransactionsKey(network, userId);
+  const pendingTransactions = (await getValidData<PendingTransaction[]>(pendingKey)) || [];
+
+  if (pendingTransactions.length === 0) {
+    return;
+  }
+
+  const remaining: PendingTransaction[] = [];
+
+  for (const txId of pendingTransactions) {
+    // Remove malformed/random placeholders that can never resolve on chain.
+    if (!FLOW_TX_ID_REGEX.test(txId)) {
+      continue;
+    }
+
+    try {
+      const normalizedTxId = txId.replace(/^0x/i, '');
+      const response = await fetch(
+        `https://rest-${network}.onflow.org/v1/transaction_results/${normalizedTxId}`
+      );
+
+      if (!response.ok) {
+        // Keep it and retry later if endpoint is temporarily unavailable.
+        remaining.push(txId);
+        continue;
+      }
+
+      const result = (await response.json()) as {
+        status?: string;
+        status_code?: number;
+      };
+
+      // Remove once terminal; keep only non-terminal transactions.
+      if (result.status !== 'Sealed' && result.status !== 'Expired') {
+        remaining.push(txId);
+      }
+    } catch {
+      // Network/parse error: keep it and retry later.
+      remaining.push(txId);
+    }
+  }
+
+  if (
+    remaining.length !== pendingTransactions.length ||
+    remaining.some((txId, index) => txId !== pendingTransactions[index])
+  ) {
+    await setCachedData(pendingKey, remaining, 360_000);
+  }
 };
 
 export const calculateEmojiIcon = (address: string): Emoji => {

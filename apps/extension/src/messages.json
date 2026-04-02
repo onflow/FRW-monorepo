@@ -1582,6 +1582,12 @@
   "Add_Account_Sidebar": {
     "message": "Add Account"
   },
+  "Add_Flow_Address_Sidebar": {
+    "message": "Add Flow Address"
+  },
+  "Add_EOA_Address_Sidebar": {
+    "message": "Add EOA Address"
+  },
   "Mobile_overview": {
     "message": "Mobile overview"
   },

@@ -1,0 +1,30 @@
+//
+//  AppDelegate+WhatsNew.swift
+//  FRW
+//
+//  Created by cat on 3/2/26.
+//
+
+import Foundation
+
+extension AppDelegate {
+  func fetchWhatsNew() async {
+      do {
+          let response = try await WhatsNewService.fetchWhatsNewForIOS()
+          if let response {
+              let trimmedContent = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+              guard !trimmedContent.isEmpty else {
+                  log.info("[WhatsNew] Empty payload, skip popup")
+                  return
+              }
+
+              log.info("[WhatsNew] payload received for version: \(response.version)")
+
+              let popupData = try response.toDictionary()
+              Router.route(to: RouteMap.ReactNative.whatsNew(popupData))
+          }
+      } catch {
+          log.error("[WhatsNew] \(error)")
+      }
+  }
+}

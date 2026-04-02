@@ -81,7 +81,7 @@ struct ImportTextView: View {
                 })
                 .textEditorBackground(.clear)
                 .font(.inter(size: 14))
-                .instabug_privateView()
+                .luciq_privateView()
         }
         .padding(20)
         .background {
@@ -155,7 +155,7 @@ public struct AnimatedSecureTextField: View {
                     .onChange(of: text) { text in
                         textDidChange(text)
                     }
-                    .instabug_privateView()
+                    .luciq_privateView()
             }
 
             HStack {

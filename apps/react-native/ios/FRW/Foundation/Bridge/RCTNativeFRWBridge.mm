@@ -160,6 +160,14 @@
   [TurboModuleSwift closeRNWithId:id];
 }
 
+- (void)onUpdateDialogActionPress:(NSString *)actionType
+                         actionUrl:(NSString * _Nullable)actionUrl
+                        actionText:(NSString * _Nullable)actionText {
+  [TurboModuleSwift onUpdateDialogActionPressWithActionType:actionType
+                                                  actionUrl:actionUrl
+                                                 actionText:actionText];
+}
+
 - (void)isFreeGasEnabled:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   resolve(@([TurboModuleSwift isFreeGasEnabled]));
 }
@@ -250,8 +258,8 @@
   [TurboModuleSwift logToNativeWithLevel:level message:message args:args];
 }
 
-- (void)ethSign:(NSString *)hexData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    NSString *result = [TurboModuleSwift ethSign:hexData];
+- (void)ethSign:(NSString *)hexData address:(NSString * _Nullable)address resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    NSString *result = [TurboModuleSwift ethSign:hexData address:address];
     if (result == nil) {
       NSError *error = [NSError errorWithDomain:@"NativeFRWBridge" 
                                            code:-1 

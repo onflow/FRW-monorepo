@@ -47,6 +47,42 @@ class ExtensionPlatformImpl implements PlatformSpec {
     this.storageInstance = new ExtensionStorage();
     this.cacheInstance = new ExtensionCache('screens:');
   }
+  onUpdateDialogActionPress?(
+    actionType: 'external' | 'internal' | 'deeplink',
+    actionUrl?: string | null,
+    actionText?: string | null
+  ): void {
+    throw new Error('Method not implemented.');
+  }
+  closeRNWithNFT(id?: string | null): void {
+    throw new Error('Method not implemented.');
+  }
+  async refreshCoaAfterMigration?(): Promise<void> {
+    // Extension-specific post-migration refresh:
+    // refresh account/address-book caches so UI reflects COA/EOA state changes.
+    if (!this.walletController) {
+      this.log(
+        'warn',
+        '[PlatformImpl] refreshCoaAfterMigration skipped: wallet controller missing'
+      );
+      return;
+    }
+
+    try {
+      if (typeof this.walletController.refreshWallets === 'function') {
+        await this.walletController.refreshWallets();
+      } else if (typeof this.walletController.refreshAll === 'function') {
+        await this.walletController.refreshAll();
+      } else {
+        this.log(
+          'warn',
+          '[PlatformImpl] refreshCoaAfterMigration skipped: no refreshWallets/refreshAll'
+        );
+      }
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] refreshCoaAfterMigration failed', error);
+    }
+  }
   getSignType(): string {
     throw new Error('Method not implemented.');
   }
@@ -253,7 +289,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.walletController.getKeyIndex() || 0;
   }
 
-  async ethSign(signData: Uint8Array): Promise<Uint8Array> {
+  async ethSign(signData: Uint8Array, address?: string): Promise<Uint8Array> {
     if (!this.walletController) {
       throw new Error('Wallet controller not initialized');
     }
@@ -262,40 +298,34 @@ class ExtensionPlatformImpl implements PlatformSpec {
       throw new Error('signData must be a Uint8Array');
     }
 
+    // Preferred path: sign with the explicit EOA address/index via wallet-manager.
+    if (typeof this.walletController.ethSignWithAddress === 'function') {
+      const signedBytes = await this.walletController.ethSignWithAddress(
+        signData,
+        address || this.currentAddress || undefined
+      );
+      return signedBytes instanceof Uint8Array
+        ? signedBytes
+        : new Uint8Array(Object.values(signedBytes));
+    }
+
+    // Backward-compatible fallback for older controller versions.
     const ethereumPrivateKey = await this.walletController.getEthereumPrivateKey();
     const privateKeyBytes = await this.walletController.privateKeyToUint8Array(ethereumPrivateKey);
-
-    // Convert plain object back to Uint8Array if needed (cross-context serialization issue)
     const actualPrivateKeyBytes =
       privateKeyBytes instanceof Uint8Array
         ? privateKeyBytes
         : new Uint8Array(Object.values(privateKeyBytes));
-
-    try {
-      const derivedSigner =
-        await WalletCoreProvider.deriveEVMAddressFromPrivateKey(actualPrivateKeyBytes);
-      const normalize = (addr: string) => `0x${addr.replace(/^0x/i, '').toLowerCase()}`;
-      const selected = this.currentAddress;
-      if (selected && /^0x[0-9a-fA-F]{40}$/.test(selected)) {
-        const expected = normalize(selected);
-        const actual = normalize(derivedSigner);
-        if (expected !== actual) {
-          throw new Error(
-            `ethSign signer mismatch: selected EVM ${expected}, signing key derives ${actual}`
-          );
-        }
-      }
-    } catch (error) {
-      this.log('error', '[PlatformImpl] ethSign signer validation failed', error);
-      throw error;
-    }
-
     return await WalletCoreProvider.signEvmDigestWithPrivateKey(actualPrivateKeyBytes, signData);
   }
 
   async getWrapEOATxWithCadence(): Promise<boolean> {
     const val = await getLocalData<boolean>('wrapEOATxWithCadence');
     return val ?? true;
+  }
+
+  async getCadenceInbox(): Promise<boolean> {
+    return (await this.walletController?.getFeatureFlag?.('cadence_inbox')) ?? false;
   }
 
   async getRecentContacts(): Promise<RecentContactsResponse> {
@@ -392,7 +422,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
     showNotification: boolean,
     title: string,
     message: string,
-    icon?: string
+    icon?: string,
+    sourceAddress?: string
   ): void {
     if (!this.walletController) {
       this.log('warn', 'Cannot listen transaction - wallet controller not initialized');
@@ -403,10 +434,22 @@ class ExtensionPlatformImpl implements PlatformSpec {
       return;
     }
 
-    this.log('debug', 'Extension listenTransaction called:', { txId, showNotification, title });
+    this.log('info', 'Extension listenTransaction called:', {
+      txId,
+      showNotification,
+      title,
+      sourceAddress,
+    });
 
     try {
-      this.walletController.listenTransaction(txId, showNotification, title, message, icon);
+      this.walletController.listenTransaction(
+        txId,
+        showNotification,
+        title,
+        message,
+        icon,
+        sourceAddress
+      );
     } catch (error) {
       this.log('error', 'Extension listenTransaction failed:', error);
     }
@@ -451,6 +494,30 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   configureCadenceService(cadenceService: any): void {
+    const extractTxId = (value: unknown): string | null => {
+      if (typeof value === 'string' && /^(?:0x)?[0-9a-fA-F]{64}$/.test(value)) {
+        return value;
+      }
+      if (!value || typeof value !== 'object') {
+        return null;
+      }
+      const obj = value as Record<string, unknown>;
+      const candidates = [
+        obj.txId,
+        obj.transactionId,
+        obj.transaction_id,
+        obj.id,
+        obj.hash,
+        obj.result,
+      ];
+      for (const candidate of candidates) {
+        if (typeof candidate === 'string' && /^(?:0x)?[0-9a-fA-F]{64}$/.test(candidate)) {
+          return candidate;
+        }
+      }
+      return null;
+    };
+
     const version = this.getVersion();
     const buildNumber = this.getBuildNumber();
     const network = this.getNetwork();
@@ -534,20 +601,37 @@ class ExtensionPlatformImpl implements PlatformSpec {
       if (config.type === 'transaction') {
         // Handle bypassed extension transactions
         if (response && response.__EXTENSION_SUCCESS__) {
-          txId = response.result;
+          txId = extractTxId(response.result);
 
           // Return the transaction ID as the response
-          response = txId;
-        } else if (response && typeof response === 'string') {
-          // Handle normal FCL transactions
-          txId = response;
+          if (txId) {
+            response = txId;
+          }
+        } else {
+          // Handle normal FCL transactions and object-shaped transaction responses
+          txId = extractTxId(response);
         }
 
         if (txId) {
           try {
             // Start transaction monitoring
             if (this.walletController && this.walletController.listenTransaction) {
-              this.walletController.listenTransaction(txId);
+              const selectedAccountForTracking = await this.getSelectedAccount();
+              const sendFromAddress = useSendStore.getState().fromAccount?.address;
+              const trackingAddress = sendFromAddress || selectedAccountForTracking?.address;
+              this.log('info', 'Response interceptor starting tx monitor:', {
+                txId,
+                selectedTrackingAddress: selectedAccountForTracking?.address,
+                sendFromAddress,
+                trackingAddress,
+                configName: config?.name,
+              });
+              this.listenTransaction?.(txId, true, '', '', undefined, trackingAddress);
+            } else {
+              this.log(
+                'warn',
+                'Response interceptor cannot start tx monitor: listenTransaction unavailable'
+              );
             }
             // Redirect after transaction (default to true)
             // Set to false in config.skipRedirect to let the page handle its own navigation

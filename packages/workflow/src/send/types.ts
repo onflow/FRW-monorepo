@@ -22,7 +22,7 @@ export interface SendPayload {
 /**
  * Strategy interface for transfer operations
  */
-export type EthSignFn = (signData: Uint8Array) => Promise<Uint8Array>;
+export type EthSignFn = (signData: Uint8Array, address?: string) => Promise<Uint8Array>;
 
 /** Send signed RLP hex to EVM RPC (eth_sendRawTransaction). When set, EOA EVM strategies use this instead of Cadence eoaCallContract. */
 export type SendRawEvmTxFn = (signedTxHex: string) => Promise<string>;
@@ -34,6 +34,7 @@ export interface TransferExecutionHelpers {
   network?: 'mainnet' | 'testnet' | string;
   gasPrice?: number | string | bigint;
   session?: TransactionSession;
+  featureFlags?: { cadence_inbox?: boolean };
 }
 
 export interface TransferStrategy {

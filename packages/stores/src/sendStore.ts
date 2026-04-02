@@ -633,14 +633,18 @@ export const useSendStore = create<SendState>((set, get) => ({
           bridge as { getWrapEOATxWithCadence?: () => Promise<boolean> }
         ).getWrapEOATxWithCadence?.()) ?? true;
       const useDirectEvm = !wrapWithCadence;
+      const cadenceInbox = (await bridge.getCadenceInbox?.()) ?? false;
 
       const network = bridge.getNetwork?.() ?? 'mainnet';
       const helpers = {
-        ethSign: bridge.ethSign ? (data: Uint8Array) => bridge.ethSign(data) : undefined,
+        ethSign: bridge.ethSign
+          ? (data: Uint8Array, address?: string) => bridge.ethSign(data, address)
+          : undefined,
         network: bridge.getNetwork ? bridge.getNetwork() : undefined,
         // Direct RPC path uses workflow/default gas settings.
         gasPrice: useDirectEvm ? undefined : 0,
         session: session || undefined,
+        featureFlags: { cadence_inbox: cadenceInbox },
         ...(useDirectEvm
           ? {
               sendRawEvmTransaction: (signedTxHex: string) =>

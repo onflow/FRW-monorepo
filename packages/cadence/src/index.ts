@@ -1,6 +1,6 @@
 import * as fcl from '@onflow/fcl';
 import { createLogger, type BridgeLogger } from '@onflow/frw-utils';
-import { send as httpSend } from '@onflow/transport-http';
+import { httpTransport } from '@onflow/transport-http';
 
 import { addresses, CadenceService } from './cadence.generated';
 
@@ -102,7 +102,7 @@ export function configureFCL(network: 'mainnet' | 'testnet'): void {
     .config()
     .put('flow.network', network)
     .put('accessNode.api', accessNode)
-    .put('sdk.transport', httpSend)
+    .put('sdk.transport', httpTransport)
     .put('logger.level', 1);
 
   const addrMap = network === 'mainnet' ? addresses.mainnet : addresses.testnet;
@@ -217,9 +217,10 @@ export async function waitForExecuted(
     timeout?: number; // Max wait time in ms (default: 60000)
     pollInterval?: number; // Interval between polls in ms (default: 2000)
     onStatusChange?: (status: any) => void; // Callback for status updates
+    sealedOnly?: boolean; // If true, only return when status is Sealed (4)
   } = {}
 ): Promise<any> {
-  const { timeout = 60000, pollInterval = 2000, onStatusChange } = options;
+  const { timeout = 60000, pollInterval = 2000, onStatusChange, sealedOnly = false } = options;
   const startTime = Date.now();
   let lastStatus: number | null = null;
 
@@ -235,8 +236,11 @@ export async function waitForExecuted(
       }
 
       // Status codes: 0=Unknown, 1=Pending, 2=Finalized, 3=Executed, 4=Sealed, 5=Expired
-      if (status.status === 3 || status.status === 4) {
-        // Transaction is Executed (3) or Sealed (4) - success!
+      const isSuccessStatus = sealedOnly
+        ? status.status === 4
+        : status.status === 3 || status.status === 4;
+
+      if (isSuccessStatus) {
         return status;
       }
 

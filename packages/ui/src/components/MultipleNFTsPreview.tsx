@@ -17,6 +17,7 @@ export interface MultipleNFTsPreviewProps {
   backgroundColor?: string;
   borderRadius?: string | number;
   contentPadding?: string;
+  bottomPadding?: string;
   unnamedNFTText?: string;
   unknownCollectionText?: string;
   noNFTsSelectedText?: string;
@@ -164,6 +165,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   backgroundColor = 'transparent',
   borderRadius = 14.4,
   contentPadding = '$0',
+  bottomPadding = '$7',
   unnamedNFTText = 'Unnamed NFT',
   unknownCollectionText = 'Unknown Collection',
   noNFTsSelectedText = 'No NFTs selected',
@@ -263,7 +265,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
       bg={backgroundColor}
       borderRadius={borderRadius}
       padding={contentPadding}
-      pb="$7"
+      pb={bottomPadding as any}
       gap={12}
     >
       {/* Section Header */}

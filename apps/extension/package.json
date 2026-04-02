@@ -1,6 +1,6 @@
 {
   "name": "frw-extension",
-  "version": "3.1.11",
+  "version": "3.1.13",
   "description": "Digital wallet created for everyone.",
   "type": "module",
   "scripts": {
@@ -59,6 +59,7 @@
     "@onflow/frw-utils": "workspace:*",
     "@onflow/frw-wallet": "workspace:^",
     "@onflow/frw-workflow": "workspace:^",
+    "@onflow/transport-http": "^1.15.6",
     "@reown/walletkit": "^1.2.8",
     "@sentry/browser": "^10.22.0",
     "@sentry/react": "^10.22.0",
@@ -100,10 +101,10 @@
     "koa-compose": "^4.1.0",
     "lodash": "^4.17.23",
     "loglevel": "^1.9.2",
-    "pdfjs-dist": "^4.0.379",
     "lottie-react-native": "^7.3.4",
     "lru-cache": "^11.1.0",
     "nanoid": "^3.3.11",
+    "pdfjs-dist": "^4.0.379",
     "process": "^0.11.10",
     "qr-code-styling": "^1.9.2",
     "qr-scanner": "^1.4.2",
@@ -203,7 +204,7 @@
     "typescript-transform-paths": "^3.5.5",
     "url-loader": "^4.1.1",
     "vitest": "^3.2.4",
-    "webpack": "^5.99.9",
+    "webpack": "^5.104.1",
     "webpack-cli": "^4.10.0",
     "webpack-merge": "^5.10.0",
     "zip-dir": "^2.0.0"

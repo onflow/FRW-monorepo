@@ -2,6 +2,7 @@ import type { forms_DeviceInfo } from '@onflow/frw-api';
 import type {
   CreateAccountResponse,
   Currency,
+  MigrationDisplayData,
   NativeScreenName,
   Platform,
   RecentContactsResponse,
@@ -57,13 +58,19 @@ export interface PlatformSpec extends KeyRotationDependencies {
   // Cryptographic operations (hexData due to Turbo Module limitations)
   sign(hexData: string): Promise<string>;
   getSignKeyIndex(): number;
-  ethSign(signData: Uint8Array): Promise<Uint8Array>;
+  ethSign(signData: Uint8Array, address?: string): Promise<Uint8Array>;
 
   /**
    * When false, EOA EVM transactions are sent via RLP directly to EVM RPC (by the package).
    * When true or unset, EOA txs go through Cadence (eoaCallContract).
    */
   getWrapEOATxWithCadence?(): Promise<boolean>;
+
+  /**
+   * Returns whether the cadence inbox (LostAndFound v4) feature is enabled.
+   * When true, token transfers use sendFt (v4); when false, transferTokensV3 is used.
+   */
+  getCadenceInbox(): Promise<boolean>;
 
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
@@ -111,6 +118,12 @@ export interface PlatformSpec extends KeyRotationDependencies {
   scanQRCode(): Promise<string>;
   shareQRCode?(address: string, qrCodeDataUrl: string): Promise<void>;
   closeRN(id?: string | null): void;
+  onUpdateDialogActionPress?(
+    actionType: 'external' | 'internal' | 'deeplink',
+    actionUrl?: string | null,
+    actionText?: string | null
+  ): void;
+  closeRNWithNFT(id?: string | null): void;
 
   // Toast notifications
   showToast?(
@@ -195,6 +208,7 @@ export interface PlatformSpec extends KeyRotationDependencies {
     erc20: Array<{ address: string; amount: string }>;
     erc721: Array<{ address: string; id: string }>;
     erc1155: Array<{ address: string; id: string; amount: string }>;
+    displayData?: MigrationDisplayData;
   }>;
   /**
    * Refresh COA-related data after migration (native-side refresh for home + side menu)

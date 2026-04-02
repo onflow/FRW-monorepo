@@ -14,7 +14,7 @@ import { getLocalData } from '@/data-model/storage';
 import { type KeyringStateV3, type VaultEntryV3 } from '@/shared/types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
-import { useUserWallets } from '@/ui/hooks/use-account-hooks';
+import { useCurrentId, useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -73,6 +73,7 @@ const PlatformContext = createContext<PlatformContextValue | null>(null);
  */
 export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { network } = useNetwork();
+  const currentId = useCurrentId();
   const userWallets = useUserWallets();
   const {
     currentWallet,
@@ -874,11 +875,13 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
     enhancedPlatform.getWalletAccounts = async () => {
       const accountsArray: any[] = [];
+      const seenAddresses = new Set<string>();
 
       // Add all main wallet accounts from walletList (this includes all 18 accounts)
       if (Array.isArray(walletList) && walletList.length > 0) {
         walletList.forEach((account) => {
           const accountName = account.name || 'Main Account';
+          const normalizedMainAddress = account.address?.toLowerCase();
           accountsArray.push({
             address: account.address,
             name: accountName,
@@ -893,26 +896,50 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             },
             isActive: account.address === mainAddress,
           });
+          if (normalizedMainAddress) {
+            seenAddresses.add(normalizedMainAddress);
+          }
         });
       }
 
-      // Add EVM account if available
-      if (evmWallet && evmWallet.address) {
-        const evmName = evmWallet.name || 'EVM Account';
-        accountsArray.push({
-          address: evmWallet.address,
-          name: evmName,
-          type: 'evm',
-          balance: '0',
-          avatar: evmWallet.icon || '', // Use icon as avatar
-          emoji: evmWallet.icon || '', // Use icon as emoji
-          emojiInfo: {
-            emoji: evmWallet.icon || '',
-            name: evmName,
-            color: evmWallet.color || '#6B7280',
-          },
-          parentAddress: mainAddress,
-          isActive: false,
+      // Add all EVM-linked accounts from walletList (COA + all EOAs)
+      if (Array.isArray(walletList) && walletList.length > 0) {
+        walletList.forEach((account) => {
+          const evmCandidates: any[] = [];
+          if (account.evmAccount?.address && account.evmAccount.hasAssets) {
+            evmCandidates.push({ ...account.evmAccount, type: 'evm' });
+          }
+          if (Array.isArray(account.eoaAccounts) && account.eoaAccounts.length > 0) {
+            account.eoaAccounts.forEach((eoa) => evmCandidates.push({ ...eoa, type: 'eoa' }));
+          } else if (account.eoaAccount?.address) {
+            // Backward-compatible fallback.
+            evmCandidates.push({ ...account.eoaAccount, type: 'eoa' });
+          }
+
+          evmCandidates.forEach((evmCandidate: any) => {
+            const normalizedAddress = evmCandidate.address?.toLowerCase();
+            if (!normalizedAddress || seenAddresses.has(normalizedAddress)) {
+              return;
+            }
+            const evmName =
+              evmCandidate.name || (evmCandidate.type === 'eoa' ? 'EOA Account' : 'EVM Account');
+            accountsArray.push({
+              address: evmCandidate.address,
+              name: evmName,
+              type: evmCandidate.type,
+              balance: '0',
+              avatar: evmCandidate.icon || '',
+              emoji: evmCandidate.icon || '',
+              emojiInfo: {
+                emoji: evmCandidate.icon || '',
+                name: evmName,
+                color: evmCandidate.color || '#6B7280',
+              },
+              parentAddress: account.address || mainAddress,
+              isActive: false,
+            });
+            seenAddresses.add(normalizedAddress);
+          });
         });
       }
 
@@ -943,7 +970,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       if (
         currentWallet &&
         currentWallet.address !== mainAddress &&
-        !accountsArray.find((acc) => acc.address === currentWallet.address)
+        !seenAddresses.has(currentWallet.address.toLowerCase())
       ) {
         const accountType = isEvmAddress ? 'evm' : 'main';
 
@@ -962,6 +989,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           },
           parentAddress: isEvmAddress ? mainAddress : undefined,
         });
+        seenAddresses.add(currentWallet.address.toLowerCase());
       }
 
       return {
@@ -1000,33 +1028,52 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
           // Create accounts array for this profile
           const profileAccounts: any[] = [];
+          const profileSeenAddresses = new Set<string>();
 
-          // Add EOA account at the top of each profile (only once per profile)
+          // Add EOA accounts at the top of each profile
           if (Array.isArray(profileMainAccounts) && profileMainAccounts.length > 0) {
-            const firstAccount = profileMainAccounts[0];
-            if (firstAccount.eoaAccount?.address) {
-              const eoaName = firstAccount.eoaAccount.name || 'EOA Account';
-              profileAccounts.push({
-                address: firstAccount.eoaAccount.address,
-                name: eoaName,
-                type: 'eoa',
-                balance: '0',
-                avatar: firstAccount.eoaAccount.icon || '',
-                emoji: firstAccount.eoaAccount.icon || '',
-                emojiInfo: {
-                  emoji: firstAccount.eoaAccount.icon || '',
+            profileMainAccounts.forEach((mainAccount) => {
+              const eoaCandidates =
+                Array.isArray(mainAccount.eoaAccounts) && mainAccount.eoaAccounts.length > 0
+                  ? mainAccount.eoaAccounts
+                  : mainAccount.eoaAccount
+                    ? [mainAccount.eoaAccount]
+                    : [];
+              eoaCandidates.forEach((eoaAccount: any) => {
+                if (!eoaAccount?.address) {
+                  return;
+                }
+                const normalizedAddress = eoaAccount.address.toLowerCase();
+                if (profileSeenAddresses.has(normalizedAddress)) {
+                  return;
+                }
+                const eoaName = eoaAccount.name || 'EOA Account';
+                profileAccounts.push({
+                  address: eoaAccount.address,
                   name: eoaName,
-                  color: firstAccount.eoaAccount.color || '#6B7280',
-                },
-                isActive: false,
+                  type: 'eoa',
+                  balance: '0',
+                  avatar: eoaAccount.icon || '',
+                  emoji: eoaAccount.icon || '',
+                  emojiInfo: {
+                    emoji: eoaAccount.icon || '',
+                    name: eoaName,
+                    color: eoaAccount.color || '#6B7280',
+                  },
+                  isActive: false,
+                });
+                profileSeenAddresses.add(normalizedAddress);
               });
-            }
+            });
           }
 
           // Add main wallet accounts
           if (Array.isArray(profileMainAccounts) && profileMainAccounts.length > 0) {
             profileMainAccounts.forEach((account) => {
               const accountName = account.name || 'Main Account';
+              if (account.address) {
+                profileSeenAddresses.add(account.address.toLowerCase());
+              }
               profileAccounts.push({
                 address: account.address,
                 name: accountName,
@@ -1041,27 +1088,31 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
                 },
                 isActive: false, // Only current profile's main address is active
               });
-              if (account.evmAccount?.address && account.evmAccount.hasAssets !== false) {
-                const evmName = account.evmAccount.name || 'EVM Account';
-                profileAccounts.push({
-                  address: account.evmAccount.address,
-                  name: evmName,
-                  type: 'evm',
-                  balance: '0',
-                  avatar: account.evmAccount.icon || '',
-                  emoji: account.evmAccount.icon || '',
-                  emojiInfo: {
-                    emoji: account.evmAccount.icon || '',
+              if (account.evmAccount?.address && account.evmAccount.hasAssets) {
+                const normalizedEvmAddress = account.evmAccount.address.toLowerCase();
+                if (!profileSeenAddresses.has(normalizedEvmAddress)) {
+                  const evmName = account.evmAccount.name || 'EVM Account';
+                  profileAccounts.push({
+                    address: account.evmAccount.address,
                     name: evmName,
-                    color: account.evmAccount.color || '#6B7280',
-                  },
-                  parentEmoji: {
-                    emoji: account?.icon || '',
-                    name: account?.name || '',
-                    color: account?.color || '#6B7280',
-                  },
-                  isActive: false,
-                });
+                    type: 'evm',
+                    balance: '0',
+                    avatar: account.evmAccount.icon || '',
+                    emoji: account.evmAccount.icon || '',
+                    emojiInfo: {
+                      emoji: account.evmAccount.icon || '',
+                      name: evmName,
+                      color: account.evmAccount.color || '#6B7280',
+                    },
+                    parentEmoji: {
+                      emoji: account?.icon || '',
+                      name: account?.name || '',
+                      color: account?.color || '#6B7280',
+                    },
+                    isActive: false,
+                  });
+                  profileSeenAddresses.add(normalizedEvmAddress);
+                }
               }
 
               // Add child accounts for this main account if they exist
@@ -1107,7 +1158,15 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       }
 
       return {
-        profiles: profilesArray,
+        profiles: profilesArray.sort((a, b) => {
+          if (a.uid === currentId && b.uid !== currentId) {
+            return -1;
+          }
+          if (b.uid === currentId && a.uid !== currentId) {
+            return 1;
+          }
+          return 0;
+        }),
       };
     };
 
@@ -1169,7 +1228,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
     // Always reinitialize ServiceContext when data changes
     ServiceContext.initialize(enhancedPlatform);
-  }, [platform, coins, userWallets, currentWallet, currency]);
+  }, [platform, coins, userWallets, currentWallet, currency, currentId]);
 
   // Keep platform synchronized with extension state
   useEffect(() => {

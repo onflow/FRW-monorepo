@@ -40,13 +40,13 @@
     "@babel/runtime": "^7.28.2",
     "@onflow/fcl": "^1.13.1",
     "@onflow/frw-utils": "workspace:*",
-    "@onflow/transport-http": "^1.13.0",
+    "@onflow/transport-http": "^1.15.6",
     "buffer": "^6.0.3"
   },
   "devDependencies": {
+    "@outblock/cadence-codegen": "^0.0.9",
     "@types/node": "^22.11.0",
     "@vitest/coverage-v8": "3.2.4",
-    "@outblock/cadence-codegen": "^0.0.9",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^3.2.4"

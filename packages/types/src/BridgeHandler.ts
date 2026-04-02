@@ -113,6 +113,11 @@ export function shouldHideAccount(account: WalletAccount): boolean {
     return false;
   }
 
+  // If balance and nfts are both undefined, data hasn't loaded yet — don't hide
+  if (account.balance === undefined && account.nfts === undefined) {
+    return false;
+  }
+
   const isBalanceZero =
     !account.balance ||
     account.balance === '0' ||

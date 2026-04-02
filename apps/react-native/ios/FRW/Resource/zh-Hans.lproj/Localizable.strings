@@ -978,3 +978,8 @@
 "failed_to_sign_transaction" = "签署交易失败";
 "deep_link_hint_title" = "谨慎继续";
 "deep_link_hint_desc" = "您是由第三方引导至此，而非 Flow Wallet。继续将打开 Dapp。";
+"add_account" = "添加账户";
+"create_cadence_account" = "创建新的 Flow Cadence 账户";
+"create_evm_account" = "创建新的 Flow EVM 账户";
+"unclaimed_assets_title" = "有资产可领取";
+"unclaimed_assets_message" = "前往查看。";

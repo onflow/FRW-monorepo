@@ -1,4 +1,5 @@
-import { Button, ScrollView, Text } from '@onflow/frw-ui';
+import { logger } from '@onflow/frw-context';
+import { Button, ScrollView, Text, XStack } from '@onflow/frw-ui';
 import type { NavigationProp, RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect } from 'react';
@@ -11,15 +12,20 @@ const HomeScreen = () => {
   const { address, network } = route.params || {};
 
   useEffect(() => {
-    console.log('🏠 HomeScreen mounted with params:', { address, network });
+    logger.debug('[HomeScreen] Mounted with params:', { address, network });
   }, [address, network]);
 
   return (
     <ScrollView>
       <Text style={{ color: 'red' }}>HomeScreen</Text>
-      <Button onPress={() => navigation.navigate('SelectTokens')}>
-        <Text>Send</Text>
-      </Button>
+      <XStack gap="$3" px="$4" pt="$4">
+        <Button onPress={() => navigation.navigate('SelectTokens')}>
+          <Text>Send</Text>
+        </Button>
+        <Button onPress={() => navigation.navigate('AddTokens')}>
+          <Text>Add Tokens</Text>
+        </Button>
+      </XStack>
     </ScrollView>
   );
 };

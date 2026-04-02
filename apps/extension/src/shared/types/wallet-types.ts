@@ -98,6 +98,7 @@ export type WalletAccount = {
   nickname?: string;
   hasAssets?: boolean; // Only set for EVM COA accounts to indicate if they have assets
   eoaAccount?: WalletAccount; // EOA account derived from same mnemonic
+  eoaAccounts?: WalletAccount[]; // All derived EOA accounts from same mnemonic
   evmAccount?: WalletAccount; // COA account derived from same mnemonic
   childAccounts?: WalletAccount[];
 };
@@ -108,6 +109,7 @@ export type MainAccount = WalletAccount &
   PublicKeyAccount & {
     evmAccount?: WalletAccount;
     eoaAccount?: WalletAccount; // EOA account derived from same mnemonic
+    eoaAccounts?: WalletAccount[]; // All derived EOA accounts from same mnemonic
     childAccounts?: WalletAccount[];
   };
 

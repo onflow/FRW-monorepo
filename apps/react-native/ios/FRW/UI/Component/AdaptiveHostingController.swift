@@ -41,7 +41,7 @@ final class AdaptiveHostingController<Content: View>: UIHostingController<Adapti
         super.viewDidLoad()
 
         // Apply background color for iOS 18 compatibility
-        view.backgroundColor = UIColor.Brand.Core.cards
+        view.backgroundColor = .clear
 
         // Fix for iOS 18: Remove default system background
         if #available(iOS 16.4, *) {
@@ -118,7 +118,7 @@ struct AdaptiveContentWrapper<Content: View>: View {
     var body: some View {
         ZStack {
             // Background layer for iOS 18 compatibility
-            Color(UIColor.Brand.Core.cards)
+            Color(UIColor.Brand.Core.drawer)
                 .ignoresSafeArea()
 
             // Content layer

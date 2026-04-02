@@ -1,7 +1,8 @@
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
 import { type forms_DeviceInfo } from '@onflow/frw-api';
-import { ServiceContext } from '@onflow/frw-context';
+import { waitForExecuted } from '@onflow/frw-cadence';
+import { logger, ServiceContext } from '@onflow/frw-context';
 import { keystoreService, profileService, validateKeystoreStructure } from '@onflow/frw-services';
 import { BIP44_PATHS, WalletCoreProvider } from '@onflow/frw-wallet';
 import * as bip39 from 'bip39';
@@ -25,6 +26,7 @@ import {
   FLOW_BIP44_PATH,
   HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
+  MAX_MAIN_ACCOUNTS_PER_PROFILE,
   SIGN_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_ECDSA_P256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
@@ -41,6 +43,7 @@ import type {
 } from '@/shared/types';
 import {
   isValidFlowAddress,
+  hasReachedFlowAddressLimit,
   isValidEthereumAddress,
   consoleError,
   getErrorMessage,
@@ -147,6 +150,9 @@ export class AccountManagement {
       hashAlgo: this.pendingMultiBackupNewKey.hashAlgo,
     };
   }
+  private static readonly ACCOUNT_CREATION_SEAL_TIMEOUT_MS = 90_000;
+  private static readonly ACCOUNT_CREATION_POLL_INTERVAL_MS = 2_000;
+  private static readonly ACCOUNT_QUERY_MAX_RETRIES = 10;
 
   /**
    * Ensure ServiceContext is initialized (required for API package)
@@ -575,24 +581,30 @@ export class AccountManagement {
     txid: string
   ): Promise<FclAccount | null> {
     try {
-      const txResult = await fcl.tx(txid).onceSealed();
+      const txResult = (await waitForExecuted(txid, {
+        timeout: AccountManagement.ACCOUNT_CREATION_SEAL_TIMEOUT_MS,
+        pollInterval: AccountManagement.ACCOUNT_CREATION_POLL_INTERVAL_MS,
+        sealedOnly: true,
+        onStatusChange: (status: {
+          status?: number;
+          statusCode?: number;
+          statusString?: string;
+        }) => {
+          logger.info('[AccountCreation] Status update', {
+            txId: txid,
+            status: status.status,
+            statusCode: status.statusCode,
+            statusString: status.statusString,
+          });
+        },
+      })) as { events?: Array<{ type?: string; data?: Record<string, unknown> }> };
+      const newAddress = this.extractCreatedAddressFromTxResult(txResult);
 
-      // Find the AccountCreated event and extract the address
-      const accountCreatedEvent = txResult.events.find(
-        (event) => event.type === 'flow.AccountCreated'
-      );
-
-      if (!accountCreatedEvent) {
+      if (!newAddress) {
         throw new Error('Account creation event not found in transaction');
       }
 
-      const newAddress = accountCreatedEvent.data.address;
-
-      // Get the account from the new address
-      const account = await fcl.account(newAddress);
-      if (!account) {
-        throw new Error('Fcl account not found');
-      }
+      const account = await this.fetchAccountWithRetry(newAddress);
       // Add the placeholder account to the user wallet
       await addPlaceholderAccount(network, pubKey, txid, account);
 
@@ -603,6 +615,43 @@ export class AccountManagement {
 
       throw new Error(`Account creation failed: ${(error as Error).message || 'Unknown error'}`);
     }
+  }
+
+  private extractCreatedAddressFromTxResult(txResult: {
+    events?: Array<{ type?: string; data?: Record<string, unknown> }>;
+  }): string | null {
+    const accountCreatedEvent = txResult.events?.find(
+      (event) => event.type === 'flow.AccountCreated'
+    );
+    const eventAddress = accountCreatedEvent?.data?.address;
+    if (typeof eventAddress === 'string' && eventAddress.length > 0) {
+      return eventAddress.startsWith('0x') ? eventAddress : `0x${eventAddress}`;
+    }
+    return null;
+  }
+
+  private async fetchAccountWithRetry(address: string): Promise<FclAccount> {
+    let lastError: unknown;
+    for (let attempt = 0; attempt < AccountManagement.ACCOUNT_QUERY_MAX_RETRIES; attempt += 1) {
+      try {
+        const account = await fcl.account(address);
+        if (account) {
+          return account;
+        }
+      } catch (error) {
+        lastError = error;
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, AccountManagement.ACCOUNT_CREATION_POLL_INTERVAL_MS)
+      );
+    }
+
+    throw new Error(
+      `FCL account not found after ${AccountManagement.ACCOUNT_QUERY_MAX_RETRIES} retries${
+        lastError ? `: ${(lastError as Error).message}` : ''
+      }`
+    );
   }
 
   async importAccountFromMobile(
@@ -657,6 +706,13 @@ export class AccountManagement {
   }
 
   async createNewAccount(network: string): Promise<void> {
+    const existingMainAccounts = await userWalletService.getMainAccounts();
+    if (hasReachedFlowAddressLimit(existingMainAccounts, MAX_MAIN_ACCOUNTS_PER_PROFILE)) {
+      throw new Error(
+        `Maximum ${MAX_MAIN_ACCOUNTS_PER_PROFILE} Flow addresses allowed per profile.`
+      );
+    }
+
     const publickey = await keyringService.getCurrentPublicKey();
     const signAlgo = await keyringService.getCurrentSignAlgo();
     const accountKey = pubKeySignAlgoToAccountKey(publickey, signAlgo);
@@ -1528,10 +1584,11 @@ export class AccountManagement {
         const accountsCacheKeyUid = mainAccountsKeyUid(network, userId);
         const accountsCacheKeyPubkey = mainAccountsKey(network, pubkey);
         const existingMainAccounts = await getValidData<MainAccount[]>(accountsCacheKeyUid);
+        const normalizedAddress = address.toLowerCase();
 
         if (existingMainAccounts && Array.isArray(existingMainAccounts)) {
           const updatedMainAccounts = existingMainAccounts.map((account) => {
-            if (account.address === address) {
+            if (account.address?.toLowerCase() === normalizedAddress) {
               return {
                 ...account,
                 name: name,
@@ -1539,35 +1596,45 @@ export class AccountManagement {
                 color: background,
               };
             }
-            if (
-              account.eoaAccount &&
-              isValidEthereumAddress(address) &&
-              account.eoaAccount.address === address
-            ) {
+            if (isValidEthereumAddress(address)) {
+              const updatedEoaAccount =
+                account.eoaAccount?.address?.toLowerCase() === normalizedAddress
+                  ? {
+                      ...account.eoaAccount,
+                      name,
+                      icon,
+                      color: background,
+                    }
+                  : account.eoaAccount;
+
+              const updatedEoaAccounts = Array.isArray(account.eoaAccounts)
+                ? account.eoaAccounts.map((eoa) =>
+                    eoa?.address?.toLowerCase() === normalizedAddress
+                      ? {
+                          ...eoa,
+                          name,
+                          icon,
+                          color: background,
+                        }
+                      : eoa
+                  )
+                : account.eoaAccounts;
+
+              const updatedEvmAccount =
+                account.evmAccount?.address?.toLowerCase() === normalizedAddress
+                  ? {
+                      ...account.evmAccount,
+                      name,
+                      icon,
+                      color: background,
+                    }
+                  : account.evmAccount;
+
               return {
                 ...account,
-                eoaAccount: {
-                  ...account.eoaAccount,
-                  name: name,
-                  icon: icon,
-                  color: background,
-                },
-              };
-            }
-            //Update evmAccount if the address is a valid EVM address
-            if (
-              account.evmAccount &&
-              isValidEthereumAddress(address) &&
-              account.evmAccount.address === address
-            ) {
-              return {
-                ...account,
-                evmAccount: {
-                  ...account.evmAccount,
-                  name: name,
-                  icon: icon,
-                  color: background,
-                },
+                eoaAccount: updatedEoaAccount,
+                eoaAccounts: updatedEoaAccounts,
+                evmAccount: updatedEvmAccount,
               };
             }
             return account;

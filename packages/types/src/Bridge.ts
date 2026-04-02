@@ -98,7 +98,10 @@ export interface InitialProps {
     | 'onboarding'
     | 'receive'
     | 'activity'
-    | 'migration';
+    | 'keystore-migration'
+    | 'migration'
+    | 'whatsNew'
+    | 'claimTokens';
   sendToConfig?: string;
 }
 
@@ -107,6 +110,7 @@ export interface EnvironmentVariables {
   GO_API_URL: string;
   INSTABUG_TOKEN: string;
   MIXPANEL_TOKEN?: string; // Optional - Android provides this, extension uses env var
+  CADENCE_INBOX: boolean;
 }
 
 export interface Currency {

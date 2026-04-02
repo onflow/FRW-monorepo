@@ -1599,6 +1599,10 @@
 		4E815E6C2D7AE2AE00082EE1 /* PrivateKeyWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E815E6A2D7AE2AE00082EE1 /* PrivateKeyWarning.swift */; };
 		4E815E6E2D7AE4C900082EE1 /* CopyButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E815E6D2D7AE4C900082EE1 /* CopyButton.swift */; };
 		4E815E6F2D7AE4C900082EE1 /* CopyButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E815E6D2D7AE4C900082EE1 /* CopyButton.swift */; };
+		4E8174662F6249BB003A8D77 /* WalletManager+Inbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8174652F6249BB003A8D77 /* WalletManager+Inbox.swift */; };
+		4E8174672F6249BB003A8D77 /* WalletManager+Inbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8174652F6249BB003A8D77 /* WalletManager+Inbox.swift */; };
+		4E81746A2F63A89B003A8D77 /* AddAccountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8174692F63A89B003A8D77 /* AddAccountSheet.swift */; };
+		4E81746B2F63A89B003A8D77 /* AddAccountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8174692F63A89B003A8D77 /* AddAccountSheet.swift */; };
 		4E82C01F2B2AF85800A61439 /* BackupUploadTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E82C01E2B2AF85800A61439 /* BackupUploadTimeline.swift */; };
 		4E82C0202B2AF85800A61439 /* BackupUploadTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E82C01E2B2AF85800A61439 /* BackupUploadTimeline.swift */; };
 		4E8394442A7153EB00DFC422 /* CalloutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8394432A7153EB00DFC422 /* CalloutView.swift */; };
@@ -1826,6 +1830,12 @@
 		4EC758422EEAC17F00B9012E /* TurboModule+Onboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC758402EEAC16F00B9012E /* TurboModule+Onboard.swift */; };
 		4EC8675D2EBAF25400AFD76D /* AuthnAccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC8675C2EBAF25400AFD76D /* AuthnAccountsView.swift */; };
 		4EC8675E2EBAF25400AFD76D /* AuthnAccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC8675C2EBAF25400AFD76D /* AuthnAccountsView.swift */; };
+		4EC968492F5588590057C0EC /* FRWAPI+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC968482F5588590057C0EC /* FRWAPI+App.swift */; };
+		4EC9684A2F5588590057C0EC /* FRWAPI+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC968482F5588590057C0EC /* FRWAPI+App.swift */; };
+		4EC9684C2F5589F70057C0EC /* WhatsNewService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC9684B2F5589F70057C0EC /* WhatsNewService.swift */; };
+		4EC9684D2F5589F70057C0EC /* WhatsNewService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC9684B2F5589F70057C0EC /* WhatsNewService.swift */; };
+		4EC9684F2F558CAA0057C0EC /* AppDelegate+WhatsNew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC9684E2F558CAA0057C0EC /* AppDelegate+WhatsNew.swift */; };
+		4EC968502F558CAA0057C0EC /* AppDelegate+WhatsNew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC9684E2F558CAA0057C0EC /* AppDelegate+WhatsNew.swift */; };
 		4EC97652286A07060066811D /* NFTCollectionEnableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC97651286A07060066811D /* NFTCollectionEnableView.swift */; };
 		4EC97653286A07060066811D /* NFTCollectionEnableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC97651286A07060066811D /* NFTCollectionEnableView.swift */; };
 		4ECA7E66284371CA0039A210 /* NFTBlurImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ECA7E64284371CA0039A210 /* NFTBlurImageView.swift */; };
@@ -3222,6 +3232,8 @@
 		4E7DD2602858E74600052B21 /* FRWAPI+NFT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FRWAPI+NFT.swift"; sourceTree = "<group>"; };
 		4E815E6A2D7AE2AE00082EE1 /* PrivateKeyWarning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateKeyWarning.swift; sourceTree = "<group>"; };
 		4E815E6D2D7AE4C900082EE1 /* CopyButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyButton.swift; sourceTree = "<group>"; };
+		4E8174652F6249BB003A8D77 /* WalletManager+Inbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalletManager+Inbox.swift"; sourceTree = "<group>"; };
+		4E8174692F63A89B003A8D77 /* AddAccountSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAccountSheet.swift; sourceTree = "<group>"; };
 		4E82C01E2B2AF85800A61439 /* BackupUploadTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupUploadTimeline.swift; sourceTree = "<group>"; };
 		4E8394432A7153EB00DFC422 /* CalloutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalloutView.swift; sourceTree = "<group>"; };
 		4E8866122DBF718A0031E242 /* FRWAPI+Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FRWAPI+Token.swift"; sourceTree = "<group>"; };
@@ -3345,6 +3357,9 @@
 		4EC626082AE8A28100318720 /* UUIDManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UUIDManager.swift; sourceTree = "<group>"; };
 		4EC758402EEAC16F00B9012E /* TurboModule+Onboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TurboModule+Onboard.swift"; sourceTree = "<group>"; };
 		4EC8675C2EBAF25400AFD76D /* AuthnAccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthnAccountsView.swift; sourceTree = "<group>"; };
+		4EC968482F5588590057C0EC /* FRWAPI+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FRWAPI+App.swift"; sourceTree = "<group>"; };
+		4EC9684B2F5589F70057C0EC /* WhatsNewService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsNewService.swift; sourceTree = "<group>"; };
+		4EC9684E2F558CAA0057C0EC /* AppDelegate+WhatsNew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+WhatsNew.swift"; sourceTree = "<group>"; };
 		4EC97651286A07060066811D /* NFTCollectionEnableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFTCollectionEnableView.swift; sourceTree = "<group>"; };
 		4ECA7E64284371CA0039A210 /* NFTBlurImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFTBlurImageView.swift; sourceTree = "<group>"; };
 		4ECB995E285B738C00F59852 /* OffsetScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OffsetScrollView.swift; sourceTree = "<group>"; };
@@ -3902,6 +3917,7 @@
 				4E9621D72B9850CF006859AD /* FRWAPI+Cadence.swift */,
 				4EFBB2BF2BDF49AB00359FAA /* FRWAPI+EVM.swift */,
 				4ED483122DA5141C00AA23E6 /* FRWAPI+Blocklist.swift */,
+				4EC968482F5588590057C0EC /* FRWAPI+App.swift */,
 			);
 			path = FRW;
 			sourceTree = "<group>";
@@ -4742,6 +4758,7 @@
 				154B88C1276A1EA300780E93 /* Env */,
 				15EC9DF1274FD1FD00F70CD9 /* FRW_App.swift */,
 				154B88852765F33400780E93 /* AppDelegate.swift */,
+				4EC9684E2F558CAA0057C0EC /* AppDelegate+WhatsNew.swift */,
 				156AC7AE2780427900ED5E3E /* FRW-Bridging-Header.h */,
 				4E6ED4902BAA79F6009906A5 /* PrivacyInfo.xcprivacy */,
 				154E314C2DA3DAB6008A495F /* Container.swift */,
@@ -5902,6 +5919,7 @@
 				4E8A96572B67143D007C95E8 /* AccountKeyManager.swift */,
 				4E9D8F0A2BF5E3AD00E11CC7 /* NetworkProvider.swift */,
 				4E05BFC22DCCF29000659097 /* InstallInfoManager.swift */,
+				4EC9684B2F5589F70057C0EC /* WhatsNewService.swift */,
 			);
 			path = Manager;
 			sourceTree = "<group>";
@@ -5957,6 +5975,7 @@
 				4EE282A42EAF3AAA0070A3E4 /* WalletManager+EOA.swift */,
 				4E25FBFF2EBDF7B500288D28 /* WalletManager+WalletAccount.swift */,
 				4E2C2B042ECABA4D004C94EA /* WalletManager+COA.swift */,
+				4E8174652F6249BB003A8D77 /* WalletManager+Inbox.swift */,
 			);
 			path = Wallet;
 			sourceTree = "<group>";
@@ -6415,6 +6434,14 @@
 			path = ViewModel;
 			sourceTree = "<group>";
 		};
+		4E8174682F63A85E003A8D77 /* AddAccount */ = {
+			isa = PBXGroup;
+			children = (
+				4E8174692F63A89B003A8D77 /* AddAccountSheet.swift */,
+			);
+			path = AddAccount;
+			sourceTree = "<group>";
+		};
 		4E8DD9FA282E505B0016A931 /* Tools */ = {
 			isa = PBXGroup;
 			children = (
@@ -6823,6 +6850,7 @@
 		6A12173629659F4A00BA0C3B /* SideMenu */ = {
 			isa = PBXGroup;
 			children = (
+				4E8174682F63A85E003A8D77 /* AddAccount */,
 				6A12173729659F5E00BA0C3B /* SideMenuView.swift */,
 				15B302B12D9AD486007C792C /* SideMenuViewModel.swift */,
 				4E6ED48D2BA96DBB009906A5 /* ChildAccountSideCell.swift */,
@@ -8430,6 +8458,7 @@
 				6AEDD60E2A429E22008BC5CD /* AccountSettingView.swift in Sources */,
 				6A164F742845F1CB0026B31E /* EnvironmentValues+IndexBarInsets.swift in Sources */,
 				4EB2C3072DC0D57700E79FC5 /* FTV3Response.swift in Sources */,
+				4EC9684A2F5588590057C0EC /* FRWAPI+App.swift in Sources */,
 				15DC20CD27819C56000B187A /* VNavigationLink.swift in Sources */,
 				15ADAE2B28F51EBB0014B722 /* SymmetricEncryption.swift in Sources */,
 				15DFD34C2CE197F9004B0DB8 /* AppExternalLinks.swift in Sources */,
@@ -8558,6 +8587,7 @@
 				153749222E26FDD60040E3F8 /* SPLocale.swift in Sources */,
 				153749232E26FDD60040E3F8 /* UISliderExtension.swift in Sources */,
 				153749242E26FDD60040E3F8 /* UIGestureRecognizerExtension.swift in Sources */,
+				4EC9684F2F558CAA0057C0EC /* AppDelegate+WhatsNew.swift in Sources */,
 				153749252E26FDD60040E3F8 /* UIBezierPathExtension.swift in Sources */,
 				153749262E26FDD60040E3F8 /* SPTableView.swift in Sources */,
 				153749272E26FDD60040E3F8 /* UITableViewExtension.swift in Sources */,
@@ -8843,6 +8873,7 @@
 				6A7F6515289A85B2007188DC /* VerifyPinViewModel.swift in Sources */,
 				4EEEF0722D05FE66008393E9 /* EventTrack+Dev.swift in Sources */,
 				4E77CE092ECC993800C2C628 /* AccountStyle.swift in Sources */,
+				4EC9684D2F5589F70057C0EC /* WhatsNewService.swift in Sources */,
 				4E4A6B6B2CA6E20300231A85 /* SeedPhrase+Add.swift in Sources */,
 				154B8907276A1EEB00780E93 /* View.swift in Sources */,
 				4E815E6E2D7AE4C900082EE1 /* CopyButton.swift in Sources */,
@@ -9185,6 +9216,7 @@
 				4E5F2F232C1AD232008589C4 /* MoveAssetsAction.swift in Sources */,
 				15DC21E127819C56000B187A /* StateOpacities_D.swift in Sources */,
 				6A6BE742288805140012588F /* GoogleDriveAPI.swift in Sources */,
+				4E81746B2F63A89B003A8D77 /* AddAccountSheet.swift in Sources */,
 				15DC21B927819C56000B187A /* View.ConditionalViewModifiers.swift in Sources */,
 				6A6BD9D9287D1726009FA262 /* WalletSendAmountView.swift in Sources */,
 				15D574CD27781D2000045E79 /* LLTextField.swift in Sources */,
@@ -9239,6 +9271,7 @@
 				4E33F7EC2E432BF100B3D62F /* RouteMap+React.swift in Sources */,
 				6A3AD5CA291D4F9B00C30D57 /* StakingListView.swift in Sources */,
 				15B302B52D9AD51A007C792C /* SideContainerView.swift in Sources */,
+				4E8174662F6249BB003A8D77 /* WalletManager+Inbox.swift in Sources */,
 				6A95CFB228B7258100267F86 /* NFTTransferView.swift in Sources */,
 				15DC207727819C56000B187A /* VText.swift in Sources */,
 				4E9059302B1792F10029FC66 /* SyncAddDeviceView.swift in Sources */,
@@ -9535,6 +9568,7 @@
 				15C58AB82868A4EE00BD4FC6 /* EnvironmentValues+IndexBarInsets.swift in Sources */,
 				15C58AB92868A4EE00BD4FC6 /* VNavigationLink.swift in Sources */,
 				4EB2C3082DC0D57700E79FC5 /* FTV3Response.swift in Sources */,
+				4EC968492F5588590057C0EC /* FRWAPI+App.swift in Sources */,
 				15ADAE2A28F51EBB0014B722 /* SymmetricEncryption.swift in Sources */,
 				15DFD34D2CE197F9004B0DB8 /* AppExternalLinks.swift in Sources */,
 				4E31380A2C658FB2003A73E5 /* CappedCollection.swift in Sources */,
@@ -9663,6 +9697,7 @@
 				1537497A2E26FDD60040E3F8 /* SPLocale.swift in Sources */,
 				1537497B2E26FDD60040E3F8 /* UISliderExtension.swift in Sources */,
 				1537497C2E26FDD60040E3F8 /* UIGestureRecognizerExtension.swift in Sources */,
+				4EC968502F558CAA0057C0EC /* AppDelegate+WhatsNew.swift in Sources */,
 				1537497D2E26FDD60040E3F8 /* UIBezierPathExtension.swift in Sources */,
 				1537497E2E26FDD60040E3F8 /* SPTableView.swift in Sources */,
 				1537497F2E26FDD60040E3F8 /* UITableViewExtension.swift in Sources */,
@@ -9948,6 +9983,7 @@
 				6AE69E9628C085F0004D4709 /* BrowserActionBarView.swift in Sources */,
 				4EEEF0732D05FE66008393E9 /* EventTrack+Dev.swift in Sources */,
 				4E77CE0A2ECC993800C2C628 /* AccountStyle.swift in Sources */,
+				4EC9684C2F5589F70057C0EC /* WhatsNewService.swift in Sources */,
 				4E4A6B6A2CA6E20300231A85 /* SeedPhrase+Add.swift in Sources */,
 				15C58B3F2868A4EE00BD4FC6 /* SnapAlignment.swift in Sources */,
 				4E815E6F2D7AE4C900082EE1 /* CopyButton.swift in Sources */,
@@ -10290,6 +10326,7 @@
 				6A6BE741288805130012588F /* GoogleDriveAPI.swift in Sources */,
 				4E5F2F222C1AD232008589C4 /* MoveAssetsAction.swift in Sources */,
 				15C58BCF2868A4EE00BD4FC6 /* View.ConditionalViewModifiers.swift in Sources */,
+				4E81746A2F63A89B003A8D77 /* AddAccountSheet.swift in Sources */,
 				6A6BD9D8287D1726009FA262 /* WalletSendAmountView.swift in Sources */,
 				15C58BD02868A4EE00BD4FC6 /* LLTextField.swift in Sources */,
 				15C58BD12868A4EE00BD4FC6 /* VSegmentedPickerState.swift in Sources */,
@@ -10344,6 +10381,7 @@
 				4E33F7ED2E432BF100B3D62F /* RouteMap+React.swift in Sources */,
 				6A3AD5C9291D4F9B00C30D57 /* StakingListView.swift in Sources */,
 				6A95CFB128B7258100267F86 /* NFTTransferView.swift in Sources */,
+				4E8174672F6249BB003A8D77 /* WalletManager+Inbox.swift in Sources */,
 				15B302B62D9AD51A007C792C /* SideContainerView.swift in Sources */,
 				15C58BDE2868A4EE00BD4FC6 /* VText.swift in Sources */,
 				4E90592F2B1792F10029FC66 /* SyncAddDeviceView.swift in Sources */,
@@ -10964,7 +11002,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD = "";
 				LDPLUSPLUS = "";
-				MARKETING_VERSION = 3.1.2;
+				MARKETING_VERSION = 3.1.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -11033,7 +11071,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD = "";
 				LDPLUSPLUS = "";
-				MARKETING_VERSION = 3.1.2;
+				MARKETING_VERSION = 3.1.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = (
@@ -11324,7 +11362,7 @@
 			repositoryURL = "https://github.com/onflow/flow-wallet-kit.git";
 			requirement = {
 				kind = revision;
-				revision = 520afb50d81dada659f1becada7451b3e1b8102a;
+				revision = 9c8f70fc922736f7040f57740344c569b419306c;
 			};
 		};
 		156AC7A527802F4F00ED5E3E /* XCRemoteSwiftPackageReference "google-api-objectivec-client-for-rest" */ = {

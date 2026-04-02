@@ -280,6 +280,10 @@ export class TopShotNftStrategy implements TransferStrategy {
       ids: ids.toString(),
     });
 
+    if (_helpers?.featureFlags?.cadence_inbox) {
+      return await this.cadenceService.batchSendNbaNftV4(flowIdentifier, receiver, ids);
+    }
+
     return await this.cadenceService.batchSendNbaNftV3(flowIdentifier, receiver, ids);
   }
 }
@@ -310,6 +314,9 @@ export class FlowToFlowNftStrategy implements TransferStrategy {
       ids: ids.toString(),
     });
 
+    if (_helpers?.featureFlags?.cadence_inbox) {
+      return await this.cadenceService.batchSendNftV4(flowIdentifier, receiver, ids);
+    }
     return await this.cadenceService.batchSendNftV3(flowIdentifier, receiver, ids);
   }
 }
