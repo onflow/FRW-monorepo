@@ -10,9 +10,25 @@ export interface NewKeyInfo {
 
 import type { AccountKeySignature } from './Bridge';
 
+export interface PendingRotationState {
+  address: string;
+  publicKey: string;
+  /** Optional for compatibility; avoid persisting this unless absolutely required. */
+  seedphrase?: string;
+  timestamp: number;
+  txId?: string;
+  phase: 'pre-tx' | 'key-added' | 'key-verified' | 'api-registered' | 'tx-confirmed';
+}
+
 export interface KeyRotationDependencies {
   createSeedKey: (strength: number) => Promise<NewKeyInfo>;
   saveNewKey: (key: NewKeyInfo) => Promise<void>;
+  /** Optional: Persist a pending rotation marker for crash recovery */
+  savePendingRotation?: (state: PendingRotationState) => Promise<void>;
+  /** Optional: Retrieve the pending rotation marker */
+  getPendingRotation?: (address: string) => Promise<PendingRotationState | null>;
+  /** Optional: Clear the pending rotation marker after successful completion */
+  clearPendingRotation?: (address: string) => Promise<void>;
   removeOldKey: (address: string, publicKey: string) => Promise<void>;
   signRotationRequest: (address: string, signatureData: string) => Promise<AccountKeySignature>;
   /** Optional: Custom logger implementation */
@@ -52,6 +68,7 @@ export interface KeyRotationServiceResult {
   txId: string;
   addedKey: KeyRotationAccountKey;
   revokedKeyIndexes: number[];
+  verificationPassed: boolean;
 }
 
 export enum RotationErrorType {
@@ -60,6 +77,7 @@ export enum RotationErrorType {
   SEED_GENERATION_FAILED = 'SEED_GENERATION_FAILED',
   KEY_DERIVATION_FAILED = 'KEY_DERIVATION_FAILED',
   CADENCE_TRANSACTION_FAILED = 'CADENCE_TRANSACTION_FAILED',
+  KEY_VERIFICATION_FAILED = 'KEY_VERIFICATION_FAILED',
   STORAGE_UPDATE_FAILED = 'STORAGE_UPDATE_FAILED',
   UNKNOWN = 'UNKNOWN',
 }

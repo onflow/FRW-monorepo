@@ -866,6 +866,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   // Temporary storage for password during key rotation
   private keyRotationPassword: string | null = null;
+  // Temporary storage for the new key during the 3-phase key rotation
+  private keyRotationPendingKey: NewKeyInfo | null = null;
 
   setKeyRotationPassword(password: string | null): void {
     this.keyRotationPassword = password;
@@ -873,9 +875,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   async saveNewKey(key: NewKeyInfo): Promise<void> {
     // The new key info is already stored in component state (via handleTipContinue)
-    // and will be used directly in handlePasswordSubmit to login with the new mnemonic
-    // No need to store it here - just a no-op
-    this.log('debug', 'saveNewKey: New key info will be used in UI component');
+    // and will be used directly in handlePasswordSubmit to login with the new mnemonic.
+    // However, KeyRotationService (Phase 2) needs it to verify the new key, so we store it temporarily here.
+    this.keyRotationPendingKey = key;
+    this.log('debug', 'saveNewKey: New key info saved temporarily for Phase 2 verification');
     return Promise.resolve();
   }
 
@@ -899,11 +902,26 @@ class ExtensionPlatformImpl implements PlatformSpec {
       throw new Error('Wallet controller not available - cannot sign rotation request');
     }
 
-    // Route signing to wallet controller which runs in background context
-    // where keyring service is properly booted and unlocked
-    // The wallet controller will get the public key internally from the keyring service
-    // We pass an empty string for publicKey since the wallet controller will get it from keyring
-    return await this.walletController.signRotationRequest(address, signatureData);
+    // Only Phase 2 verification payloads should use the pending NEW key.
+    // API submit signing must continue to use the currently active key.
+    const isVerifyPayload = signatureData.startsWith('key-rotation-verify:');
+    const pendingKey = isVerifyPayload ? this.keyRotationPendingKey : null;
+
+    try {
+      const signature = await this.walletController.signRotationRequest(
+        address,
+        signatureData,
+        pendingKey
+      );
+
+      return signature;
+    } finally {
+      // Pending key is a one-shot bridge value for Phase 2 verification.
+      // Always clear it after a verify attempt (success or failure).
+      if (isVerifyPayload) {
+        this.keyRotationPendingKey = null;
+      }
+    }
   }
 
   getKeyRotationDependencies(): KeyRotationDependencies {

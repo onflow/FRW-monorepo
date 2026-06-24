@@ -1,7 +1,7 @@
 import Luciq from '@luciq/react-native';
 import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
-import type { AccountKeySignature, NewKeyInfo } from '@onflow/frw-types';
+import type { AccountKeySignature, NewKeyInfo, PendingRotationState } from '@onflow/frw-types';
 import type {
   CreateAccountResponse,
   Currency,
@@ -308,6 +308,18 @@ class PlatformImpl implements PlatformSpec {
 
   removeOldKey(address: string, publicKey: string): Promise<void> {
     return NativeFRWBridge.removeOldKey(address, publicKey);
+  }
+
+  savePendingRotation(state: PendingRotationState): Promise<void> {
+    return NativeFRWBridge.savePendingRotation(state);
+  }
+
+  getPendingRotation(address: string): Promise<PendingRotationState | null> {
+    return NativeFRWBridge.getPendingRotation(address);
+  }
+
+  clearPendingRotation(address: string): Promise<void> {
+    return NativeFRWBridge.clearPendingRotation(address);
   }
 
   signRotationRequest(address: string, signatureData: string): Promise<AccountKeySignature> {

@@ -52,6 +52,15 @@ interface AccountKeySignature {
   weight?: number;
 }
 
+interface PendingRotationState {
+  address: string;
+  publicKey: string;
+  seedphrase: string;
+  timestamp: number;
+  txId?: string;
+  phase: 'pre-tx' | 'key-added' | 'key-verified' | 'api-registered' | 'tx-confirmed';
+}
+
 interface NewKeyInfo {
   seedphrase: string;
   flowKey: AccountKey;
@@ -194,6 +203,9 @@ export interface Spec extends TurboModule {
   createSeedKey(strength: number): Promise<NewKeyInfo>;
   saveNewKey(key: NewKeyInfo): Promise<void>;
   removeOldKey(address: string, publicKey: string): Promise<void>;
+  savePendingRotation(state: PendingRotationState): Promise<void>;
+  getPendingRotation(address: string): Promise<PendingRotationState | null>;
+  clearPendingRotation(address: string): Promise<void>;
   signRotationRequest(address: string, signatureData: string): Promise<AccountKeySignature>;
 
   // Onboarding methods

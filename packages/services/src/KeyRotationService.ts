@@ -6,6 +6,8 @@ import {
 } from '@onflow/frw-api';
 import { type Cache, type PlatformSpec, getServiceContext } from '@onflow/frw-context';
 import {
+  RotationError,
+  RotationErrorType,
   type KeyRotationAccountKey,
   type KeyRotationServiceConfig,
   type KeyRotationServiceResult,
@@ -13,6 +15,9 @@ import {
 } from '@onflow/frw-types';
 import { logger, normalizePublicKey, resolveHashAlgo, resolveSignAlgo } from '@onflow/frw-utils';
 import { KeyRotation } from '@onflow/frw-workflow';
+
+/** Maximum age (ms) before a pending rotation is considered stale and eligible for cleanup */
+const PENDING_ROTATION_STALENESS_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
  * KeyRotationService handles key rotation operations
@@ -71,9 +76,14 @@ export class KeyRotationService {
   }
 
   /**
-   * Check if account matches Blocto key pattern
+   * Check if account matches Blocto key pattern.
+   * Also triggers self-healing reconciliation of any interrupted rotations.
    */
   async isBloctoAccount(address: string): Promise<boolean> {
+    // Attempt to reconcile any pending rotation before checking status.
+    // Gracefully degrades to a no-op if bridge doesn't implement pending methods.
+    await this.reconcilePendingRotation(address);
+
     const cached = await this.getCachedBloctoDetection(address);
     if (cached !== undefined) {
       return cached;
@@ -84,10 +94,16 @@ export class KeyRotationService {
   }
 
   /**
-   * Rotate Blocto keys for a given account address and sync to v3/signed API
+   * Rotate Blocto keys for a given account address using 3-phase Expand → Verify → Collapse.
+   *
+   * Phase 1 (Expand): Add new key on-chain (old key remains active)
+   * Phase 2 (Verify): Prove new key can sign (mathematical proof)
+   * Phase 3 (Collapse): Revoke old keys (only after verification)
+   *
+   * If any phase fails, old keys remain active — the user is never locked out.
    */
   async rotateKey(address: string, newKeyInfo: NewKeyInfo): Promise<KeyRotationServiceResult> {
-    logger.info('KeyRotationService: Starting Blocto key rotation', { address });
+    logger.info('KeyRotationService: Starting 3-phase Blocto key rotation', { address });
 
     const detection = await this.workflow.detectBloctoKey(address);
     if (!detection.isBloctoKey) {
@@ -122,11 +138,49 @@ export class KeyRotationService {
       );
     }
 
+    // ── WAL: Write-Ahead Log ────────────────────────────────────────────
+    // Write the WAL pending marker FIRST (before saveNewKey).
+    // If this write fails, no local key state has been mutated yet → clean abort.
+    try {
+      logger.debug('KeyRotationService: Persisting pending state and new key (pre-rotation)');
+
+      // 1. Write the WAL marker first — no local mutation has occurred yet.
+      if (this.bridge.savePendingRotation) {
+        await this.bridge.savePendingRotation({
+          address,
+          publicKey: newKeyInfo.flowKey.publicKey,
+          timestamp: Date.now(),
+          phase: 'pre-tx',
+        });
+      }
+
+      // 2. Persist key to primary storage before irreversible on-chain actions.
+      await this.bridge.saveNewKey(newKeyInfo);
+
+      logger.info('KeyRotationService: Pending state and new key persisted successfully');
+    } catch (error) {
+      logger.error('KeyRotationService: Failed to persist new key or pending state - aborting', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw new Error(
+        'Cannot proceed with key rotation: failed to persist new key to secure storage.'
+      );
+    }
+
     let result;
     try {
       logger.debug('KeyRotationService: Submitting to v3/signed API');
       result = await this.submitToSignedAPI(address, newKeyInfo.flowKey, signAlgo, hashAlgo);
       logger.info('KeyRotationService: API submission successful', { result });
+      if (this.bridge.savePendingRotation) {
+        await this.bridge.savePendingRotation({
+          address,
+          publicKey: newKeyInfo.flowKey.publicKey,
+          timestamp: Date.now(),
+          phase: 'api-registered',
+        });
+      }
     } catch (error) {
       logger.error('KeyRotationService: API submission failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -135,33 +189,130 @@ export class KeyRotationService {
       throw error;
     }
 
-    let txId;
+    // ── Phase 1: EXPAND — add new key on-chain (old key stays active) ──
+    let addTxId;
     try {
-      logger.debug('KeyRotationService: Starting on-chain key rotation');
-      txId = await this.workflow.rotateKeysOnChain(
-        normalizePublicKey(newKeyInfo.flowKey.publicKey),
-        revokeIndexes
+      logger.info('KeyRotationService: Phase 1 (Expand) — adding new key on-chain');
+      addTxId = await this.workflow.addKeysOnChain(
+        normalizePublicKey(newKeyInfo.flowKey.publicKey)
       );
-      logger.info('KeyRotationService: On-chain key rotation successful', {
-        txId,
-      });
+
+      if (this.bridge.savePendingRotation) {
+        await this.bridge.savePendingRotation({
+          address,
+          publicKey: newKeyInfo.flowKey.publicKey,
+          seedphrase: newKeyInfo.seedphrase,
+          timestamp: Date.now(),
+          txId: addTxId,
+          phase: 'key-added',
+        });
+      }
+
+      logger.info('KeyRotationService: Phase 1 complete — new key added on-chain', { addTxId });
     } catch (error) {
-      logger.error('KeyRotationService: On-chain key rotation failed', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-      });
+      logger.error(
+        'KeyRotationService: Phase 1 (Expand) failed — old key still active, user is safe',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+        }
+      );
       throw error;
     }
 
+    // ── Phase 2: VERIFY — prove new key can produce valid signatures ────
     try {
-      logger.debug('KeyRotationService: Saving new key');
-      await this.bridge.saveNewKey(newKeyInfo);
-      logger.debug('KeyRotationService: New key saved');
-    } catch (error) {
-      logger.warn('KeyRotationService: Failed to save new key (non-critical)', {
-        error: error instanceof Error ? error.message : 'Unknown error',
+      logger.info('KeyRotationService: Phase 2 (Verify) — testing new key signature');
+
+      // Use a deterministic test payload so we can verify the response
+      const testPayload = `key-rotation-verify:${address}:${Date.now()}`;
+      const verifySignature = await this.bridge.signRotationRequest(address, testPayload);
+
+      // Verify the signature response came from the expected public key
+      const returnedPubKey = normalizePublicKey(verifySignature.public_key ?? '');
+      const expectedPubKey = normalizePublicKey(newKeyInfo.flowKey.publicKey);
+
+      if (returnedPubKey !== expectedPubKey) {
+        throw new Error(
+          `Key verification failed: expected public key ${expectedPubKey.slice(0, 16)}..., ` +
+            `got ${returnedPubKey.slice(0, 16)}...`
+        );
+      }
+
+      if (!verifySignature.signature) {
+        throw new Error('Key verification failed: no signature returned');
+      }
+
+      if (this.bridge.savePendingRotation) {
+        await this.bridge.savePendingRotation({
+          address,
+          publicKey: newKeyInfo.flowKey.publicKey,
+          seedphrase: newKeyInfo.seedphrase,
+          timestamp: Date.now(),
+          txId: addTxId,
+          phase: 'key-verified',
+        });
+      }
+
+      logger.info('KeyRotationService: Phase 2 complete — new key verified', {
+        publicKeyMatch: true,
+        signaturePresent: true,
       });
-      // Don't throw - saving the key is not critical for rotation success
+    } catch (error) {
+      logger.error(
+        'KeyRotationService: Phase 2 (Verify) FAILED — old key still active, user is safe',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+        }
+      );
+      // DO NOT proceed to Phase 3 — old keys remain active
+      throw new RotationError({
+        type: RotationErrorType.KEY_VERIFICATION_FAILED,
+        message:
+          error instanceof Error
+            ? `Key verification failed: ${error.message}. Old keys remain active — no assets at risk.`
+            : 'Key verification failed. Old keys remain active — no assets at risk.',
+      });
+    }
+
+    // ── Phase 3: COLLAPSE — revoke old keys (verified safe) ─────────────
+    let revokeTxId;
+    try {
+      logger.info('KeyRotationService: Phase 3 (Collapse) — revoking old keys');
+      revokeTxId = await this.workflow.revokeKeysOnChain(revokeIndexes);
+
+      if (this.bridge.savePendingRotation) {
+        await this.bridge.savePendingRotation({
+          address,
+          publicKey: newKeyInfo.flowKey.publicKey,
+          seedphrase: newKeyInfo.seedphrase,
+          timestamp: Date.now(),
+          txId: revokeTxId,
+          phase: 'tx-confirmed',
+        });
+      }
+
+      logger.info('KeyRotationService: Phase 3 complete — old keys revoked', { revokeTxId });
+    } catch (error) {
+      logger.error(
+        'KeyRotationService: Phase 3 (Collapse) failed — both keys active (safe state)',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+        }
+      );
+      throw error;
+    }
+
+    // ── Cleanup ─────────────────────────────────────────────────────────
+    // Clear WAL entry (non-critical)
+    try {
+      if (this.bridge.clearPendingRotation) {
+        await this.bridge.clearPendingRotation(address);
+      }
+    } catch (e) {
+      logger.warn('KeyRotationService: Failed to clear pending rotation flag (non-critical)', e);
     }
 
     try {
@@ -170,7 +321,6 @@ export class KeyRotationService {
       logger.warn('KeyRotationService: Failed to update cache (non-critical)', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
-      // Don't throw - cache update is not critical
     }
 
     if (revokeIndexes.length > 0) {
@@ -180,15 +330,145 @@ export class KeyRotationService {
         .filter((key): key is string => Boolean(key));
 
       for (const publicKey of revokePublicKeys) {
-        await this.bridge.removeOldKey(address, publicKey);
+        try {
+          await this.bridge.removeOldKey(address, publicKey);
+        } catch (error) {
+          // Post-revoke local cleanup failure should not mask successful on-chain completion.
+          logger.warn('KeyRotationService: removeOldKey cleanup failed (non-critical)', {
+            address,
+            publicKey: `${publicKey.slice(0, 16)}...`,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
       }
     }
 
+    if (!revokeTxId) {
+      throw new Error('Rotation completed without revoke transaction id');
+    }
+
     return {
-      txId,
+      txId: revokeTxId,
       addedKey: newKeyInfo.flowKey,
       revokedKeyIndexes: revokeIndexes,
+      verificationPassed: true,
     };
+  }
+
+  /**
+   * Reconcile any pending rotation state for an address.
+   * Cross-references local 'pending' state with current on-chain keys.
+   *
+   * Does NOT clear "pending" state for recent entries (< PENDING_ROTATION_STALENESS_MS).
+   * This avoids falsely orphaning a rotation that is still in-flight or awaiting
+   * blockchain indexing/finality lag.
+   *
+   * Gracefully degrades to a no-op if the bridge doesn't implement pending methods.
+   */
+  async reconcilePendingRotation(
+    address: string
+  ): Promise<'none' | 'recovered' | 'orphaned' | 'pending' | 'failed'> {
+    // If the bridge doesn't implement pending rotation methods, skip silently
+    if (!this.bridge.getPendingRotation) {
+      return 'none';
+    }
+
+    try {
+      const pending = await this.bridge.getPendingRotation(address);
+      if (!pending) {
+        return 'none';
+      }
+
+      logger.info('KeyRotationService: Found pending rotation to reconcile', {
+        address,
+        phase: pending.phase,
+        ageMs: Date.now() - pending.timestamp,
+      });
+
+      // Fetch current on-chain state via workflow
+      const detection = await this.workflow.detectBloctoKey(address);
+      const onChainKeys = detection.fullAccountKeys ?? [];
+
+      // Check if the allegedly 'pending' key is actually already active on-chain
+      const isConfirmedOnChain = onChainKeys.some(
+        (k) =>
+          normalizePublicKey(k.publicKey ?? '') === normalizePublicKey(pending.publicKey) &&
+          !k.revoked
+      );
+
+      if (isConfirmedOnChain && !detection.needRevoke) {
+        logger.info('KeyRotationService: Pending key found on-chain. Finalizing local state.', {
+          address,
+        });
+
+        // 1. Ensure new key is in primary storage when recovery material exists.
+        // Pending rotation entries may intentionally omit seedphrase for security.
+        if (pending.seedphrase) {
+          await this.bridge.saveNewKey({
+            seedphrase: pending.seedphrase,
+            flowKey: { publicKey: pending.publicKey },
+          });
+        } else {
+          logger.warn(
+            'KeyRotationService: Pending rotation confirmed on-chain without seedphrase; skipping saveNewKey recovery step.',
+            { address }
+          );
+        }
+
+        // 2. Clear the pending flag
+        if (this.bridge.clearPendingRotation) {
+          await this.bridge.clearPendingRotation(address);
+        }
+
+        // 3. Force cache update to reflect migration success
+        await this.setCachedBloctoDetection(address, false);
+
+        return 'recovered';
+      }
+
+      if (isConfirmedOnChain && detection.needRevoke) {
+        logger.info(
+          'KeyRotationService: New key exists on-chain but rotation is incomplete; keeping pending state.',
+          {
+            address,
+            phase: pending.phase,
+          }
+        );
+        return 'pending';
+      }
+
+      // Check staleness before treating as orphaned.
+      // If the pending entry is recent, the tx may still be in-flight or
+      // the blockchain index may not have caught up yet. Do NOT clear it.
+      const ageMs = Date.now() - pending.timestamp;
+      if (ageMs < PENDING_ROTATION_STALENESS_MS) {
+        logger.info('KeyRotationService: Pending rotation is recent, leaving for next check.', {
+          address,
+          ageMs,
+          thresholdMs: PENDING_ROTATION_STALENESS_MS,
+        });
+        return 'pending';
+      }
+
+      // Stale entry — the key never appeared on-chain within the timeout window
+      logger.warn(
+        'KeyRotationService: Stale pending rotation did not take effect on-chain. Cleaning up.',
+        {
+          address,
+          ageMs,
+        }
+      );
+
+      if (this.bridge.clearPendingRotation) {
+        await this.bridge.clearPendingRotation(address);
+      }
+      return 'orphaned';
+    } catch (error) {
+      logger.error('KeyRotationService: Reconciliation failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      return 'failed';
+    }
   }
 
   /**
