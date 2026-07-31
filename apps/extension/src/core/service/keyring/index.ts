@@ -1398,6 +1398,10 @@ class KeyringService extends EventEmitter {
     await this.clearCurrentKeyring();
     await this.clearKeyringList();
     await this.clearVault();
+    // Also clear the booted ciphertext: after a full reset there is no vault left to verify a
+    // password against. Leaving it behind makes isBooted() return true forever and bricks
+    // new-account creation with a password the user no longer has (#1428).
+    this.store.updateState({ booted: '' });
   }
 
   /**
