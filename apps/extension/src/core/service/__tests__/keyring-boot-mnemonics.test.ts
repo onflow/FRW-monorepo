@@ -154,4 +154,36 @@ describe('Keyring Boot and Mnemonics Test', () => {
     const privateKeyTuple = await keyringService.getCurrentPrivateKeyTuple();
     expect(privateKeyTuple.SECP256K1.pk).toEqual(mockPrivateKey);
   });
+
+  it('resetKeyRing clears the booted state so a fresh password can be set (#1428)', async () => {
+    // Boot the service with a real encrypted vault, as an existing wallet would have
+    const encryptedBooted = await encryptor.encrypt(MOCK_PASSWORD, 'true');
+    const mockVaultData = [
+      {
+        type: 'HD Key Tree',
+        data: {
+          mnemonic: MOCK_MNEMONIC,
+          activeIndexes: [0],
+          derivationPath: FLOW_BIP44_PATH,
+          passphrase: '',
+        },
+      },
+    ];
+    const encryptedVaultData = await encryptor.encrypt(MOCK_PASSWORD, mockVaultData);
+    memoryStore.set(KEYRING_STATE_V2_KEY, {
+      booted: encryptedBooted,
+      vault: [{ id: 'testId1', encryptedData: encryptedVaultData }],
+      vaultVersion: 2,
+    });
+    await keyringService.loadKeyringStore();
+    expect(keyringService.isBooted()).toBe(true);
+
+    await keyringService.resetKeyRing();
+
+    // After a full reset, nothing may remain that requires the old password
+    expect(keyringService.isBooted()).toBe(false);
+    const persisted = memoryStore.get('keyringState');
+    expect(persisted.booted).toBeFalsy();
+    expect(persisted.vault).toEqual([]);
+  });
 });

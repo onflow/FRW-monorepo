@@ -517,8 +517,6 @@ export class WalletController extends BaseController {
     // This clears local storage but a lot is still kept in memory
     await clearLocalData();
 
-    // Note that this does not clear the 'booted' state
-    // We should fix this, but it would involve making changes to keyringService
     await keyringService.resetKeyRing();
     await keyringService.lock();
 

@@ -1186,6 +1186,12 @@
   "Explorers_Collectors_and_Gamers": {
     "message": "探検家、コレクター、ゲーマー"
   },
+  "Existing_Wallet_Found": {
+    "message": "既存のウォレットが見つかりました"
+  },
+  "Existing_Wallet_Found_Description": {
+    "message": "このデバイスにはすでにウォレットが設定されています。新しいアカウントを作成するには、まず既存のウォレットのロックを解除してください。パスワードがわからない場合は、ウォレットをリセットしてやり直してください。"
+  },
   "Keystore": {
     "message": "キーストア"
   },
