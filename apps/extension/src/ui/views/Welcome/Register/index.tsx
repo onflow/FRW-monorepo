@@ -84,9 +84,16 @@ const Register = () => {
 
   useEffect(() => {
     const checkWalletStatus = async () => {
-      const isBooted = await usewallet.isBooted();
-      dispatch({ type: 'SET_IS_ADD_WALLET', payload: isBooted });
-      setIsExistingWalletLocked(isBooted && !(await usewallet.isUnlocked()));
+      try {
+        const isBooted = await usewallet.isBooted();
+        dispatch({ type: 'SET_IS_ADD_WALLET', payload: isBooted });
+        setIsExistingWalletLocked(isBooted && !(await usewallet.isUnlocked()));
+      } catch (error) {
+        // If the background isn't ready, fall back to the registration steps (previous behavior)
+        // rather than spinning forever.
+        consoleError('Failed to check wallet status:', error);
+        setIsExistingWalletLocked(false);
+      }
     };
 
     checkWalletStatus();
