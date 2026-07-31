@@ -1,7 +1,7 @@
-import { Box } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { generateRandomUsername } from '@onflow/frw-utils';
 import * as bip39 from 'bip39';
-import React, { useCallback, useEffect, useReducer } from 'react';
+import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import {
@@ -11,6 +11,8 @@ import {
   type StepType,
   STEPS,
 } from '@/reducers';
+import { consoleError } from '@/shared/utils';
+import { LLSpinner } from '@/ui/components';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
@@ -27,6 +29,45 @@ export const initRegisterState = (initialState: RegisterState): RegisterState =>
   };
 };
 
+// Shown when a vault already exists on this device but the wallet is locked. In that state the
+// create-account flow can never succeed: any new password fails verification against the existing
+// vault and the user just sees a confusing 'Incorrect password' (#1428).
+const ExistingWalletNotice = ({
+  onUnlock,
+  onReset,
+}: {
+  onUnlock: () => void;
+  onReset: () => void;
+}) => (
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      alignItems: 'center',
+      textAlign: 'center',
+      px: '36px',
+      py: '48px',
+    }}
+  >
+    <Typography variant="h4">{chrome.i18n.getMessage('Existing_Wallet_Found')}</Typography>
+    <Typography variant="body1" color="text.secondary">
+      {chrome.i18n.getMessage('Existing_Wallet_Found_Description')}
+    </Typography>
+    <Button variant="contained" color="primary" onClick={onUnlock} fullWidth>
+      {chrome.i18n.getMessage('Unlock_Wallet')}
+    </Button>
+    <Button variant="outlined" color="error" onClick={onReset} fullWidth>
+      {chrome.i18n.getMessage('Reset_my_wallet')}
+    </Button>
+    <Typography variant="body2" color="text.secondary">
+      {chrome.i18n.getMessage(
+        'This_will_remove_any_existing_wallets_and_replace_them_with_new_wallets_Make_sure_you_have_your_recovery_phrase_backed_up'
+      )}
+    </Typography>
+  </Box>
+);
+
 const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,10 +77,16 @@ const Register = () => {
   const [state, dispatch] = useReducer(registerReducer, INITIAL_REGISTER_STATE, initRegisterState);
   const { activeTab, username, password, mnemonic, isAddWallet, nickname } = state;
 
+  // undefined = still checking; true = a booted vault exists and the wallet is locked
+  const [isExistingWalletLocked, setIsExistingWalletLocked] = useState<boolean | undefined>(
+    undefined
+  );
+
   useEffect(() => {
     const checkWalletStatus = async () => {
       const isBooted = await usewallet.isBooted();
       dispatch({ type: 'SET_IS_ADD_WALLET', payload: isBooted });
+      setIsExistingWalletLocked(isBooted && !(await usewallet.isUnlocked()));
     };
 
     checkWalletStatus();
@@ -93,11 +140,8 @@ const Register = () => {
         // But after all this, we haven't updated loggedInAccounts so if we close the window before the account refreshes, we won't be able to login
         dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.BACKUP });
       } catch (error) {
-        console.error('Error during registration/import:', error);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-        // You might want to add error state management here
-        // For now, we'll let the error bubble up to be handled by the SetPassword component
+        consoleError('Error during registration/import:', error);
+        // Let the error bubble up to be handled by the SetPassword component
         throw error;
       }
     },
@@ -135,38 +179,49 @@ const Register = () => {
       showConfetti={activeTab === STEPS.ALL_SET}
       showRegisterHeader={true}
     >
-      <Box>
-        {activeTab === STEPS.RECOVERY && (
-          <RecoveryPhrase
-            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.REPEAT })}
-            mnemonic={mnemonic}
-          />
-        )}
+      {isExistingWalletLocked === true && !location.state?.isFromImport ? (
+        <ExistingWalletNotice
+          onUnlock={() => navigate('/unlock')}
+          onReset={() => navigate('/forgot')}
+        />
+      ) : isExistingWalletLocked === undefined && !location.state?.isFromImport ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: '48px' }}>
+          <LLSpinner />
+        </Box>
+      ) : (
+        <Box>
+          {activeTab === STEPS.RECOVERY && (
+            <RecoveryPhrase
+              handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.REPEAT })}
+              mnemonic={mnemonic}
+            />
+          )}
 
-        {activeTab === STEPS.REPEAT && (
-          <RepeatPhrase
-            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.PASSWORD })}
-            mnemonic={mnemonic}
-          />
-        )}
+          {activeTab === STEPS.REPEAT && (
+            <RepeatPhrase
+              handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.PASSWORD })}
+              mnemonic={mnemonic}
+            />
+          )}
 
-        {activeTab === STEPS.PASSWORD && (
-          <SetPassword onSubmit={submitPassword} isLogin={isAddWallet} />
-        )}
+          {activeTab === STEPS.PASSWORD && (
+            <SetPassword onSubmit={submitPassword} isLogin={isAddWallet} />
+          )}
 
-        {activeTab === STEPS.BACKUP && username && password && (
-          <GoogleBackup
-            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.ALL_SET })}
-            mnemonic={mnemonic}
-            username={username}
-            password={password}
-          />
-        )}
+          {activeTab === STEPS.BACKUP && username && password && (
+            <GoogleBackup
+              handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.ALL_SET })}
+              mnemonic={mnemonic}
+              username={username}
+              password={password}
+            />
+          )}
 
-        {activeTab === STEPS.ALL_SET && (
-          <AllSet handleSwitchTab={() => window.close()} variant="add" />
-        )}
-      </Box>
+          {activeTab === STEPS.ALL_SET && (
+            <AllSet handleSwitchTab={() => window.close()} variant="add" />
+          )}
+        </Box>
+      )}
     </LandingComponents>
   );
 };
