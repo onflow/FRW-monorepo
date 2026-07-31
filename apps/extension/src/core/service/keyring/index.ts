@@ -1888,7 +1888,6 @@ class KeyringService extends EventEmitter {
       this.memStore.updateState({ isUnlocked: false });
       this.emit('lock');
       await removeLocalData(CURRENT_ID_KEY);
-      this.store.updateState({ booted: '' });
       return true;
     }
 
@@ -1972,7 +1971,6 @@ class KeyringService extends EventEmitter {
       // Update the memory store
       this.memStore.updateState({ isUnlocked: false });
       this.emit('lock');
-      this.store.updateState({ booted: '' });
       // There are no keyrings left, so return undefined
       return undefined;
     }
