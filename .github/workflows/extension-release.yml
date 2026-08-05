@@ -2,7 +2,7 @@ name: Extension Store Release
 
 # CD pipeline for the Chrome Web Store (#1430).
 # Cut a release by pushing a tag `release/ext-x.y.z` whose version matches
-# apps/extension/_raw/manifest.json and apps/extension/package.json.
+# apps/extension/package.json (injected into the manifest at build time).
 # The publish job runs in the `chrome-webstore` GitHub environment; configure
 # required reviewers on that environment to keep a human gate before publish.
 
@@ -32,12 +32,13 @@ jobs:
         id: version
         run: |
           VERSION="${GITHUB_REF_NAME#release/ext-}"
-          MANIFEST_VERSION=$(jq -r .version apps/extension/_raw/manifest.json)
+          # package.json is the single source of truth: prepareManifest injects it into the
+          # generated _raw/manifest.json at build time (manifest.pro.json's own version is stale).
           PKG_VERSION=$(jq -r .version apps/extension/package.json)
           echo "Tag: $GITHUB_REF_NAME (version $VERSION)"
-          echo "manifest.json: $MANIFEST_VERSION, package.json: $PKG_VERSION"
-          if [[ "$VERSION" != "$MANIFEST_VERSION" || "$VERSION" != "$PKG_VERSION" ]]; then
-            echo "::error::Tag version ($VERSION) must match _raw/manifest.json ($MANIFEST_VERSION) and package.json ($PKG_VERSION). Bump versions, commit, then re-cut the tag."
+          echo "package.json: $PKG_VERSION"
+          if [[ "$VERSION" != "$PKG_VERSION" ]]; then
+            echo "::error::Tag version ($VERSION) must match apps/extension/package.json ($PKG_VERSION). Bump the version, commit, then re-cut the tag."
             exit 1
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
