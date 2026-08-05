@@ -1,0 +1,161 @@
+name: Extension Store Release
+
+# CD pipeline for the Chrome Web Store (#1430).
+# Cut a release by pushing a tag `release/ext-x.y.z` whose version matches
+# apps/extension/_raw/manifest.json and apps/extension/package.json.
+# The publish job runs in the `chrome-webstore` GitHub environment; configure
+# required reviewers on that environment to keep a human gate before publish.
+
+on:
+  push:
+    tags:
+      - "release/ext-*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: extension-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve and validate release version
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#release/ext-}"
+          MANIFEST_VERSION=$(jq -r .version apps/extension/_raw/manifest.json)
+          PKG_VERSION=$(jq -r .version apps/extension/package.json)
+          echo "Tag: $GITHUB_REF_NAME (version $VERSION)"
+          echo "manifest.json: $MANIFEST_VERSION, package.json: $PKG_VERSION"
+          if [[ "$VERSION" != "$MANIFEST_VERSION" || "$VERSION" != "$PKG_VERSION" ]]; then
+            echo "::error::Tag version ($VERSION) must match _raw/manifest.json ($MANIFEST_VERSION) and package.json ($PKG_VERSION). Bump versions, commit, then re-cut the tag."
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Create environment file
+        run: |
+          cat << EOF > apps/extension/.env.pro
+          # Git info
+          COMMIT_SHA="${{ github.sha }}"
+          BRANCH_NAME="${{ github.ref_name }}"
+          DEPLOYMENT_ENV="production"
+          REPO_URL="https://github.com/${{ github.repository }}"
+
+          # Google drive
+          GD_BACKUP_NAME="${{ vars.GD_BACKUP_NAME }}"
+          GD_FOLDER="${{ vars.GD_FOLDER }}"
+          GD_AES_KEY="${{ secrets.GD_AES_KEY }}"
+          GD_IV="${{ secrets.GD_IV }}"
+          GOOGLE_API="${{ secrets.GOOGLE_API }}"
+          FB_TOKEN="${{ secrets.FB_TOKEN }}"
+          # firebase
+          FB_API_KEY="${{ secrets.FB_API_KEY }}"
+          FB_AUTH_DOMAIN="${{ secrets.FB_AUTH_DOMAIN }}"
+          FB_DATABASE_URL="${{ secrets.FB_DATABASE_URL }}"
+          FB_PROJECTID="${{ secrets.FB_PROJECTID }}"
+          FB_STORAGE_BUCKET="${{ secrets.FB_STORAGE_BUCKET }}"
+          FB_MESSAGING_SENDER_ID="${{ secrets.FB_MESSAGING_SENDER_ID }}"
+          FB_APP_ID="${{ secrets.FB_APP_ID }}"
+          FB_MEASUREMENT_ID="${{ secrets.FB_MEASUREMENT_ID }}"
+          FB_FUNCTIONS="${{ secrets.FB_FUNCTIONS }}"
+          API_NEWS_PATH="${{ vars.API_NEWS_PATH }}"
+          API_CONFIG_PATH="${{ vars.API_CONFIG_PATH }}"
+          API_BASE_URL="${{ vars.API_BASE_URL }}"
+          API_GO_SERVER_URL="${{ vars.API_GO_SERVER_URL }}"
+          # sentry
+          SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
+          # manifest
+          MANIFEST_KEY="${{ secrets.MANIFEST_KEY }}"
+          OAUTH2_CLIENT_ID="${{ secrets.OAUTH2_CLIENT_ID }}"
+          OAUTH2_SCOPES="${{ vars.OAUTH2_SCOPES }}"
+          WC_PROJECTID="${{ secrets.WC_PROJECTID }}"
+          MIXPANEL_TOKEN="${{ secrets.MIXPANEL_TOKEN }}"
+          SCRIPTS_PUBLIC_KEY="${{ vars.SCRIPTS_PUBLIC_KEY }}"
+          BETA_MANIFEST_KEY="${{ secrets.BETA_MANIFEST_KEY }}"
+          BETA_OAUTH2_CLIENT_ID="${{ secrets.BETA_OAUTH2_CLIENT_ID }}"
+          EOF
+
+      - name: Build packages
+        run: pnpm build:packages
+
+      - name: Build extension (production)
+        run: pnpm -F frw-extension build:ci
+        env:
+          CI: true
+          CI_BUILD_ID: ${{ github.run_number }}
+          BUILD_NUMBER: ${{ github.run_number }}
+          COMMIT_SHA: ${{ github.sha }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          DEPLOYMENT_ENV: production
+
+      - name: Zip dist
+        run: |
+          cd apps/extension/dist
+          zip -r "../FlowCore_${{ steps.version.outputs.version }}.zip" .
+
+      - name: Upload release zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlowCore-${{ steps.version.outputs.version }}
+          path: apps/extension/FlowCore_${{ steps.version.outputs.version }}.zip
+          retention-days: 90
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    # Secrets live here; add required reviewers to this environment to gate publish.
+    environment: chrome-webstore
+    steps:
+      - name: Download release zip
+        uses: actions/download-artifact@v4
+        with:
+          name: FlowCore-${{ needs.build.outputs.version }}
+
+      - name: Upload and publish to Chrome Web Store
+        run: |
+          npx -y chrome-webstore-upload-cli@4 \
+            --source "FlowCore_${{ needs.build.outputs.version }}.zip" \
+            --extension-id "${{ secrets.CWS_ITEM_ID }}" \
+            --client-id "${{ secrets.CWS_CLIENT_ID }}" \
+            --client-secret "${{ secrets.CWS_CLIENT_SECRET }}" \
+            --refresh-token "${{ secrets.CWS_REFRESH_TOKEN }}"
+
+  release:
+    needs: [build, publish]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release zip
+        uses: actions/download-artifact@v4
+        with:
+          name: FlowCore-${{ needs.build.outputs.version }}
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            "FlowCore_${{ needs.build.outputs.version }}.zip" \
+            --title "Flow Wallet Extension ${{ needs.build.outputs.version }}" \
+            --generate-notes
