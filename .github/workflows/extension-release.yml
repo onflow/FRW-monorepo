@@ -27,6 +27,17 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for tag listing
+          fetch-tags: true
+
+      - name: Get previous release tag
+        id: prev_tag
+        run: |
+          # Newest non-beta tag excluding the one being released
+          PREV_TAG=$(git tag --sort=-committerdate | grep -v "beta" | grep -v "^${GITHUB_REF_NAME}$" | head -n 1 || echo "")
+          echo "latest_tag=$PREV_TAG" >> $GITHUB_OUTPUT
+          echo "Previous release tag: $PREV_TAG"
 
       - name: Resolve and validate release version
         id: version
@@ -63,6 +74,9 @@ jobs:
           BRANCH_NAME="${{ github.ref_name }}"
           DEPLOYMENT_ENV="production"
           REPO_URL="https://github.com/${{ github.repository }}"
+          LATEST_TAG="${{ steps.prev_tag.outputs.latest_tag }}"
+          IS_BETA="false"
+          BETA_VERSION=""
 
           # Google drive
           GD_BACKUP_NAME="${{ vars.GD_BACKUP_NAME }}"
