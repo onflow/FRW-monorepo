@@ -149,13 +149,15 @@ jobs:
           name: FlowCore-${{ needs.build.outputs.version }}
 
       - name: Upload and publish to Chrome Web Store
+        env:
+          # chrome-webstore-upload-cli v4 removed the auth flags; env vars only (fregante/chrome-webstore-upload-cli#80)
+          EXTENSION_ID: ${{ secrets.CWS_ITEM_ID }}
+          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
         run: |
           npx -y chrome-webstore-upload-cli@4 \
-            --source "FlowCore_${{ needs.build.outputs.version }}.zip" \
-            --extension-id "${{ secrets.CWS_ITEM_ID }}" \
-            --client-id "${{ secrets.CWS_CLIENT_ID }}" \
-            --client-secret "${{ secrets.CWS_CLIENT_SECRET }}" \
-            --refresh-token "${{ secrets.CWS_REFRESH_TOKEN }}"
+            --source "FlowCore_${{ needs.build.outputs.version }}.zip"
 
   release:
     needs: [build, publish]
