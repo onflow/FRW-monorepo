@@ -143,6 +143,20 @@ jobs:
     # Secrets live here; add required reviewers to this environment to gate publish.
     environment: chrome-webstore
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Download release zip
         uses: actions/download-artifact@v4
         with:
@@ -157,7 +171,7 @@ jobs:
           CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
         run: |
-          npx -y chrome-webstore-upload-cli@4 \
+          pnpm --filter frw-extension exec chrome-webstore-upload \
             --source "FlowCore_${{ needs.build.outputs.version }}.zip"
 
   release:
