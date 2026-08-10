@@ -420,6 +420,30 @@ extension BrowserViewController: WKNavigationDelegate {
         reloadActionBarView()
         return .allow
     }
+
+    func webView(
+        _: WKWebView,
+        decidePolicyFor navigationResponse: WKNavigationResponse
+    ) async -> WKNavigationResponsePolicy {
+        // Attachments and non-renderable responses must never be rendered inline (#1436).
+        if BrowserViewController.isAttachmentResponse(navigationResponse.response) {
+            return .cancel
+        }
+        return navigationResponse.canShowMIMEType ? .allow : .cancel
+    }
+
+    /// True if the response was served as an attachment (`Content-Disposition: attachment`).
+    /// Attachments must not be rendered inline: rendering them would execute their contents
+    /// under the serving domain's origin, enabling phishing/XSS via trusted file-hosting
+    /// domains (e.g. an HTML file uploaded to Google Drive).
+    static func isAttachmentResponse(_ response: URLResponse) -> Bool {
+        guard let httpResponse = response as? HTTPURLResponse,
+              let disposition = httpResponse.value(forHTTPHeaderField: "Content-Disposition")
+        else {
+            return false
+        }
+        return disposition.lowercased().contains("attachment")
+    }
 }
 
 // MARK: WKUIDelegate
