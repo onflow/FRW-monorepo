@@ -1171,6 +1171,12 @@
   "Explorers_Collectors_and_Gamers": {
     "message": "Explorers, Collectors and Gamers"
   },
+  "Existing_Wallet_Found": {
+    "message": "Existing wallet found"
+  },
+  "Existing_Wallet_Found_Description": {
+    "message": "A wallet is already set up on this device. To create a new account, unlock your existing wallet first. If you no longer have the password, reset the wallet and start over."
+  },
   "Keystore": {
     "message": "Keystore"
   },

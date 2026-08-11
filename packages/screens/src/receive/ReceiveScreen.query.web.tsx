@@ -1,5 +1,11 @@
 import { bridge, navigation, toast } from '@onflow/frw-context';
-import { useAllProfiles, useProfileStore, tokenQueries, tokenQueryKeys } from '@onflow/frw-stores';
+import {
+  useAllProfiles,
+  useProfileStore,
+  tokenQueries,
+  tokenQueryKeys,
+  shouldHideCoaAccount,
+} from '@onflow/frw-stores';
 import type { WalletAccount } from '@onflow/frw-types';
 import { BackgroundWrapper, ExtensionHeader, Text, YStack, Button } from '@onflow/frw-ui';
 import { logger, retryConfigs } from '@onflow/frw-utils';
@@ -86,6 +92,46 @@ export function ReceiveScreen(): ReactElement {
     ...retryConfigs.critical,
   });
 
+  // Batch fetch FLOW balances for all accounts
+  const allAccountAddresses = useMemo(() => allAccounts.map((acc) => acc.address), [allAccounts]);
+
+  const { data: batchBalances = [] } = useQuery({
+    queryKey: ['batchBalances', allAccountAddresses],
+    queryFn: () => tokenQueries.fetchBatchFlowBalances(allAccountAddresses),
+    enabled: allAccountAddresses.length > 0,
+    staleTime: 30 * 1000,
+  });
+
+  // Identify zero-FLOW-balance EVM addresses — only these need NFT/ERC20 visibility checks
+  const zeroBalanceEvmAddresses = useMemo(() => {
+    const balLookup = new Map(batchBalances);
+    return allAccounts
+      .filter((acc) => {
+        if (acc.type !== 'evm') return false;
+        const balStr = balLookup.get(acc.address) || '0';
+        const match = balStr.match(/^([\d,.]+)/);
+        const val = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+        return val === 0;
+      })
+      .map((acc) => acc.address);
+  }, [batchBalances, allAccounts]);
+
+  // Batch fetch NFT counts only for zero-FLOW EVM addresses (COA visibility)
+  const { data: batchNFTCounts = [] } = useQuery({
+    queryKey: ['batchNFTCounts', zeroBalanceEvmAddresses, network],
+    queryFn: () => tokenQueries.fetchBatchNFTCounts(zeroBalanceEvmAddresses, network),
+    enabled: zeroBalanceEvmAddresses.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch ERC20 balance presence only for zero-FLOW EVM addresses
+  const { data: batchERC20Balances = [] } = useQuery({
+    queryKey: ['batchERC20HasBalance', zeroBalanceEvmAddresses, network],
+    queryFn: () => tokenQueries.fetchBatchERC20HasBalance(zeroBalanceEvmAddresses, network),
+    enabled: zeroBalanceEvmAddresses.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Format balance display
   const balanceDisplay = useMemo(() => {
     if (!balanceData?.displayBalance) {
@@ -99,14 +145,30 @@ export function ReceiveScreen(): ReactElement {
     return selectedAccount?.type === 'evm';
   }, [selectedAccount]);
 
-  // Prepare accounts with balance for AccountSelector
+  // Prepare accounts with balance for AccountSelector, filtering hidden COAs
   const accountsForSelector = useMemo(() => {
-    return allAccounts.map((account) => ({
-      ...account,
-      balance:
-        account.address === selectedAccount?.address ? balanceDisplay : account.balance || '0 FLOW',
-    }));
-  }, [allAccounts, selectedAccount?.address, balanceDisplay]);
+    const balLookup = new Map(batchBalances);
+    const nftLookup = new Map(batchNFTCounts);
+    const erc20Lookup = new Map(batchERC20Balances);
+
+    return allAccounts
+      .map((account) => ({
+        ...account,
+        balance:
+          account.address === selectedAccount?.address
+            ? balanceDisplay
+            : balLookup.get(account.address) || account.balance || '0 FLOW',
+        nfts: String(nftLookup.get(account.address) || 0),
+      }))
+      .filter((account) => !shouldHideCoaAccount(account, erc20Lookup));
+  }, [
+    allAccounts,
+    selectedAccount?.address,
+    balanceDisplay,
+    batchBalances,
+    batchNFTCounts,
+    batchERC20Balances,
+  ]);
 
   // Handle account selection
   const handleAccountSelect = useCallback(

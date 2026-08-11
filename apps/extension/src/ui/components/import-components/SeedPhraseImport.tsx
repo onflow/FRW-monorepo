@@ -108,6 +108,7 @@ const SeedPhraseImport = ({
           form="seed"
           size="large"
           type="submit"
+          data-testid="import-button"
           sx={{
             height: '56px',
             width: '100%',

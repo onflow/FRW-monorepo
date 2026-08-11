@@ -906,7 +906,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       if (Array.isArray(walletList) && walletList.length > 0) {
         walletList.forEach((account) => {
           const evmCandidates: any[] = [];
-          if (account.evmAccount?.address) {
+          if (account.evmAccount?.address && account.evmAccount.hasAssets) {
             evmCandidates.push({ ...account.evmAccount, type: 'evm' });
           }
           if (Array.isArray(account.eoaAccounts) && account.eoaAccounts.length > 0) {
@@ -1088,7 +1088,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
                 },
                 isActive: false, // Only current profile's main address is active
               });
-              if (account.evmAccount?.address && account.evmAccount.hasAssets !== false) {
+              if (account.evmAccount?.address && account.evmAccount.hasAssets) {
                 const normalizedEvmAddress = account.evmAccount.address.toLowerCase();
                 if (!profileSeenAddresses.has(normalizedEvmAddress)) {
                   const evmName = account.evmAccount.name || 'EVM Account';

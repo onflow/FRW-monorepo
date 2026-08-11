@@ -517,8 +517,6 @@ export class WalletController extends BaseController {
     // This clears local storage but a lot is still kept in memory
     await clearLocalData();
 
-    // Note that this does not clear the 'booted' state
-    // We should fix this, but it would involve making changes to keyringService
     await keyringService.resetKeyRing();
     await keyringService.lock();
 
@@ -1515,7 +1513,19 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
     const isEmulator = await this.getEmulatorMode();
     const isEvm = await this.getActiveAccountType();
-    return await transactionActivityService.getFlowscanUrl(network, isEmulator, isEvm);
+    const currentAddress = await this.getCurrentAddress();
+    return await transactionActivityService.getFlowscanUrl(
+      network,
+      isEmulator,
+      isEvm,
+      currentAddress || undefined
+    );
+  };
+
+  getExplorerRedirectBase = async (): Promise<string | undefined> => {
+    const network = await this.getNetwork();
+    const isEvm = await this.getActiveAccountType();
+    return await transactionActivityService.getExplorerRedirectBase(network, isEvm);
   };
 
   getViewSourceUrl = async (): Promise<string> => {

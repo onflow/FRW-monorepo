@@ -65,9 +65,7 @@ struct AccountInfoCard: View {
         VStack {
             ForEach(0..<list.count, id: \.self) { index in
                 let account = list[index]
-                if !account.isHidden {
-                    AccountInfoView(account: account, parent: parent(), hideType: hideType, onClickHidden: onClickHidden)
-                }
+                AccountInfoView(account: account, parent: parent(), hideType: hideType, onClickHidden: onClickHidden)
             }
         }
         .padding(18)

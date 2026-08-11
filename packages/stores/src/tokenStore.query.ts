@@ -513,6 +513,44 @@ export const tokenQueries = {
     }
   },
 
+  // Batch check if EVM addresses have any ERC20 token balance > 0
+  // Only call for EVM addresses with zero FLOW balance to minimize API calls
+  fetchBatchERC20HasBalance: async (
+    evmAddressList: string[],
+    network: string = 'mainnet'
+  ): Promise<Array<[string, boolean]>> => {
+    if (!evmAddressList || evmAddressList.length === 0) {
+      return [];
+    }
+
+    try {
+      const results = await Promise.allSettled(
+        evmAddressList.map(async (address) => {
+          const tokens = await tokenQueries.fetchTokens(address, network);
+          const hasBalance = tokens.some((token) => {
+            const balance = parseFloat(token.balance || '0');
+            return balance > 0;
+          });
+          return [address, hasBalance] as [string, boolean];
+        })
+      );
+
+      return results.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        }
+        logger.warn(
+          '[TokenQuery] Failed to fetch ERC20 balance for address:',
+          evmAddressList[index]
+        );
+        return [evmAddressList[index], false] as [string, boolean];
+      });
+    } catch (error) {
+      logger.error('[TokenQuery] Failed to fetch batch ERC20 balances:', error);
+      return evmAddressList.map((address) => [address, false] as [string, boolean]);
+    }
+  },
+
   // Batch fetch NFT counts for multiple addresses
   fetchBatchNFTCounts: async (
     addressList: string[],

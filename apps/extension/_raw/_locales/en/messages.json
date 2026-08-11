@@ -1168,6 +1168,12 @@
   "Explorers_Collectors_and_Gamers": {
     "message": "Explorers, Collectors and Gamers"
   },
+  "Existing_Wallet_Found": {
+    "message": "Existing wallet found"
+  },
+  "Existing_Wallet_Found_Description": {
+    "message": "A wallet is already set up on this device. To create a new account, unlock your existing wallet first. If you no longer have the password, reset the wallet and start over."
+  },
   "Keystore": {
     "message": "Keystore"
   },
@@ -1550,10 +1556,10 @@
     "message": "Add EOA Address"
   },
   "Create_Flow_Address_Sidebar": {
-    "message": "Create Flow Address"
+    "message": "Create a new Flow Cadence account"
   },
   "Create_EOA_Address_Sidebar": {
-    "message": "Create EOA Address"
+    "message": "Create a new Flow EVM Account"
   },
   "Mobile_overview": {
     "message": "Mobile overview"

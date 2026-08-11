@@ -284,13 +284,13 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.getSignKeyIndex();
   }
 
-  async ethSign(signData: Uint8Array): Promise<Uint8Array> {
+  async ethSign(signData: Uint8Array, address?: string): Promise<Uint8Array> {
     if (!(signData instanceof Uint8Array)) {
       throw new Error('signData must be a Uint8Array');
     }
 
     const hexPayload = `0x${bytesToHex(signData)}`;
-    const signatureHex = await NativeFRWBridge.ethSign(hexPayload);
+    const signatureHex = await NativeFRWBridge.ethSign(hexPayload, address ?? null);
     return hexToBytes(signatureHex);
   }
 

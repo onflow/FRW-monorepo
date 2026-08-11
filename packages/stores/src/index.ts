@@ -29,6 +29,7 @@ export {
   accessibleAssetQueries,
   accessibleAssetHelpers,
 } from './accessibleAssetStore.query';
+export { shouldHideCoaAccount } from './account-visibility';
 export {
   storageQueryKeys,
   storageQueries,

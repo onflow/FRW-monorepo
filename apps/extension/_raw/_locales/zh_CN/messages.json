@@ -1186,6 +1186,12 @@
   "Explorers_Collectors_and_Gamers": {
     "message": "探索者、收藏家和游戏玩家"
   },
+  "Existing_Wallet_Found": {
+    "message": "检测到已有钱包"
+  },
+  "Existing_Wallet_Found_Description": {
+    "message": "此设备上已设置钱包。要创建新账户，请先解锁现有钱包。如果您不再记得密码，可以重置钱包并重新开始。"
+  },
   "Keystore": {
     "message": "密钥库"
   },

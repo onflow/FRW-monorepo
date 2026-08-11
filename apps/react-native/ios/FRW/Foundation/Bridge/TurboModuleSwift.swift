@@ -649,12 +649,13 @@ extension TurboModuleSwift {
     }
 
     @objc
-    static func ethSign(_ hexData: String) -> String? {
+    static func ethSign(_ hexData: String, address: String?) -> String? {
         guard let keyProvider = WalletManager.shared.keyProvider as? EthereumKeyProtocol else {
             log.error("[EOA] invalid key provider")
             return nil
         }
-        guard let index = WalletManager.shared.eoaIndex() else {
+        let resolvedAddress: String? = (address?.isEmpty == false) ? address : nil
+        guard let index = WalletManager.shared.eoaIndex(address: resolvedAddress) else {
             log.error("[EOA] invalid index")
             return nil
         }

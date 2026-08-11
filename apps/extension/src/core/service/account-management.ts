@@ -924,7 +924,17 @@ export class AccountManagement {
 
   async verifyPasswordIfBooted(password: string): Promise<void> {
     if (await keyringService.isBooted()) {
-      await keyringService.verifyPassword(password);
+      try {
+        await keyringService.verifyPassword(password);
+      } catch {
+        // A vault already exists on this device, so any new profile must use the existing wallet
+        // password. Surface that instead of the raw keyring error ('Incorrect password'), which is
+        // nonsensical to a user who is trying to create a brand-new account (#1428).
+        throw new Error(
+          'An existing wallet was found on this device. The password must match your existing wallet password. ' +
+            'If you no longer have it, go back and use "Forgot password" on the unlock screen to reset the wallet and start over.'
+        );
+      }
     }
   }
 

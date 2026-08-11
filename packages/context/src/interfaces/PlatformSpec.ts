@@ -2,6 +2,7 @@ import type { forms_DeviceInfo } from '@onflow/frw-api';
 import type {
   CreateAccountResponse,
   Currency,
+  MigrationDisplayData,
   NativeScreenName,
   Platform,
   RecentContactsResponse,
@@ -57,7 +58,7 @@ export interface PlatformSpec extends KeyRotationDependencies {
   // Cryptographic operations (hexData due to Turbo Module limitations)
   sign(hexData: string): Promise<string>;
   getSignKeyIndex(): number;
-  ethSign(signData: Uint8Array): Promise<Uint8Array>;
+  ethSign(signData: Uint8Array, address?: string): Promise<Uint8Array>;
 
   /**
    * When false, EOA EVM transactions are sent via RLP directly to EVM RPC (by the package).
@@ -207,6 +208,7 @@ export interface PlatformSpec extends KeyRotationDependencies {
     erc20: Array<{ address: string; amount: string }>;
     erc721: Array<{ address: string; id: string }>;
     erc1155: Array<{ address: string; id: string; amount: string }>;
+    displayData?: MigrationDisplayData;
   }>;
   /**
    * Refresh COA-related data after migration (native-side refresh for home + side menu)

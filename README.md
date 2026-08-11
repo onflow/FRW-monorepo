@@ -1,6 +1,6 @@
-# Flow Reference Wallet (FRW) 🌊
+# FRW-monorepo — Flow Reference Wallet (Mobile + Browser Extension)
 
-> Production-ready Flow blockchain wallet with React Native and Browser
+> Production-ready Flow wallet with React Native and Browser
 > Extension
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
@@ -21,7 +21,7 @@ FRW-monorepo/
 ├── packages/                    # Shared libraries
 │   ├── types/                   # TypeScript definitions & data models
 │   ├── api/                     # HTTP API clients for backend services
-│   ├── cadence/                 # Flow blockchain interaction & smart contracts
+│   ├── cadence/                 # Flow interaction & smart contracts
 │   ├── services/                # Business logic & domain services
 │   ├── workflow/                # Transaction workflows & orchestration
 │   ├── stores/                  # State management (Zustand stores)
@@ -126,3 +126,12 @@ for details.
 **Built with ❤️ by the Flow Foundation team**
 
 _Ready to build the future of decentralized finance on Flow!_ 🚀
+
+## About Flow
+
+This repo is part of the [Flow network](https://flow.com), a Layer 1 blockchain built for consumer applications, AI agents, and DeFi at scale.
+
+- Developer docs: https://developers.flow.com
+- Cadence language: https://cadence-lang.org
+- Community: [Flow Discord](https://discord.gg/flow) · [Flow Forum](https://forum.flow.com)
+- Governance: [Flow Improvement Proposals](https://github.com/onflow/flips)

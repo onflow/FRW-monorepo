@@ -12,7 +12,7 @@ import Web3Core
 @MainActor
 class EVMTokenBalanceProvider: TokenBalanceProvider {
     var tokens: [TokenModel] = []
-    private var isLoading = false
+    private var inFlightFetch: Task<[TokenModel], Error>?
 
     // MARK: Lifecycle
 
@@ -27,40 +27,46 @@ class EVMTokenBalanceProvider: TokenBalanceProvider {
     var currency: Currency
 
     func fetchUserTokens(address: any FWAddress) async throws -> [TokenModel] {
-        // EMERGENCY FIX: Prevent concurrent calls that cause memory corruption
-        guard !isLoading else {
-            print("⚠️ EVMTokenBalanceProvider: Concurrent fetch prevented")
-            return tokens // Return cached tokens to prevent crash
+        // Deduplicate concurrent calls: await in-flight fetch instead of returning stale/empty data
+        if let existing = inFlightFetch {
+            return try await existing.value
         }
-        
-        guard let addr = address as? EthereumAddress
-        else {
+
+        guard let addr = address as? EthereumAddress else {
             throw EVMError.addressError
         }
-        
-        isLoading = true
-        defer { isLoading = false }
-        
-        currency = CurrencyCache.cache.currentCurrency
-        let response: [EVMTokenResponse] = try await Network.request(FRWAPI.Token.evm(.init(address: addr.hexAddr, currency: currency.rawValue, network: network)))
-        tokens = response.compactMap { $0.toTokenModel(type: .evm) }
-        let customToken = await fetchCustomBalance()
-        tokens.append(contentsOf: customToken)
-        
-        // THREAD-SAFE FIX: Pure Swift Decimal comparison without ObjC bridging
-        let tokensCopy = tokens.map { $0 } // Create defensive copy
-        tokens = tokensCopy.sorted { lhs, rhs in
-            // Convert String to Decimal directly, avoiding NSNumberFormatter bridging
-            guard let lBalString = lhs.balanceInUSD,
-                  let rBalString = rhs.balanceInUSD,
-                  let lBal = Decimal(string: lBalString),
-                  let rBal = Decimal(string: rBalString) else {
-                return false // Put invalid balances at end
+
+        let task = Task<[TokenModel], Error> {
+            currency = CurrencyCache.cache.currentCurrency
+            let response: [EVMTokenResponse] = try await Network.request(FRWAPI.Token.evm(.init(address: addr.hexAddr, currency: currency.rawValue, network: network)))
+            tokens = response.compactMap { $0.toTokenModel(type: .evm) }
+            let customToken = await fetchCustomBalance()
+            tokens.append(contentsOf: customToken)
+
+            // Pure Swift Decimal comparison without ObjC bridging
+            let tokensCopy = tokens.map { $0 }
+            tokens = tokensCopy.sorted { lhs, rhs in
+                guard let lBalString = lhs.balanceInUSD,
+                      let rBalString = rhs.balanceInUSD,
+                      let lBal = Decimal(string: lBalString),
+                      let rBal = Decimal(string: rBalString) else {
+                    return false
+                }
+                return lBal > rBal
             }
-            return lBal > rBal
+
+            return tokens
         }
-        
-        return tokens
+
+        inFlightFetch = task
+        do {
+            let result = try await task.value
+            inFlightFetch = nil
+            return result
+        } catch {
+            inFlightFetch = nil
+            throw error
+        }
     }
 
     func getFTBalance(address: FWAddress) async throws -> [TokenModel] {

@@ -26,7 +26,7 @@ export const closeOpenedPages = async (page: Page) => {
 export const getCurrentAddress = async (page: Page, isCoa = false) => {
   // Wait for the dashboard page to be fully loaded
   await page.waitForURL(/.*\/dashboard.*/);
-  await wait(2000);
+  await wait(6000);
   const whatsNewPopup = page.getByTestId('popup-close-button');
 
   if (await whatsNewPopup.isVisible()) {
@@ -297,11 +297,11 @@ export const importAccountBySeedPhrase = async ({
 
   await page.getByPlaceholder('Import 12 or 24 words split').fill(seedPhrase);
 
-  await page.getByRole('button', { name: 'Import' }).click();
+  await page.getByTestId('import-button').click();
 
   // We need to wait for the next step to be visible
 
-  await expect(page.getByRole('button', { name: 'Import' })).not.toBeVisible({ timeout: 6_000 });
+  await expect(page.getByTestId('import-button')).not.toBeVisible({ timeout: 6_000 });
 
   const step = await page.getByText('STEP').textContent();
 
