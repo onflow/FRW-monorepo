@@ -1323,21 +1323,55 @@ export class WalletController extends BaseController {
    */
   signRotationRequest = async (
     address: string,
-    signatureData: string
+    signatureData: string,
+    pendingNewKeyInfo?: any
   ): Promise<AccountKeySignature> => {
-    // Check if keyring is unlocked
-    if (!keyringService.isUnlocked()) {
-      throw new Error('Keyring must be unlocked to sign rotation request');
-    }
-
-    // Get private key and public key from keyring service (runs in background)
-    const privateKey = await keyringService.getCurrentPrivateKey();
-    const signAlgo = keyringService.getCurrentSignAlgo() || 2; // Default to secp256k1
-    const oldPublicKey = keyringService.getCurrentPublicKey();
-
     // Import signing utilities
     const { signWithKey } = await import('@/core/utils/modules/publicPrivateKey');
-    const { HASH_ALGO_NUM_SHA3_256 } = await import('@/shared/constant');
+    const {
+      HASH_ALGO_NUM_SHA3_256,
+      HASH_ALGO_NUM_SHA2_256,
+      SIGN_ALGO_NUM_ECDSA_secp256k1,
+      SIGN_ALGO_NUM_ECDSA_P256,
+    } = await import('@/shared/constant');
+
+    let privateKey: string;
+    let signAlgo: number;
+    let hashAlgo: number;
+    let publicKey: string;
+    let weight = 1000;
+
+    const isVerifyPayload = signatureData.startsWith('key-rotation-verify:');
+    if (isVerifyPayload && pendingNewKeyInfo && pendingNewKeyInfo.seedphrase) {
+      // Phase 2 Verify of the 3-phase flow: sign with the NEW key.
+      const { seedWithPathAndPhrase2PublicPrivateKey } = await import(
+        '@/core/utils/modules/publicPrivateKey'
+      );
+      const keyTuple = await seedWithPathAndPhrase2PublicPrivateKey(pendingNewKeyInfo.seedphrase);
+
+      signAlgo = pendingNewKeyInfo.flowKey?.signAlgo || SIGN_ALGO_NUM_ECDSA_P256;
+      hashAlgo = pendingNewKeyInfo.flowKey?.hashAlgo || HASH_ALGO_NUM_SHA3_256;
+      weight = pendingNewKeyInfo.flowKey?.weight || 1000;
+
+      if (signAlgo === SIGN_ALGO_NUM_ECDSA_secp256k1) {
+        privateKey = keyTuple.SECP256K1.pk;
+        publicKey = keyTuple.SECP256K1.pubK;
+      } else {
+        privateKey = keyTuple.P256.pk;
+        publicKey = keyTuple.P256.pubK;
+      }
+    } else {
+      // Check if keyring is unlocked
+      if (!keyringService.isUnlocked()) {
+        throw new Error('Keyring must be unlocked to sign rotation request');
+      }
+
+      // Default to current key from keyring (old behavior, e.g. for fallback/other flows)
+      privateKey = await keyringService.getCurrentPrivateKey();
+      signAlgo = keyringService.getCurrentSignAlgo() || 2; // Default to secp256k1
+      hashAlgo = HASH_ALGO_NUM_SHA3_256; // Legacy used hardcoded SHA3_256
+      publicKey = keyringService.getCurrentPublicKey();
+    }
 
     // The backend verification uses Flow's verify with domain separation tag "FLOW-V0.0-user"
     // We need to prepend this tag to the message before hashing, just like login does
@@ -1347,24 +1381,24 @@ export class WalletController extends BaseController {
     const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
     const message = USER_DOMAIN_TAG + Buffer.from(signatureData, 'utf8').toString('hex');
 
-    // Sign the message (with domain tag prepended) with SHA3_256
-    // signWithKey will hash the message with SHA3_256 internally
+    // Sign the message (with domain tag prepended)
     const signatureString = await signWithKey(
       message,
       signAlgo,
-      HASH_ALGO_NUM_SHA3_256,
+      hashAlgo,
       privateKey,
       false,
-      false // isPrehashed=false - let signWithKey hash it with SHA3_256
+      false // isPrehashed=false - let signWithKey hash it
     );
 
     // Return AccountKeySignature object
     return {
-      public_key: oldPublicKey, // Use the OLD key's public key (the one that signed)
-      hash_algo: HASH_ALGO_NUM_SHA3_256,
+      public_key: publicKey,
+      hash_algo: hashAlgo,
       sign_algo: signAlgo,
       signature: signatureString,
       sign_message: signatureData,
+      weight: weight,
     };
   };
 

@@ -12,6 +12,7 @@ import {
   useTheme,
   Spinner,
   ScrollView,
+  InfoDialog,
 } from '@onflow/frw-ui';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -57,6 +58,7 @@ export function KeyRotationMnemonicScreen({
   const { copied, copy } = useCopyToClipboard();
   const { executeRotation, isLoading, error } = useKeyRotation();
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
+  const [showRotationConfirmDialog, setShowRotationConfirmDialog] = useState(false);
 
   // Parse seed phrase into words
   const seedPhraseWords = parseSeedPhrase(newKeyInfo?.seedphrase || '');
@@ -129,6 +131,7 @@ export function KeyRotationMnemonicScreen({
   const handleComplete = async () => {
     logger.info('[KeyRotationMnemonicScreen] User confirmed backup, starting key rotation', {
       address,
+      explicitConsent: true,
     });
 
     const result = await executeRotation(address, newKeyInfo);
@@ -137,6 +140,14 @@ export function KeyRotationMnemonicScreen({
       logger.info('[KeyRotationMnemonicScreen] Key rotation successful', { txId: result.txId });
       onComplete(result);
     }
+  };
+
+  const handleStartPressed = () => {
+    setShowRotationConfirmDialog(true);
+  };
+
+  const handleCancelRotationConfirm = () => {
+    setShowRotationConfirmDialog(false);
   };
 
   const buttonText = isLoading
@@ -215,7 +226,7 @@ export function KeyRotationMnemonicScreen({
               size="large"
               fullWidth
               disabled={!isPhraseRevealed || isLoading}
-              onPress={handleComplete}
+              onPress={handleStartPressed}
             >
               {isLoading ? (
                 <XStack gap="$2" items="center">
@@ -230,6 +241,29 @@ export function KeyRotationMnemonicScreen({
             </Button>
           </YStack>
         </YStack>
+
+        <InfoDialog
+          visible={showRotationConfirmDialog}
+          title={t('keyrotation.confirm.title', { defaultValue: 'Confirm key rotation' })}
+          buttonText={t('keyrotation.confirm.button', { defaultValue: 'Confirm and continue' })}
+          onButtonClick={handleComplete}
+          onClose={handleCancelRotationConfirm}
+        >
+          <YStack gap="$3" self="stretch" items="center">
+            <Text fontSize="$3" color="$text" text="center" lineHeight={20}>
+              {t('keyrotation.confirm.description', {
+                defaultValue:
+                  'This will begin rotating your account keys. Keep this app open until completion.',
+              })}
+            </Text>
+            <Text fontSize="$3" color="$textSecondary" text="center" lineHeight={20}>
+              {t('keyrotation.confirm.secondary', {
+                defaultValue:
+                  'Your old key will only be revoked after the new key is verified successfully.',
+              })}
+            </Text>
+          </YStack>
+        </InfoDialog>
       </ScrollView>
     </OnboardingBackground>
   );

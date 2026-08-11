@@ -242,6 +242,48 @@ transaction(
   }
 
 
+  public async addKeys(publicKeys: string[]) {
+    const code = `
+import Crypto
+
+transaction(publicKeys: [String]) {
+    prepare(signer: auth(Keys) &Account) {
+
+      for publicKey in publicKeys {
+        let signatureAlgorithm = SignatureAlgorithm.ECDSA_secp256k1
+        let hashAlgorithm = HashAlgorithm.SHA2_256
+        let weight = 1000.0
+
+        let key = PublicKey(
+            publicKey: publicKey.decodeHex(),
+            signatureAlgorithm: signatureAlgorithm
+        )
+
+        signer.keys.add(
+            publicKey: key,
+            hashAlgorithm: hashAlgorithm,
+            weight: weight
+        )
+      }
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "addKeys",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(publicKeys, t.Array(t.String)),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
   public async checkResource(address: string, flowIdentifier: string): Promise<boolean> {
     const code = `
 import NonFungibleToken from 0xNonFungibleToken
@@ -460,6 +502,32 @@ access(all) fun main(): UFix64 {
     config = await this.runRequestInterceptors(config);
     let response = await fcl.query(config);
     const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
+
+  public async revokeKeys(revokeKeyIndexs: number[]) {
+    const code = `
+transaction(revokeKeyIndexs: [Int]) {
+    prepare(signer: auth(Keys) &Account) {
+      for revokeKeyIndex in revokeKeyIndexs {
+        signer.keys.revoke(keyIndex: revokeKeyIndex)
+      }
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "revokeKeys",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(revokeKeyIndexs, t.Array(t.Int)),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
     return result.response;
   }
 
