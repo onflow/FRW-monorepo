@@ -14,11 +14,11 @@ on:
       ios_ref:
         description: "Ref (branch, tag, or SHA) for apps/react-native/ios"
         required: false
-        default: dev
+        default: main
       android_ref:
         description: "Ref (branch, tag, or SHA) for apps/react-native/android"
         required: false
-        default: dev
+        default: main
       update_mode:
         description: "Use create-pr (default) or update-existing-pr"
         required: true
@@ -34,9 +34,8 @@ on:
         description: "Base branch when creating a new PR"
         required: false
         type: choice
-        default: dev
+        default: main
         options:
-          - dev
           - main
 
 jobs:

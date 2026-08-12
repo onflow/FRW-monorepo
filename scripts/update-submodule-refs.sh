@@ -6,7 +6,7 @@ set -euo pipefail
 #   scripts/update-submodule-refs.sh [--ios-ref <ref>] [--android-ref <ref>]
 #                                    [--skip-ios] [--skip-android]
 #
-# When a ref is omitted the default branch defined in .gitmodules (dev) is used.
+# When a ref is omitted the default branch defined in .gitmodules (main) is used.
 
 IOS_PATH="apps/react-native/ios"
 ANDROID_PATH="apps/react-native/android"
@@ -65,7 +65,7 @@ update_submodule() {
 
   if [[ -z "$ref" || "$ref" == "default" ]]; then
     # Use ref configured in .gitmodules (dev)
-    ref=$(git config -f .gitmodules "submodule.${label}.branch" || echo "dev")
+    ref=$(git config -f .gitmodules "submodule.${label}.branch" || echo "main")
   fi
 
   echo "::group::Updating $label ($path) to $ref"

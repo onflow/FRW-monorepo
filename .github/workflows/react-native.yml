@@ -4,11 +4,11 @@ on:
   push:
     paths:
       - "apps/react-native/**"
-    branches: [main, dev, "release/*"]
+    branches: [main, "release/*"]
   pull_request:
     paths:
       - "apps/react-native/**"
-    branches: [main, dev, "release/*"]
+    branches: [main, "release/*"]
 
 jobs:
   react-native-bundle-android:

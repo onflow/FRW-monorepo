@@ -65,11 +65,10 @@ these plugins once they're installed. See `.claude/README.md` for full details.
   - `/create-issue "Add dark mode"` - Custom title with auto description
   - `/create-issue "Fix bug" "Description here"` - Custom title and description
 
-- `/create-pr` - Automated PR creation to dev branch with validation and issue
+- `/create-pr` - Automated PR creation to main branch with validation and issue
   linking
-  - `/create-pr` - Create PR to dev with auto-generated title
-  - `/create-pr main` - Create PR to main branch
-  - `/create-pr dev "feat: new feature"` - Create PR with custom title
+  - `/create-pr` - Create PR to main with auto-generated title
+  - `/create-pr main "feat: new feature"` - Create PR with custom title
   - Automatically searches and links related GitHub issues
 
 ## GitHub Workflows
@@ -537,7 +536,7 @@ The UI package includes comprehensive Storybook integration:
 
 **Allowed Branches (no issue number required)**
 
-- `main`, `master`, `dev`, `develop`
+- `main`, `master`, `dev`, `develop`, `legacy-main`
 - Maintenance branches (GitFlow): `hotfix/<desc>` or `hotfix/<issue>-<desc>`,
   `release/<version>` or `release/<issue>-<version>`
 
