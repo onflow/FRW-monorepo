@@ -219,13 +219,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                   <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight="$8">
                     {t('onboarding.recoveryPhrase.title')}
                   </Text>
-                  <Text
-                    fontSize="$4"
-                    color="$textSecondary"
-                    text="center"
-                    lineHeight="$4"
-                    maxW={280}
-                  >
+                  <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} px="$4">
                     {t('onboarding.recoveryPhrase.description')}
                   </Text>
                 </YStack>
@@ -237,7 +231,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                   rounded="$4"
                   pt="$6"
                   pb="$6"
-                  px="$4.5"
+                  px="$4"
                   mb="$4"
                   self="center"
                   position="relative"
@@ -342,21 +336,21 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                   title={t('onboarding.recoveryPhrase.warning.title')}
                   description={t('onboarding.recoveryPhrase.warning.description')}
                 />
+
+                {/* Bottom button */}
+                <YStack pt="$4" pb="$6">
+                  <Button
+                    variant="inverse"
+                    size="large"
+                    fullWidth
+                    disabled={!isPhraseRevealed}
+                    onPress={handleNext}
+                  >
+                    {t('onboarding.recoveryPhrase.next')}
+                  </Button>
+                </YStack>
               </YStack>
             </ScrollView>
-
-            {/* Fixed bottom button */}
-            <YStack px="$4" pb="$6">
-              <Button
-                variant="inverse"
-                size="large"
-                fullWidth
-                disabled={!isPhraseRevealed}
-                onPress={handleNext}
-              >
-                {t('onboarding.recoveryPhrase.next')}
-              </Button>
-            </YStack>
           </YStack>
         </OnboardingBackground>
       )}

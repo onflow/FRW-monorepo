@@ -14,11 +14,11 @@ import {
   AccountCreationLoadingState,
   ShieldAnimation,
   useTheme,
-  ScrollView,
 } from '@onflow/frw-ui';
 import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useWindowDimensions } from 'react-native';
 
 interface SecureEnclaveScreenProps {
   // React Navigation passes navigation prop, but we use the abstraction
@@ -34,6 +34,8 @@ export function SecureEnclaveScreen({
   navigation: navProp,
 }: SecureEnclaveScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
+  const { height } = useWindowDimensions();
+  const animationHeight = Math.round(Math.min(height * 0.4, 375));
   const theme = useTheme();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showLoadingState, setShowLoadingState] = useState(false);
@@ -45,7 +47,7 @@ export function SecureEnclaveScreen({
       const nav = navProp as { setOptions: (options: Record<string, unknown>) => void };
       if (showLoadingState) {
         nav.setOptions({
-          headerLeft: () => null,
+          headerShown: false,
           gestureEnabled: false,
         });
       }
@@ -168,67 +170,65 @@ export function SecureEnclaveScreen({
   return (
     <>
       <OnboardingBackground>
-        <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-          <YStack px="$4" pt="$4">
-            {/* Advanced text */}
-            <YStack mb="$6">
-              <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
-                {t('onboarding.secureEnclave.title')}
+        <YStack flex={1} px="$4" pt="$4">
+          {/* Advanced text */}
+          <YStack mb="$6">
+            <Text fontSize="$9" fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
+              {t('onboarding.secureEnclave.title')}
+            </Text>
+          </YStack>
+
+          {/* Shield Animation - flex to fill available space, shrinks when text scales */}
+          <YStack flex={1} items="center" justify="center" mb="$4" style={{ maxHeight: 375 }}>
+            <ShieldAnimation width={300} height={animationHeight} autoPlay={true} loop={true} />
+          </YStack>
+
+          {/* Card with profile description */}
+          <YStack items="center" mb="$4">
+            <YStack w="100%" maxW={320} items="center" gap="$2">
+              <Text fontSize="$5" fontWeight="700" color="$text" text="center" mb="$2">
+                {t('onboarding.secureEnclave.cardTitle')}
               </Text>
-            </YStack>
-
-            {/* Shield Animation */}
-            <YStack alignItems="center" mb="$8">
-              <ShieldAnimation width={300} height={375} autoPlay={true} loop={true} />
-            </YStack>
-
-            {/* Card with profile description */}
-            <YStack items="center" mb="$8">
-              <YStack w="100%" maxW={320} items="center" gap="$2">
-                <Text fontSize="$5" fontWeight="700" color="$text" text="center" mb="$2">
-                  {t('onboarding.secureEnclave.cardTitle')}
-                </Text>
-                <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={17} px="$2">
-                  {t('onboarding.secureEnclave.cardDescription')}
-                </Text>
-              </YStack>
-            </YStack>
-
-            {/* Feature items */}
-            <YStack gap="$2" items="center" mb="$6">
-              {/* Secure enclave */}
-              <XStack gap="$2" items="center">
-                <SecureEnclave size={16} color={theme.primary.val} />
-                <Text fontSize="$4" color="$primary">
-                  {t('onboarding.secureEnclave.features.secureEnclave')}
-                </Text>
-              </XStack>
-
-              {/* Hardware security */}
-              <XStack gap="$2" items="center">
-                <HardwareGradeSecurity size={16} color={theme.primary.val} />
-                <Text fontSize="$4" color="$primary">
-                  {t('onboarding.secureEnclave.features.hardwareSecurity')}
-                </Text>
-              </XStack>
-
-              {/* No EVM support */}
-              <XStack gap="$2" items="center">
-                <ShieldOff size={16} color={theme.error.val} />
-                <Text fontSize="$4" color="$error">
-                  {t('onboarding.secureEnclave.features.noEvm')}
-                </Text>
-              </XStack>
+              <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={17} px="$2">
+                {t('onboarding.secureEnclave.cardDescription')}
+              </Text>
             </YStack>
           </YStack>
 
-          {/* Fixed bottom button */}
-          <YStack px="$4" pb="$6">
+          {/* Feature items */}
+          <YStack gap="$2" items="center" mb="$6">
+            {/* Secure enclave */}
+            <XStack gap="$2" items="center">
+              <SecureEnclave size={16} color={theme.primary.val} />
+              <Text fontSize="$4" color="$primary">
+                {t('onboarding.secureEnclave.features.secureEnclave')}
+              </Text>
+            </XStack>
+
+            {/* Hardware security */}
+            <XStack gap="$2" items="center">
+              <HardwareGradeSecurity size={16} color={theme.primary.val} />
+              <Text fontSize="$4" color="$primary">
+                {t('onboarding.secureEnclave.features.hardwareSecurity')}
+              </Text>
+            </XStack>
+
+            {/* No EVM support */}
+            <XStack gap="$2" items="center">
+              <ShieldOff size={16} color={theme.error.val} />
+              <Text fontSize="$4" color="$error">
+                {t('onboarding.secureEnclave.features.noEvm')}
+              </Text>
+            </XStack>
+          </YStack>
+
+          {/* Bottom button */}
+          <YStack pb="$6">
             <Button variant="inverse" size="large" fullWidth onPress={handleNext}>
               {t('onboarding.secureEnclave.next')}
             </Button>
           </YStack>
-        </ScrollView>
+        </YStack>
       </OnboardingBackground>
 
       {/* Confirmation Dialog */}

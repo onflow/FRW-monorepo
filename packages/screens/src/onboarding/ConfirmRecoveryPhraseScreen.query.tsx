@@ -102,9 +102,9 @@ export function ConfirmRecoveryPhraseScreen({
     if (navigation && typeof navigation === 'object' && 'setOptions' in navigation) {
       const nav = navigation as { setOptions: (options: Record<string, unknown>) => void };
       if (isCreatingAccount) {
-        // Hide back button and disable swipe gesture during account creation
+        // Hide header and disable swipe gesture during account creation
         nav.setOptions({
-          headerLeft: () => null,
+          headerShown: false,
           gestureEnabled: false,
         });
       }

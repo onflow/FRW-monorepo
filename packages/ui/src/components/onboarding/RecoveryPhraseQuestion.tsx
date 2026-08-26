@@ -28,16 +28,16 @@ export function RecoveryPhraseQuestion({
       <View
         width="100%"
         maxW={339}
-        height={57}
         rounded="$4"
         bg="$bgGlass"
         borderWidth={1}
         borderColor="$borderGlass"
         px="$3"
+        py="$2"
         items="center"
         justify="center"
       >
-        <XStack gap="$2" width="100%" justify="space-between">
+        <XStack gap="$2" width="100%" justify="space-between" items="center">
           {options.map((word, wordIndex) => {
             const isSelected = selectedAnswer === word;
             const isWrong = isSelected && word !== correctAnswer;
@@ -51,7 +51,7 @@ export function RecoveryPhraseQuestion({
                 flex={1}
                 width="100%"
                 minW={58}
-                height={45}
+                py="$2"
                 rounded={10}
                 bg={isSelected ? '$white' : 'transparent'}
                 items="center"
@@ -62,7 +62,8 @@ export function RecoveryPhraseQuestion({
                   fontWeight="500"
                   color={isCorrectSelection ? '$success' : isWrong ? '$error' : '$text'}
                   text="center"
-                  lineHeight={28}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
                 >
                   {word}
                 </Text>

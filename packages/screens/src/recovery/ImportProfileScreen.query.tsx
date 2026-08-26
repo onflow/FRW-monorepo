@@ -148,6 +148,7 @@ export function ImportProfileScreen(): React.ReactElement {
             <ImportOptionCard
               title={t('onboarding.importProfile.anotherMethod.title')}
               subtitle={t('onboarding.importProfile.anotherMethod.subtitle')}
+              layout="horizontal"
               onPress={handleAnotherMethod}
             />
           </YStack>

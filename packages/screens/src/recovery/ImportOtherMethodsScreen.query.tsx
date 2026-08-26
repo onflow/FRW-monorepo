@@ -52,6 +52,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
             icon={<Pocket size={28} color={theme.primary.val} />}
             title={t('onboarding.importOtherMethods.keyStore.title')}
             subtitle={t('onboarding.importOtherMethods.keyStore.subtitle')}
+            layout="horizontal"
             onPress={handleKeyStore}
           />
 
@@ -60,6 +61,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
             icon={<Key size={28} color={theme.primary.val} />}
             title={t('onboarding.importOtherMethods.privateKey.title')}
             subtitle={t('onboarding.importOtherMethods.privateKey.subtitle')}
+            layout="horizontal"
             onPress={handlePrivateKey}
           />
 
@@ -68,6 +70,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
             icon={<GoogleDrive size={28} color={theme.primary.val} />}
             title={t('onboarding.importOtherMethods.googleDrive.title')}
             subtitle={t('onboarding.importOtherMethods.googleDrive.subtitle')}
+            layout="horizontal"
             onPress={handleGoogleDrive}
           />
 
@@ -77,6 +80,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
               icon={<Icloud size={28} color={theme.primary.val} />}
               title={t('onboarding.importOtherMethods.iCloud.title')}
               subtitle={t('onboarding.importOtherMethods.iCloud.subtitle')}
+              layout="horizontal"
               onPress={handleICloud}
             />
           )}
