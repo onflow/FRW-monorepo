@@ -202,7 +202,7 @@
     "typescript-eslint": "^8.36.0",
     "typescript-transform-paths": "^3.5.5",
     "url-loader": "^4.1.1",
-    "vitest": "^3.2.4",
+    "vitest": "^3.2.6",
     "webpack": "^5.104.1",
     "webpack-cli": "^4.10.0",
     "webpack-merge": "^5.10.0"
