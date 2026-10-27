@@ -102,6 +102,7 @@ extension MultiBackupManager {
     func preLogin(with type: MultiBackupType) async throws {
         switch type {
         case .google:
+            guard GoogleDriveBackup.isEnabled else { throw BackupError.unauthorized }
             try await gdTarget.loginCloud()
         case .dropbox:
             try await dropboxTarget.loginCloud()

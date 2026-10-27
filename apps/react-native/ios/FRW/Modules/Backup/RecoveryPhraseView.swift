@@ -150,7 +150,7 @@ struct RecoveryPhraseView: RouteableView {
                     title: "backup_to_gd".localized
                 )
                 .padding(.top, 8)
-                .visibility(isInBackupMode ? .gone : .visible)
+                .visibility(isInBackupMode || !GoogleDriveBackup.isEnabled ? .gone : .visible)
 
                 VPrimaryButton(
                     model: ButtonStyle.border,

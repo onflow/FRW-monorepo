@@ -16,6 +16,9 @@ class BackupMultiViewModel: ObservableObject {
         list = []
         selectedList = backups
         for type in MultiBackupType.allCases {
+            if type == .google, !GoogleDriveBackup.isEnabled {
+                continue
+            }
             if type != .passkey {
                 list.append(MultiItem(type: type, isBackup: backups.contains(type)))
             }

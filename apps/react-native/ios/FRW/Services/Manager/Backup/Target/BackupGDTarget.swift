@@ -18,6 +18,7 @@ class BackupGDTarget: BackupTarget {
     // MARK: Lifecycle
 
     init() {
+        guard GoogleDriveBackup.isEnabled else { return }
         guard let filePath = Bundle.main.path(forResource: "GoogleOAuth2", ofType: "plist") else {
             fatalError("fatalError ===> Can't find GoogleOAuth2.plist")
         }
@@ -114,7 +115,8 @@ extension BackupGDTarget {
     }
 
     private func googleRestoreLogin() async throws -> GIDGoogleUser {
-        try await withCheckedThrowingContinuation { continuation in
+        guard GoogleDriveBackup.isEnabled else { throw GoogleBackupError.missingLoginUser }
+        return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.main.async {
                 GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
                     guard let signInUser = user else {
@@ -129,7 +131,8 @@ extension BackupGDTarget {
     }
 
     private func googleUserLogin() async throws -> GIDGoogleUser {
-        try await withCheckedThrowingContinuation { continuation in
+        guard GoogleDriveBackup.isEnabled else { throw GoogleBackupError.missingLoginUser }
+        return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.main.async {
                 let topVC = Router.topPresentedController()
                 GIDSignIn.sharedInstance

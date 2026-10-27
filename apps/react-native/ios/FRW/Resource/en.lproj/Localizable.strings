@@ -195,6 +195,8 @@
 "backup_to_icloud" = "Backup to iCould";
 "Activity::message" = "Activity";
 "backup_to_gd" = "Backup to Google Drive";
+"google_drive_backup_retired_title" = "Back up your recovery phrase";
+"google_drive_backup_retired_desc" = "Google Drive backup is no longer available, so your Drive backup can't be used to restore this wallet. Your wallet is still safe on this device. Back up your recovery phrase so you can restore it if you lose this phone.";
 "Coins::message" = "coins";
 "backup_manually" = "Backup Manually";
 "Search_to_find_more_users::message" = "Search to find more users";

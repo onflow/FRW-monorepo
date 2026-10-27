@@ -47,6 +47,7 @@ class RecoveryPhraseViewModel: ViewModel {
         case .icloudBackup:
             Router.route(to: RouteMap.Backup.backupToCloud(.icloud))
         case .googleBackup:
+            guard GoogleDriveBackup.isEnabled else { return }
             Router.route(to: RouteMap.Backup.backupToCloud(.googleDrive))
         case .manualBackup:
             Router.route(to: RouteMap.Backup.backupManual)
