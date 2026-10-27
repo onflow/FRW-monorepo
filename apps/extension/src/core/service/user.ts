@@ -8,6 +8,7 @@ import {
   getLocalData,
   setLocalData,
 } from '@/data-model';
+import { API_BASE_URL } from '@/shared/constant';
 import { type UserInfoResponse, type LoggedInAccount } from '@/shared/types';
 import { consoleError } from '@/shared/utils';
 
@@ -144,7 +145,7 @@ class UserInfoService {
 
   replaceAvatarUrl = (url) => {
     const baseUrl = 'https://source.boringavatars.com/';
-    const newBaseUrl = 'https://lilico.app/api/avatar/';
+    const newBaseUrl = `${API_BASE_URL}/api/avatar/`;
 
     if (url.startsWith(baseUrl)) {
       return url.replace(baseUrl, newBaseUrl);

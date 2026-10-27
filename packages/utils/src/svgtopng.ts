@@ -14,7 +14,7 @@ export function convertedSVGURL(originalUrl: string): string {
 
   try {
     const encoded = encodeURIComponent(trimmed);
-    return `https://lilico.app/api/svg2png?url=${encoded}`;
+    return `https://web.api.wallet.flow.com/api/svg2png?url=${encoded}`;
   } catch {
     return originalUrl;
   }

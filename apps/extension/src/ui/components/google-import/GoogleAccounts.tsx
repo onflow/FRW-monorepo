@@ -12,11 +12,12 @@ import {
 } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { API_BASE_URL } from '@/shared/constant';
 import { useWallet } from '@/ui/hooks/use-wallet';
 
 const FetchAvatar = ({ username }) => {
   const [avatar, setAvatar] = useState(
-    `https://lilico.app/api/avatar/beam/120/${username}?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`
+    `${API_BASE_URL}/api/avatar/beam/120/${username}?colors=FFDD32,FC814A,7678ED,B3DEE2,BCF0DA`
   );
   const usewallet = useWallet();
 

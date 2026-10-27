@@ -1,8 +1,9 @@
 import InfoIcon from '@mui/icons-material/Info';
 import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import { GOOGLE_DRIVE_BACKUP_ENABLED } from '@/shared/constant';
 import { consoleError } from '@/shared/utils';
 import { LLSpinner } from '@/ui/components';
 import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
@@ -26,6 +27,14 @@ const GoogleBackup: React.FC<GoogleBackupProps> = ({
   const [loading, setLoading] = useState(false);
   const [backupErr, setBackupErr] = useState(false);
 
+  // Drive backup is disabled in this build (OAuth client lived in the retired GCP project):
+  // skip straight to the next step.
+  useEffect(() => {
+    if (!GOOGLE_DRIVE_BACKUP_ENABLED) {
+      handleSwitchTab();
+    }
+  }, [handleSwitchTab]);
+
   const handleBackup = async () => {
     try {
       setLoading(true);
@@ -41,6 +50,10 @@ const GoogleBackup: React.FC<GoogleBackupProps> = ({
       setLoading(false);
     }
   };
+
+  if (!GOOGLE_DRIVE_BACKUP_ENABLED) {
+    return null;
+  }
 
   return (
     <Box className="registerBox">

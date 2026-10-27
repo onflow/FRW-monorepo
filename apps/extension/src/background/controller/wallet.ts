@@ -1960,21 +1960,20 @@ export class WalletController extends BaseController {
   };
 
   /**
-   * Get JWT token from Firebase authentication
+   * Get the FRW-Server session token (access token, or anonymous when logged out).
+   * Used as the Bearer for web-next and Go API calls made through @onflow/frw-api.
+   * @param forceRefresh - Refresh/re-mint instead of returning the cached token (used after a 401)
    * @returns Promise<string> - The JWT token
    */
-  getJWT = async (): Promise<string> => {
+  getJWT = async (forceRefresh = false): Promise<string> => {
     try {
-      const auth = authenticationService.getAuth();
-
-      if (!auth.currentUser) {
-        throw new Error('No authenticated user available');
+      if (forceRefresh) {
+        await authenticationService.handleUnauthorized();
       }
-
-      const idToken = await auth.currentUser.getIdToken();
+      const idToken = await authenticationService.getToken();
 
       if (!idToken) {
-        throw new Error('Failed to get ID token from Firebase');
+        throw new Error('Failed to get auth token');
       }
 
       return idToken;

@@ -64,7 +64,7 @@ export class ServiceContext {
     configureApiEndpoints(
       bridge.getApiEndpoint(),
       bridge.getGoApiEndpoint(),
-      () => bridge.getJWT(),
+      (forceRefresh?: boolean) => bridge.getJWT(forceRefresh),
       () => bridge.getNetwork()
     );
 

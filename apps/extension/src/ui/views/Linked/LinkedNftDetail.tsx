@@ -300,7 +300,7 @@ const LinkedNftDetail = () => {
                 }}
               >
                 <MenuItem onClick={handleClose}>
-                  <a href={'https://lilico.app/nft/' + ownerAddress +'/'+ nftDetail.contract.address +'/'+ nftDetail.contract.name + '?tokenId=' + nftDetail.id.tokenId} target="_blank">
+                  <a href={`${API_BASE_URL}/nft/` + ownerAddress +'/'+ nftDetail.contract.address +'/'+ nftDetail.contract.name + '?tokenId=' + nftDetail.id.tokenId} target="_blank">
                 Share
                   </a>
                 </MenuItem>

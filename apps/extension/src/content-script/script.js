@@ -13,7 +13,7 @@ const service = {
   provider: {
     address: '0x33f75ff0b830dcec',
     name: 'Flow Wallet',
-    icon: 'https://lilico.app/frw-logo.png',
+    icon: `${process.env.API_BASE_URL || 'https://web.api.wallet.flow.com'}/frw-logo.png`,
     description: 'A wallet created for everyone',
   },
 };

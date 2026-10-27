@@ -34,7 +34,7 @@ export interface PlatformSpec extends KeyRotationDependencies {
   getSelectedAddress(): string | null;
   getDebugAddress(): string | null;
   getNetwork(): string;
-  getJWT(): Promise<string>;
+  getJWT(forceRefresh?: boolean): Promise<string>;
   getVersion(): string;
   getBuildNumber(): string;
   getLanguage(): string;
