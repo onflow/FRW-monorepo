@@ -78,7 +78,14 @@ async function prepare() {
     manifest.description = '__MSG_appDescriptionBeta__';
     manifest.key = process.env.BETA_MANIFEST_KEY;
     manifest.oauth2.client_id = process.env.BETA_OAUTH2_CLIENT_ID;
-  } else {
+  }
+  // Chrome rejects the whole manifest if oauth2 is present with an empty
+  // client_id. Leave it out when unset (Google Drive backup needs it; it's off
+  // by default since the old OAuth client lived in the retired GCP project).
+  if (!manifest.oauth2.client_id) {
+    delete manifest.oauth2;
+  }
+  if (!IS_BETA) {
     manifest.version = version;
     manifest.name = '__MSG_appName__';
     manifest.description = '__MSG_appDescription__';
