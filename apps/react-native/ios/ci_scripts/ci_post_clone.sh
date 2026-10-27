@@ -65,16 +65,26 @@ then
 	base64 -D -o $LOCAL_ENV_FILE <<< $LOCAL_ENV
 fi
 
+# Google Drive backup is off (GOOGLE_DRIVE_BACKUP_ENABLED=false), so GoogleOAuth2.plist is never
+# read at runtime, but it is still a bundled resource. Without the secret, write an empty plist.
 if [ ! -f $GOOGLE_OAUTH2_FILE_DEV ] 
 then
-	echo "DEV: Generating GoogleOAuth2..."
-	base64 -D -o $GOOGLE_OAUTH2_FILE_DEV <<< $GOOGLE_OAUTH2_DEV
+	if [ -n "${GOOGLE_OAUTH2_DEV:-}" ]
+	then
+		echo "DEV: Generating GoogleOAuth2..."
+		base64 -D -o $GOOGLE_OAUTH2_FILE_DEV <<< "$GOOGLE_OAUTH2_DEV"
+	else
+		echo "DEV: GOOGLE_OAUTH2_DEV not set, writing an empty GoogleOAuth2.plist"
+		echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict/></plist>' > $GOOGLE_OAUTH2_FILE_DEV
+	fi
 fi
 
-if [ ! -f $GOOGLE_SERVICE_FILE_DEV ] 
+# Firebase is off (FirebaseRuntime.isEnabled = false) and GoogleService-Info.plist is no longer
+# bundled, so GOOGLE_SERVICE_DEV is optional.
+if [ ! -f $GOOGLE_SERVICE_FILE_DEV ] && [ -n "${GOOGLE_SERVICE_DEV:-}" ]
 then
 	echo "DEV: Generating GoogleService-Info..."
-	base64 -D -o $GOOGLE_SERVICE_FILE_DEV <<< $GOOGLE_SERVICE_DEV
+	base64 -D -o $GOOGLE_SERVICE_FILE_DEV <<< "$GOOGLE_SERVICE_DEV"
 fi
 
 if [ ! -f $SERVICE_CONFIG_FILE_DEV ] 
@@ -83,16 +93,26 @@ then
 	base64 -D -o $SERVICE_CONFIG_FILE_DEV <<< $SERVICE_CONFIG_DEV
 fi
 
+# Google Drive backup is off (GOOGLE_DRIVE_BACKUP_ENABLED=false), so GoogleOAuth2.plist is never
+# read at runtime, but it is still a bundled resource. Without the secret, write an empty plist.
 if [ ! -f $GOOGLE_OAUTH2_FILE_PROD ] 
 then
-	echo "PROD: Generating GoogleOAuth2..."
-	base64 -D -o $GOOGLE_OAUTH2_FILE_PROD <<< $GOOGLE_OAUTH2_PROD
+	if [ -n "${GOOGLE_OAUTH2_PROD:-}" ]
+	then
+		echo "PROD: Generating GoogleOAuth2..."
+		base64 -D -o $GOOGLE_OAUTH2_FILE_PROD <<< "$GOOGLE_OAUTH2_PROD"
+	else
+		echo "PROD: GOOGLE_OAUTH2_PROD not set, writing an empty GoogleOAuth2.plist"
+		echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict/></plist>' > $GOOGLE_OAUTH2_FILE_PROD
+	fi
 fi
 
-if [ ! -f $GOOGLE_SERVICE_FILE_PROD ] 
+# Firebase is off (FirebaseRuntime.isEnabled = false) and GoogleService-Info.plist is no longer
+# bundled, so GOOGLE_SERVICE_PROD is optional.
+if [ ! -f $GOOGLE_SERVICE_FILE_PROD ] && [ -n "${GOOGLE_SERVICE_PROD:-}" ]
 then
 	echo "PROD: Generating GoogleService-Info..."
-	base64 -D -o $GOOGLE_SERVICE_FILE_PROD <<< $GOOGLE_SERVICE_PROD
+	base64 -D -o $GOOGLE_SERVICE_FILE_PROD <<< "$GOOGLE_SERVICE_PROD"
 fi
 
 if [ ! -f $SERVICE_CONFIG_FILE_PROD ] 

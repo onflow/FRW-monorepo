@@ -10,8 +10,6 @@ import FlowWalletKit
 import WalletCore
 import Flow
 import UserNotifications
-import FirebaseAuth
-import Firebase
 
 extension TurboModuleSwift {
   @objc
@@ -107,9 +105,19 @@ extension TurboModuleSwift {
     ]
   }
 
+  /// RN onboarding (ConfirmRecoveryPhraseScreen) hands over the /v4/register session here, as
+  /// JSON `{"id","access_token","refresh_token","expires_in","refresh_expires_in"}` through the
+  /// old `customToken` parameter (same contract as Android's `SessionTokens.fromJson`).
+  /// Anything that is not JSON is a legacy Firebase custom token (server without a signing key).
+  /// Firebase Auth is off, so such a token cannot start a session: fail clearly instead of
+  /// continuing with an anonymous token.
   @objc
   static func signInWithCustomToken(customToken: String) async throws {
-    try await Auth.auth().signIn(withCustomToken: customToken)
+    guard let grant = RNSessionGrant.parse(customToken) else {
+      log.error("[Auth] RN passed a legacy Firebase custom token; no session tokens in the register response")
+      throw AuthError.missingAccessToken
+    }
+    await AuthSession.shared.establish(grant)
   }
 
   @objc
@@ -160,7 +168,9 @@ extension TurboModuleSwift {
 
   @objc
   static func getV4RegisteredSignature(mnemonic: String) async throws -> [String: Any] {
-    let jwt = try await getJWT()
+    // The JS sends /v4/register with Bearer getJWT() right after this. tokenForSigning() mints a
+    // fresh anonymous token and opens a short window in which getJWT() returns that same token.
+    let jwt = try await AuthSession.shared.tokenForSigning()
     guard let signatureData = jwt.addUserMessage() else {
       log.error("invalid data to sign")
       throw LLError.signFailed
@@ -197,5 +207,39 @@ extension TurboModuleSwift {
     ]
     return try response.toDictionary()
     
+  }
+}
+
+/// Parses the session JSON RN passes through the `customToken` bridge parameters.
+enum RNSessionGrant {
+  static func parse(_ value: String) -> AuthGrant? {
+    let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard trimmed.hasPrefix("{"),
+          let data = trimmed.data(using: .utf8),
+          let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+    else {
+      return nil
+    }
+    func string(_ key: String) -> String? {
+      guard let value = json[key] as? String, !value.isEmpty else { return nil }
+      return value
+    }
+    func number(_ key: String) -> Double? {
+      if let value = json[key] as? NSNumber { return value.doubleValue }
+      if let value = json[key] as? String { return Double(value) }
+      return nil
+    }
+    guard let accessToken = string("access_token"),
+          let uid = string("id") ?? string("uid")
+    else {
+      return nil
+    }
+    return AuthGrant(
+      accessToken: accessToken,
+      refreshToken: string("refresh_token"),
+      expiresIn: number("expires_in"),
+      refreshExpiresIn: number("refresh_expires_in"),
+      uid: uid
+    )
   }
 }

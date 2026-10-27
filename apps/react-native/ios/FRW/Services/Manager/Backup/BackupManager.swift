@@ -5,7 +5,6 @@
 //  Created by Hao Fu on 2/1/22.
 //
 
-import FirebaseAuth
 import Foundation
 import GoogleAPIClientForREST_Drive
 import GoogleAPIClientForRESTCore

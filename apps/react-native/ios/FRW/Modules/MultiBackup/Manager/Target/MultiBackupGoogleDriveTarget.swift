@@ -26,6 +26,13 @@ class MultiBackupGoogleDriveTarget: MultiBackupTarget {
         if let clientID = plist?.object(forKey: "CLIENT_ID") as? String {
             self.clientID = clientID
         }
+        // The prod OAuth client lives in GCP project 556216024625 (lilico-334404). When a new
+        // client exists, set GoogleDriveClientID in Info.plist (and swap the reversed-client-ID
+        // URL scheme next to it) without touching GoogleOAuth2.plist.
+        if let override = Bundle.main.object(forInfoDictionaryKey: "GoogleDriveClientID") as? String,
+           !override.isEmpty {
+            self.clientID = override
+        }
     }
 
     // MARK: Internal

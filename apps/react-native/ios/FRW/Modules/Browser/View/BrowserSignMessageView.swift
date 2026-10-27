@@ -124,7 +124,7 @@ struct BrowserSignMessageView: View {
 struct BrowserSignMessageView_Previews: PreviewProvider {
     static let vm = BrowserSignMessageViewModel(
         title: "Test title",
-        url: "https://lilico.app",
+        url: "https://wallet.flow.com",
         logo: "",
         cadence: "464f4f"
     ) { _ in

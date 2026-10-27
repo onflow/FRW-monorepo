@@ -69,6 +69,8 @@
 	<string>f4bff0f0e2ed98c2ba53a29qzvm</string>
 	<key>CrowdinSourceLanguage</key>
 	<string>en</string>
+	<key>GoogleDriveClientID</key>
+	<string></string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>

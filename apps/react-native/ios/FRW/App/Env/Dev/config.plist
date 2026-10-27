@@ -2,11 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- dev.lilico.app and lilico-dev Cloud Functions are gone with GCP. There is no dev
+	     backend on AWS yet, so dev builds use the production API and functions hosts. -->
 	<key>lilico-web</key>
 	<string>https://web-dev.api.wallet.flow.com/api/</string>
 	<key>lilico</key>
-	<string>https://dev.lilico.app</string>
+	<string>https://api.wallet.flow.com</string>
 	<key>firebase-function</key>
-	<string>https://us-central1-lilico-dev.cloudfunctions.net</string>
+	<string>https://functions.wallet.flow.com</string>
 </dict>
 </plist>

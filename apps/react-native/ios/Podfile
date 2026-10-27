@@ -54,4 +54,14 @@ post_install do |installer|
             target.remove_from_project
           end
       end
+    # fmt 11.0.2 (via RCT-Folly) fails to compile with Apple clang in Xcode 26.4+ under C++20
+    # ("call to consteval function ... is not a constant expression"). Build fmt as C++17, where
+    # it does not use consteval format-string checks.
+    installer.pods_project.targets.each do |target|
+      if target.name == "fmt"
+        target.build_configurations.each do |config|
+          config.build_settings["CLANG_CXX_LANGUAGE_STANDARD"] = "c++17"
+        end
+      end
+    end
 end

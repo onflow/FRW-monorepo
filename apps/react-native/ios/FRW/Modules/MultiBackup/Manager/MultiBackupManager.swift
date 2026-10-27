@@ -6,7 +6,6 @@
 //
 
 import CryptoKit
-import FirebaseAuth
 import Flow
 import FlowWalletKit
 import Foundation

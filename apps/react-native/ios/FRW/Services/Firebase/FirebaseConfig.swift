@@ -32,6 +32,11 @@ enum FirebaseConfig: String {
     // MARK: Internal
 
     static func start() {
+        guard FirebaseRuntime.isEnabled else {
+            // No Remote Config backend: run on the bundled remote_config_defaults.plist.
+            onConfigLoadFinish()
+            return
+        }
         Task {
             do {
                 _ = try await FirebaseConfig.all.fetchConfig()
@@ -51,7 +56,33 @@ enum FirebaseConfig: String {
 }
 
 extension FirebaseConfig {
+    /// Values from the bundled `remote_config_defaults.plist` (the same file Firebase Remote
+    /// Config used as its defaults). Used while Firebase is disabled.
+    static let bundledDefaults: [String: String] = {
+        guard let url = Bundle.main.url(forResource: "remote_config_defaults", withExtension: "plist"),
+              let dict = NSDictionary(contentsOf: url) as? [String: Any]
+        else {
+            return [:]
+        }
+        var values: [String: String] = [:]
+        for (key, value) in dict {
+            values[key] = (value as? String) ?? "\(value)"
+        }
+        return values
+    }()
+
+    private var bundledData: Data {
+        Data((FirebaseConfig.bundledDefaults[rawValue] ?? "").utf8)
+    }
+
     func fetch<T: Codable>(decoder: JSONDecoder = FRWAPI.jsonDecoder) throws -> T {
+        guard FirebaseRuntime.isEnabled else {
+            do {
+                return try decoder.decode(T.self, from: bundledData)
+            } catch {
+                throw FirebaseConfigError.decode
+            }
+        }
         let remoteConfig = RemoteConfig.remoteConfig()
         let json = remoteConfig.configValue(forKey: rawValue)
         do {
@@ -64,19 +95,29 @@ extension FirebaseConfig {
     }
 
     func fetch() throws -> String {
+        guard FirebaseRuntime.isEnabled else {
+            return FirebaseConfig.bundledDefaults[rawValue] ?? ""
+        }
         let remoteConfig = RemoteConfig.remoteConfig()
         let json = remoteConfig.configValue(forKey: rawValue)
         return json.stringValue ?? ""
     }
 
     func fetchLocal<T: Codable>() throws -> T {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        guard FirebaseRuntime.isEnabled else {
+            do {
+                return try decoder.decode(T.self, from: bundledData)
+            } catch {
+                throw FirebaseConfigError.decode
+            }
+        }
         let remoteConfig = RemoteConfig.remoteConfig()
         guard let json = remoteConfig.defaultValue(forKey: rawValue) else {
             throw FirebaseConfigError.decode
         }
         do {
-            let decoder = JSONDecoder()
-            decoder.keyDecodingStrategy = .convertFromSnakeCase
             let collections = try decoder.decode(T.self, from: json.dataValue)
             return collections
         } catch {
