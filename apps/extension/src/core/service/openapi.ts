@@ -60,6 +60,7 @@ import {
 
 import { findKeyAndInfo } from '../utils';
 import { type SessionTokenResponse } from './authentication-service';
+import { nonJsonHttpError, readResponseBody } from './http-error';
 import {
   googleSafeHostService,
   analyticsService,
@@ -511,20 +512,25 @@ export class OpenApiService {
     });
 
     let response = await fetch(requestUrl, await withAuth());
-    // 401 = expired/invalid token: refresh (or re-mint anonymous) and retry once
+    let body = await readResponseBody(response);
+    // 401 = expired/invalid token: refresh (or re-mint anonymous) and retry once.
+    // handleUnauthorized only renews for 401s from the token issuer (FRW-Server), and at most
+    // once per 30 s; a 401 from web-next or another host is returned/thrown as a normal failure.
     if (response.status === 401) {
-      const errorBody = await response
-        .clone()
-        .json()
-        .catch(() => null);
+      const code = body.isJson ? body.data?.code : undefined;
       if (
-        errorBody?.code !== 'signed_token_reused' &&
-        (await authenticationService.handleUnauthorized())
+        code !== 'signed_token_reused' &&
+        (await authenticationService.handleUnauthorized(requestUrl))
       ) {
         response = await fetch(requestUrl, await withAuth());
+        body = await readResponseBody(response);
       }
     }
-    const responseData = await response.json(); // parses JSON response into native JavaScript objects
+    if (!body.isJson) {
+      // e.g. a plain-text "Not authenticated": typed error instead of a JSON SyntaxError
+      throw nonJsonHttpError(response.status, requestUrl, body.text);
+    }
+    const responseData = body.data;
 
     // Verify signature if present in headers
     try {

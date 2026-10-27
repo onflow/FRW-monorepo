@@ -23,6 +23,10 @@ const DEVICE_ID_KEY = 'frwDeviceId';
 const ACCESS_REFRESH_MARGIN_MS = 5 * 60_000;
 // Reuse a cached anonymous token only with more than this left (contract: 2 min)
 const ANON_REUSE_MARGIN_MS = 2 * 60_000;
+// At most one forced renewal (refresh or re-mint after a 401 / forceRefresh), and at most one
+// early refresh attempt inside the margin, per this window, unless the token has actually expired.
+// Stops a polling loop from rotating the session or burning the anonymous rate limit.
+export const RENEW_MIN_INTERVAL_MS = 30_000;
 
 type StoredSession = {
   uid: string;
@@ -72,6 +76,10 @@ export class AuthenticationService {
   private refreshPromise: Promise<string | null> | null = null;
   private anonPromise: Promise<AnonToken> | null = null;
   private initPromise: Promise<void> | null = null;
+  // Set by an accepted 401 / forceRefresh; the next getToken() renews even if the token looks valid
+  private forceRenewNext = false;
+  private lastForcedRenewAt = 0;
+  private lastRefreshAttemptAt = 0;
 
   /**
    * No network calls here: only restores the stored session. Boot must never block on auth.
@@ -134,21 +142,84 @@ export class AuthenticationService {
     if (this.signingToken) {
       return this.signingToken;
     }
+    if (forceRefresh) {
+      this.requestForcedRenew();
+    }
+    const force = this.forceRenewNext;
+    this.forceRenewNext = false;
+
     if (this.session) {
-      if (!forceRefresh && this.session.accessExpiresAt - Date.now() > ACCESS_REFRESH_MARGIN_MS) {
+      const now = Date.now();
+      const remaining = this.session.accessExpiresAt - now;
+      if (!force && remaining > ACCESS_REFRESH_MARGIN_MS) {
         return this.session.accessToken;
       }
-      const refreshed = await this.refresh();
-      if (refreshed) {
-        return refreshed;
+      // Early refresh (inside the margin, still valid): at most one attempt per window, so a
+      // failing refresh endpoint isn't hit on every call
+      if (!force && remaining > 0 && now - this.lastRefreshAttemptAt < RENEW_MIN_INTERVAL_MS) {
+        return this.session.accessToken;
+      }
+      try {
+        const refreshed = await this.refresh();
+        if (refreshed) {
+          return refreshed;
+        }
+      } catch (error) {
+        // Transient failure (network, 5xx, 429): keep the session and its expiry untouched, and
+        // keep using the current access token while it is still valid
+        if (this.session && this.session.accessExpiresAt > Date.now()) {
+          consoleError('[auth] Token refresh failed; using current access token', error);
+          return this.session.accessToken;
+        }
+        throw error;
       }
       // Refresh token rejected: session is over, fall through to anonymous
     }
-    if (!forceRefresh && this.anon && this.anon.expiresAt - Date.now() > ANON_REUSE_MARGIN_MS) {
+    if (!force && this.anon && this.anon.expiresAt - Date.now() > ANON_REUSE_MARGIN_MS) {
       return this.anon.token;
     }
-    const anon = await this.mintAnonymous();
-    return anon.token;
+    try {
+      const anon = await this.mintAnonymous();
+      return anon.token;
+    } catch (error) {
+      // e.g. 429 from the anonymous endpoint: an unexpired cached token is still usable
+      if (!this.session && this.anon && this.anon.expiresAt > Date.now()) {
+        return this.anon.token;
+      }
+      throw error;
+    }
+  };
+
+  /** True if `url` is served by the token issuer (FRW-Server), whose 401s mean "renew the token". */
+  isTokenIssuer = (url: string): boolean => {
+    try {
+      return !!this.apiBaseUrl && new URL(url).origin === new URL(this.apiBaseUrl).origin;
+    } catch {
+      return false;
+    }
+  };
+
+  /** True if the current Bearer (access, or cached anonymous) has actually expired. */
+  private isCurrentTokenExpired = (now = Date.now()): boolean => {
+    if (this.session) {
+      return this.session.accessExpiresAt <= now;
+    }
+    return !this.anon || this.anon.expiresAt <= now;
+  };
+
+  /** Mark the next getToken() to renew, rate-limited to one per RENEW_MIN_INTERVAL_MS. */
+  private requestForcedRenew = (): boolean => {
+    const now = Date.now();
+    if (this.isCurrentTokenExpired(now)) {
+      // getToken() renews an expired token anyway; no rate limit needed
+      return true;
+    }
+    if (now - this.lastForcedRenewAt < RENEW_MIN_INTERVAL_MS) {
+      return false;
+    }
+    this.lastForcedRenewAt = now;
+    this.forceRenewNext = true;
+    return true;
   };
 
   private getTokenOrThrow = async (forceRefresh?: boolean) => {
@@ -160,20 +231,24 @@ export class AuthenticationService {
   };
 
   /**
-   * Called after a 401 from a token-protected API. Drops the current access/anonymous token so
-   * the next getToken() refreshes or re-mints. Returns true if a retry makes sense.
+   * Called after a 401. Returns true if the caller should retry once with a new getToken().
+   *
+   * - `url` from another host (web-next etc.): false, no session change. Only the token issuer's
+   *   401 says anything about our token. Callers that omit `url` must only pass issuer 401s.
+   * - Token actually expired: true (getToken() renews it).
+   * - Otherwise the next getToken() refreshes (logged in) or re-mints (logged out), at most once
+   *   per RENEW_MIN_INTERVAL_MS; inside that window this returns false. The stored expiry is
+   *   never zeroed, so a failed refresh doesn't make every later call refresh.
    */
-  handleUnauthorized = async (): Promise<boolean> => {
+  handleUnauthorized = async (url?: string): Promise<boolean> => {
     if (this.signingToken) {
       // A signed login must be re-signed by the caller; a blind retry would be rejected.
       return false;
     }
-    if (this.session) {
-      this.session = { ...this.session, accessExpiresAt: 0 };
-    } else {
-      this.anon = null;
+    if (url !== undefined && !this.isTokenIssuer(url)) {
+      return false;
     }
-    return true;
+    return this.requestForcedRenew();
   };
 
   /**
@@ -208,6 +283,7 @@ export class AuthenticationService {
       refreshExpiresAt: now + (data.refresh_expires_in ?? 7776000) * 1000,
     };
     this.anon = null;
+    this.forceRenewNext = false;
     await setLocalData(SESSION_KEY, this.session);
     analyticsService?.identify?.(uid, uid);
     consoleLog('User is signed in');
@@ -226,6 +302,7 @@ export class AuthenticationService {
   signOut = async () => {
     this.session = null;
     this.anon = null;
+    this.forceRenewNext = false;
     await removeLocalData(SESSION_KEY);
     consoleLog('User is signed out');
   };
@@ -262,6 +339,7 @@ export class AuthenticationService {
       await this.signOut();
       return null;
     }
+    this.lastRefreshAttemptAt = Date.now();
     const res = await fetch(`${this.apiBaseUrl}/v1/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },

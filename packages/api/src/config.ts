@@ -3,7 +3,8 @@ import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestCo
 type RetriableConfig = InternalAxiosRequestConfig & { _authRetried?: boolean };
 
 /**
- * On HTTP 401, ask the platform for a fresh token (refresh or re-mint) and retry once.
+ * On HTTP 401 from the token issuer (Go API), ask the platform for a fresh token (refresh or
+ * re-mint) and retry once.
  * A reused signed login token cannot be fixed by retrying, so that case is passed through.
  */
 function retryOnUnauthorized(
@@ -56,13 +57,9 @@ export function configureApiEndpoints(
     (error) => Promise.reject(error)
   );
 
-  // Add response interceptor to debug server responses
-  instance.interceptors.response.use(
-    (response) => {
-      return response;
-    },
-    retryOnUnauthorized(instance, getJWT)
-  );
+  // No 401 retry here: this is web-next, not the token issuer. A 401 from it is a normal
+  // request failure; forcing a refresh/re-mint on it rotated the session on every poll.
+  // An actually expired token is renewed by getJWT() in the request interceptor.
 
   serviceOptions.axios = instance;
 
