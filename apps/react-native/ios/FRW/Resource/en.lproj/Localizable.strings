@@ -927,7 +927,7 @@
 "restore_multi_title" = "From Multi Backup";
 "restore_multi_desc" = "Google Drive/ Passkey/ iCloud/ Recovery Phrase";
 "restore_phrase_title" = "From Raw Key";
-"restore_phrase_desc" = "Support legacy Google Drive, iCloud, Seed Phrase, Key Store and Private Key";
+"restore_phrase_desc" = "Support iCloud, Seed Phrase, Key Store and Private Key";
 "from_multi_backup" = "From Multi-Backup";
 "from_multi_backup_desc" = "Please Select 2 or More Backup Options";
 "connect_to_x" = "Connect to %@";
@@ -1113,7 +1113,7 @@ Please create backups for your wallet to ensure you retain access to your Flow a
 
 "restore_device_desc_2" = "Mobile or Extension Devices";
 "restore_phrase_title_2" = "From Raw Key";
-"restore_phrase_desc_2" = "Support legacy Google Drive, Seed Phrase, Key Store and Private Key";
+"restore_phrase_desc_2" = "Support Seed Phrase, Key Store and Private Key";
 "import_desc" = "From Flow Wallet legacy backup, Seed Phrase, 
 Key Store and Private Key.";
 "invalid_data" = "Invalid Data";
