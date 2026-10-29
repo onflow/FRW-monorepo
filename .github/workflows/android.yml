@@ -21,6 +21,16 @@ on:
           - debug
           - dev
           - release
+      skipStoreUpload:
+        description: "Skip Google Play / Firebase App Distribution uploads (test builds)"
+        default: false
+        required: false
+        type: boolean
+      webApiHost:
+        description: "Test only: override the web-next host baked into the app (e.g. a Vercel preview URL). Leave empty for store builds."
+        default: ""
+        required: false
+        type: string
 jobs:
   determine-env:
     runs-on: ubuntu-latest
@@ -255,6 +265,23 @@ jobs:
             # Minimal diagnostics: confirm paths set
             grep -E '^(serviceCredentialsFile|playServiceAccountFile)=' local.properties || true
           fi
+
+      - name: Override web-next host (test builds only)
+        if: inputs.webApiHost != ''
+        shell: bash
+        working-directory: ${{ env.ANDROID_DIR }}
+        env:
+          WEB_API_HOST: ${{ inputs.webApiHost }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$WEB_API_HOST" =~ ^https://[A-Za-z0-9.-]+$ ]]; then
+            echo "::error::webApiHost must look like https://host"; exit 1
+          fi
+          F=app/src/main/java/com/flowfoundation/wallet/network/WalletHosts.kt
+          sed -i "s#else \"https://web.api.wallet.flow.com\"#else \"$WEB_API_HOST\"#" "$F"
+          grep -n 'val WEB' "$F"
+          grep -q "$WEB_API_HOST" "$F"
+          echo "::warning::TEST BUILD: web-next host overridden to $WEB_API_HOST. Do not ship this artifact."
 
       - name: Ensure debug keystore path is writable
         shell: bash
@@ -540,7 +567,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-${{ steps.meta.outputs.buildType }}-apk
+          name: android-${{ steps.meta.outputs.buildType }}${{ inputs.webApiHost != '' && '-TESTONLY' || '' }}-apk
           path: |
             apps/react-native/android/app/build/outputs/apk/**/**/*.apk
           if-no-files-found: warn
@@ -549,13 +576,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-${{ steps.meta.outputs.buildType }}-aab
+          name: android-${{ steps.meta.outputs.buildType }}${{ inputs.webApiHost != '' && '-TESTONLY' || '' }}-aab
           path: |
             apps/react-native/android/app/build/outputs/bundle/**/**/*.aab
           if-no-files-found: warn
 
       - name: Attach APK/AAB to GitHub Release (release only)
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/release/') && steps.meta.outputs.buildType == 'release'
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/release/') && steps.meta.outputs.buildType == 'release' && inputs.webApiHost == ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
@@ -619,8 +646,10 @@ jobs:
             echo "[Android CI] Uploaded: $name"
           done
 
+      # Firebase project lilico-334404 is gone: App Distribution only runs when the repo variable
+      # FIREBASE_ENABLED is "true" (a new Firebase project has been wired in).
       - name: Firebase App Distribution (dev)
-        if: steps.meta.outputs.buildType == 'dev'
+        if: steps.meta.outputs.buildType == 'dev' && vars.FIREBASE_ENABLED == 'true' && !inputs.skipStoreUpload
         working-directory: ${{ env.ANDROID_DIR }}
         run: |
           if [ ! -f firebase-appdist.json ]; then
@@ -630,7 +659,7 @@ jobs:
           ./gradlew :app:appDistributionUploadDev -PserviceCredentialsFile="$PWD/firebase-appdist.json" --stacktrace
 
       - name: Firebase App Distribution (release)
-        if: steps.meta.outputs.buildType == 'release'
+        if: steps.meta.outputs.buildType == 'release' && vars.FIREBASE_ENABLED == 'true' && !inputs.skipStoreUpload
         working-directory: ${{ env.ANDROID_DIR }}
         run: |
           if [ ! -f firebase-appdist.json ]; then
@@ -639,8 +668,11 @@ jobs:
           fi
           ./gradlew :app:appDistributionUploadRelease -PserviceCredentialsFile="$PWD/firebase-appdist.json" --stacktrace
 
+      # The Play service account (FASTLANE_SA) probably lived in lilico-334404. If it is dead this
+      # step fails; the signed AAB is still in the android-release-aab artifact for a manual upload.
       - name: Google Play Internal (release)
-        if: steps.meta.outputs.buildType == 'release'
+        if: steps.meta.outputs.buildType == 'release' && !inputs.skipStoreUpload && inputs.webApiHost == ''
+        continue-on-error: true
         working-directory: ${{ env.ANDROID_DIR }}
         run: |
           # Determine which credentials to use for Play

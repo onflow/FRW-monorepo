@@ -31,11 +31,8 @@ extension FRWAPI.Utils: TargetType, AccessTokenAuthorizable {
         case .currencyRate:
             return Config.get(.lilico)
         case .retoken:
-            #if LILICOPROD
-            return .init(string: "https://scanner.lilico.app")!
-            #else
-            return .init(string: "https://dev-scanner.lilico.app")!
-            #endif
+            // dev-scanner.lilico.app is gone with GCP; dev builds share the production scanner.
+            return .init(string: "https://scanner.wallet.flow.com")!
         case .flowAddress:
             return .init(string: "https://production.key-indexer.flow.com/")!
         case .coinbase:

@@ -6,6 +6,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
+// Google Drive restore is off: its OAuth client was in GCP project lilico-334404 (556216024625),
+// which is gone. Matches the extension's GOOGLE_DRIVE_BACKUP_ENABLED and the native flags.
+const GOOGLE_DRIVE_BACKUP_ENABLED = false;
+
 /**
  * ImportOtherMethodsScreen - Allows users to import wallet via other methods
  * Options include: Key store, Private key, Google Drive, and iCloud
@@ -64,12 +68,14 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
           />
 
           {/* Google Drive */}
-          <ImportOptionCard
-            icon={<GoogleDrive size={28} color={theme.primary.val} />}
-            title={t('onboarding.importOtherMethods.googleDrive.title')}
-            subtitle={t('onboarding.importOtherMethods.googleDrive.subtitle')}
-            onPress={handleGoogleDrive}
-          />
+          {GOOGLE_DRIVE_BACKUP_ENABLED && (
+            <ImportOptionCard
+              icon={<GoogleDrive size={28} color={theme.primary.val} />}
+              title={t('onboarding.importOtherMethods.googleDrive.title')}
+              subtitle={t('onboarding.importOtherMethods.googleDrive.subtitle')}
+              onPress={handleGoogleDrive}
+            />
+          )}
 
           {/* iCloud - iOS only */}
           {Platform.OS === 'ios' && (

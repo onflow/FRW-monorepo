@@ -11,6 +11,8 @@ enum AppExternalLinks: String, CaseIterable {
     case frw = "frw://"
     case fcw = "fcw://"
     case lilico = "lilico://"
+    // Inbound matchers only: old QR codes and dApp links still use the lilico hosts. The app
+    // no longer claims them as universal links (see FRW.entitlements) or emits them.
     case frwUL = "https://frw-link.lilico.app"
     case fcwUL = "https://fcw-link.lilico.app"
     case wallet = "https://link.wallet.flow.com"

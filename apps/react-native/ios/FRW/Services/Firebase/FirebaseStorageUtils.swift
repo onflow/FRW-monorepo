@@ -13,7 +13,12 @@ import UIKit
 
 enum FirebaseStorageUtils {
     static func upload(avatar: UIImage, removeQuery: Bool = true) async -> String? {
-        await withCheckedContinuation { config in
+        // Avatars were stored in the Firebase bucket. No replacement yet: upload is unavailable.
+        guard FirebaseRuntime.isEnabled else {
+            log.warning("[Avatar] upload disabled: Firebase Storage removed")
+            return nil
+        }
+        return await withCheckedContinuation { config in
             guard let username = UserManager.shared.userInfo?.username else {
                 config.resume(returning: nil)
                 return

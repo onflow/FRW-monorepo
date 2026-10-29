@@ -17,7 +17,10 @@ class PushHandler: NSObject, ObservableObject {
 
     override private init() {
         super.init()
-        Messaging.messaging().delegate = self
+        // FCM disabled with Firebase. Push delivery is off until direct APNs lands.
+        if FirebaseRuntime.isEnabled {
+            Messaging.messaging().delegate = self
+        }
         UNUserNotificationCenter.current().delegate = self
 
         refreshPushStatus()
@@ -128,7 +131,8 @@ extension PushHandler {
     }
 
     func uploadWhenAppUpgrade() {
-        guard let address = WalletManager.shared
+        guard FirebaseRuntime.isEnabled,
+            let address = WalletManager.shared
             .getWatchAddressOrChildAccountAddressOrPrimaryAddress(),
             let fcmToken = Messaging.messaging().fcmToken
         else {
@@ -195,7 +199,7 @@ extension PushHandler: MessagingDelegate, UNUserNotificationCenterDelegate {
 
 extension PushHandler {
     private func registerForWalletConnect() {
-        if let deviceToken = Messaging.messaging().apnsToken {
+        if FirebaseRuntime.isEnabled, let deviceToken = Messaging.messaging().apnsToken {
             Task(priority: .high) {
                 log.debug("[Push] web3wallet register before")
                 let deviceTokenString = deviceToken.map { data in String(format: "%02.2hhx", data) }

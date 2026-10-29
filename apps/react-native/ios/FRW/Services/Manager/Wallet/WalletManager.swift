@@ -325,6 +325,7 @@ extension WalletManager {
                 selectedAccount = .main(account.address)
             }
             checkBloctoKeyAndPresentBackupTip(address: account.hexAddr)
+            GoogleDriveBackup.promptIfDriveWasOnlyBackup()
         }
 
         updateUserAddress()

@@ -12,6 +12,27 @@ import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
 
 /**
+ * Session fields returned by v4 register/login/import. FRW-Server now issues its own
+ * access/refresh tokens (see auth contract); custom_token is only present while the
+ * Firebase fallback is still configured server-side.
+ */
+export type ProfileSessionReturn = controllers_UserReturn & {
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  refresh_expires_in?: number;
+};
+
+const toSessionReturn = (responseData: any): ProfileSessionReturn => ({
+  id: responseData?.id,
+  custom_token: responseData?.custom_token,
+  access_token: responseData?.access_token,
+  refresh_token: responseData?.refresh_token,
+  expires_in: responseData?.expires_in,
+  refresh_expires_in: responseData?.refresh_expires_in,
+});
+
+/**
  * Response from /v2/user/address endpoint
  * Backend returns: { data: { txid?: string }, status: number, message: string }
  */
@@ -74,7 +95,7 @@ export class ProfileService {
     evmSignature: string;
     eoaAddress: string;
     deviceInfo?: forms_DeviceInfo;
-  }): Promise<controllers_UserReturn> {
+  }): Promise<ProfileSessionReturn> {
     try {
       // Validate required fields
       if (!params.accountKey.public_key) {
@@ -124,12 +145,14 @@ export class ProfileService {
       const id = responseData?.id;
       const customToken = responseData?.custom_token;
 
-      if (!id || !customToken) {
+      if (!id || (!customToken && !responseData?.access_token)) {
         logger.error('[ProfileService] Registration v4 failed: missing required fields');
-        throw new Error('Registration response missing required fields (id or custom_token)');
+        throw new Error(
+          'Registration response missing required fields (id and access_token or custom_token)'
+        );
       }
 
-      return { custom_token: customToken, id };
+      return toSessionReturn(responseData);
     } catch (error: any) {
       // Enhanced error handling for Axios errors
       if (error?.response) {
@@ -190,7 +213,7 @@ export class ProfileService {
     address: string;
     backupInfo?: any; // forms_BackupInfo - optional backup information
     deviceInfo?: forms_DeviceInfo;
-  }): Promise<controllers_UserReturn> {
+  }): Promise<ProfileSessionReturn> {
     try {
       // Validate required fields
       if (!params.accountKey.public_key) {
@@ -245,12 +268,14 @@ export class ProfileService {
       const id = responseData?.id;
       const customToken = responseData?.custom_token;
 
-      if (!id || !customToken) {
+      if (!id || (!customToken && !responseData?.access_token)) {
         logger.error('[ProfileService] Import v4 failed: missing required fields');
-        throw new Error('Import response missing required fields (id or custom_token)');
+        throw new Error(
+          'Import response missing required fields (id and access_token or custom_token)'
+        );
       }
 
-      return { custom_token: customToken, id };
+      return toSessionReturn(responseData);
     } catch (error: any) {
       if (error?.response) {
         const status = error.response.status;
@@ -304,7 +329,7 @@ export class ProfileService {
     evmSignature: string;
     eoaAddress: string;
     deviceInfo?: forms_DeviceInfo;
-  }): Promise<controllers_UserReturn> {
+  }): Promise<ProfileSessionReturn> {
     try {
       // Validate required fields
       if (!params.accountKey.public_key) {
@@ -353,12 +378,14 @@ export class ProfileService {
       const id = responseData?.id;
       const customToken = responseData?.custom_token;
 
-      if (!id || !customToken) {
+      if (!id || (!customToken && !responseData?.access_token)) {
         logger.error('[ProfileService] Login v4 failed: missing required fields');
-        throw new Error('Login response missing required fields (id or custom_token)');
+        throw new Error(
+          'Login response missing required fields (id and access_token or custom_token)'
+        );
       }
 
-      return { custom_token: customToken, id };
+      return toSessionReturn(responseData);
     } catch (error: any) {
       if (error?.response) {
         const status = error.response.status;

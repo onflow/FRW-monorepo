@@ -6,7 +6,6 @@ import { logger } from '@onflow/frw-context';
 import { BIP44_PATHS } from '@onflow/frw-wallet';
 import { captureException } from '@sentry/react';
 import * as ethUtil from 'ethereumjs-util';
-import { signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
 // Import the cadence package that contains getFlowBalanceForAnyAccounts
 
@@ -1440,23 +1439,6 @@ class UserWallet {
     signAlgo: number,
     replaceUser = true
   ): Promise<void> => {
-    // Login anonymously if needed
-    const auth = authenticationService.getAuth();
-    let idToken = await auth.currentUser?.getIdToken();
-    if (idToken === null || !idToken) {
-      // Sign in anonymously first
-      const userCredential = await signInAnonymously(auth);
-      idToken = await userCredential.user.getIdToken();
-      if (idToken === null || !idToken) {
-        throw new Error('Failed to get idToken - even after signing in anonymously');
-      }
-    }
-    // Add the user domain tag
-    const rightPaddedHexBuffer = (value, pad) =>
-      Buffer.from(value.padEnd(pad * 2, '0'), 'hex').toString('hex');
-    const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
-    const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
-
     // Determine hash algorithm based on signing algorithm (same logic as pubKeySignAlgoToAccountKey)
     const hashAlgo = getCompatibleHashAlgo(signAlgo);
 
@@ -1468,19 +1450,31 @@ class UserWallet {
       weight: DEFAULT_WEIGHT,
     };
 
-    // Sign the message
-    const realSignature = await signWithKey(
-      message,
-      accountKeyRequest.sign_algo,
-      accountKeyRequest.hash_algo,
-      privateKey
-    );
-
     // Get the device info
     const deviceInfo = await this.getDeviceInfo();
 
-    // Login with the signed message
-    await openapiService.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
+    // Sign a fresh anonymous token and send it as the Bearer of the login request
+    await authenticationService.withSigningToken(async (idToken) => {
+      // Add the user domain tag
+      const rightPaddedHexBuffer = (value, pad) =>
+        Buffer.from(value.padEnd(pad * 2, '0'), 'hex').toString('hex');
+      const USER_DOMAIN_TAG = rightPaddedHexBuffer(
+        Buffer.from('FLOW-V0.0-user').toString('hex'),
+        32
+      );
+      const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
+
+      // Sign the message
+      const realSignature = await signWithKey(
+        message,
+        accountKeyRequest.sign_algo,
+        accountKeyRequest.hash_algo,
+        privateKey
+      );
+
+      // Login with the signed message
+      await openapiService.loginV3(accountKeyRequest, deviceInfo, realSignature, replaceUser);
+    });
 
     // Set the current pubkey in userWallet provided we have been able to login
     this.setCurrentPubkey(accountKeyRequest.public_key);
@@ -1589,10 +1583,8 @@ class UserWallet {
     deviceInfo: DeviceInfoRequest,
     replaceUser = true
   ) => {
-    const auth = authenticationService.getAuth();
-    const idToken = await auth.currentUser?.getIdToken();
-    if (idToken === null || !idToken) {
-      signInAnonymously(auth);
+    const idToken = await authenticationService.getToken();
+    if (!idToken) {
       return;
     }
 
@@ -1633,9 +1625,13 @@ class UserWallet {
    * @returns The device info
    */
   getDeviceInfo = async (): Promise<DeviceInfoRequest> => {
-    const result = await openapiService.getLocation();
+    // Location is informational only: never let a failing geo lookup block login
+    const result = await openapiService.getLocation().catch((error) => {
+      consoleError('getLocation failed, sending device info without location', error);
+      return null;
+    });
     const installationId = await openapiService.getInstallationId();
-    const userlocation = result.data;
+    const userlocation = result?.data ?? {};
     const deviceInfo: DeviceInfoRequest = {
       city: userlocation.city,
       continent: userlocation.country,

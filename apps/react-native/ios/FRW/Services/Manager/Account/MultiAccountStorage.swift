@@ -41,7 +41,9 @@ class MultiAccountStorage: ObservableObject {
             return
         }
 
-        guard let user = Auth.auth().currentUser, !user.isAnonymous, !user.uid.isEmpty else {
+        // Pre-multi-account migration keyed on the Firebase user; skipped without Firebase.
+        guard FirebaseRuntime.isEnabled,
+              let user = Auth.auth().currentUser, !user.isAnonymous, !user.uid.isEmpty else {
             LocalUserDefaults.shared.multiAccountUpgradeFlag = true
             return
         }

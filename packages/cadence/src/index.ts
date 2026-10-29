@@ -41,8 +41,10 @@ export async function waitForTransaction(
 
   while (Date.now() - startTime < timeoutMs) {
     try {
-      // Fetch transaction result directly
-      const result = await fcl.tx(txId).snapshot();
+      // Fetch the status from the access node on every poll. fcl.tx(txId).snapshot() reads the
+      // cached state of FCL's WebSocket subscription, which never updates in React Native, so it
+      // stays at status 0 (UNKNOWN) until the timeout even after the transaction has sealed.
+      const result = await fcl.send([fcl.getTransactionStatus(txId)]).then(fcl.decode);
 
       // eslint-disable-next-line no-console
       console.log(`[FCL] Transaction status: ${result.status} (4=sealed)`);

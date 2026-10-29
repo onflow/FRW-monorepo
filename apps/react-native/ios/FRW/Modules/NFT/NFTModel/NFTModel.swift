@@ -163,7 +163,7 @@ struct NFTModel: Codable, Hashable, Identifiable {
                     let newImgURL = imgUrl
                         .replace(
                             by: [
-                                "https://lilico.infura-ipfs.io/ipfs/": "https://lilico.app/api/ipfs/",
+                                "https://lilico.infura-ipfs.io/ipfs/": "https://web.api.wallet.flow.com/api/ipfs/",
                             ]
                         )
                     image = URL(string: newImgURL)!

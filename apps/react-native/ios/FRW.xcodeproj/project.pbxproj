@@ -330,7 +330,6 @@
 		154B891F276A1EEB00780E93 /* FirebaseDynamicLinks in Frameworks */ = {isa = PBXBuildFile; productRef = 154B88FC276A1EEB00780E93 /* FirebaseDynamicLinks */; };
 		154B8920276A1EEB00780E93 /* SwiftUIX in Frameworks */ = {isa = PBXBuildFile; productRef = 154B88F1276A1EEB00780E93 /* SwiftUIX */; };
 		154B8922276A1EEB00780E93 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 15EC9DF8274FD1FD00F70CD9 /* Preview Assets.xcassets */; };
-		154B8929276A1F4600780E93 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 154B88832765EBF700780E93 /* GoogleService-Info.plist */; };
 		154E31452DA38621008A495F /* TokenListMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154E31442DA38621008A495F /* TokenListMode.swift */; };
 		154E31462DA38621008A495F /* TokenListMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154E31442DA38621008A495F /* TokenListMode.swift */; };
 		154E31492DA3DA78008A495F /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = 154E31482DA3DA78008A495F /* Factory */; };
@@ -980,6 +979,8 @@
 		15DC1D4A27814AD1000B187A /* TextFieldStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15DC1D4827814AD1000B187A /* TextFieldStyle.swift */; };
 		15DC1D53278165DB000B187A /* Haneke in Frameworks */ = {isa = PBXBuildFile; productRef = 15DC1D52278165DB000B187A /* Haneke */; };
 		15DC1D5927816660000B187A /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15DC1D5727816660000B187A /* Network.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F3 /* AuthSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* AuthSession.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F4 /* AuthSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* AuthSession.swift */; };
 		15DC1D5D27816F46000B187A /* MoyaAsync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15DC1D5B27816F46000B187A /* MoyaAsync.swift */; };
 		15DC1F7327819B74000B187A /* SpinnerStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15DC1F7127819B74000B187A /* SpinnerStyle.swift */; };
 		15DC207527819C56000B187A /* VTextType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15DC1F7727819C55000B187A /* VTextType.swift */; };
@@ -2097,7 +2098,6 @@
 		6A3221392927B49B000B8E1F /* StakingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A3221382927B49B000B8E1F /* StakingDetailView.swift */; };
 		6A32213A2927B49B000B8E1F /* StakingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A3221382927B49B000B8E1F /* StakingDetailView.swift */; };
 		6A35EADA2859BD36005A85B8 /* EditAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A35EAD82859BD36005A85B8 /* EditAvatarView.swift */; };
-		6A37AD9428BDAA310047E5F7 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6A37AD9328BDAA300047E5F7 /* GoogleService-Info.plist */; };
 		6A37AD9728BE0DE40047E5F7 /* TransactionProcessStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A37AD9628BE0DE40047E5F7 /* TransactionProcessStatusView.swift */; };
 		6A37AD9828BE0DE40047E5F7 /* TransactionProcessStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A37AD9628BE0DE40047E5F7 /* TransactionProcessStatusView.swift */; };
 		6A37AD9B28BE15700047E5F7 /* SendAmountTransactionProcessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A37AD9A28BE15700047E5F7 /* SendAmountTransactionProcessView.swift */; };
@@ -2830,6 +2830,7 @@
 		15DC1D4527814A68000B187A /* ButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyle.swift; sourceTree = "<group>"; };
 		15DC1D4827814AD1000B187A /* TextFieldStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldStyle.swift; sourceTree = "<group>"; };
 		15DC1D5727816660000B187A /* Network.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* AuthSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSession.swift; sourceTree = "<group>"; };
 		15DC1D5B27816F46000B187A /* MoyaAsync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoyaAsync.swift; sourceTree = "<group>"; };
 		15DC1F7127819B74000B187A /* SpinnerStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerStyle.swift; sourceTree = "<group>"; };
 		15DC1F7727819C55000B187A /* VTextType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VTextType.swift; sourceTree = "<group>"; };
@@ -4815,6 +4816,7 @@
 				1570466E27931F5100D1747B /* AlchemyEndpoint.swift */,
 				1570467D2793EBA100D1747B /* GithubEndpoint.swift */,
 				15DC1D5727816660000B187A /* Network.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* AuthSession.swift */,
 				156E84A8281CDE7500415896 /* FlowNetwork.swift */,
 				4EDEA76A2C904F0300DE76B6 /* ErrorStatus.swift */,
 			);
@@ -8039,7 +8041,6 @@
 				1565FBA328B16FD70086A652 /* Compass.json in Resources */,
 				1596A8D82E1AD9B300E85303 /* main.jsbundle in Resources */,
 				15D3BA7B28C4D2A4009AEA6E /* LaunchScreen.storyboard in Resources */,
-				154B8929276A1F4600780E93 /* GoogleService-Info.plist in Resources */,
 				158C9CA42787F6EA0062E0C6 /* Inter.ttf in Resources */,
 				4E3138072C658FB2003A73E5 /* codeql-analysis.yml in Resources */,
 				15D3BA6828C39454009AEA6E /* Matrix Code NFI.ttf in Resources */,
@@ -8088,7 +8089,6 @@
 				4E0D34A32A8B4E2900BC6E43 /* e-Ukraine-Light.ttf in Resources */,
 				15C628AB29F6A53200ED6A93 /* LocalEnv in Resources */,
 				1565FB6328B14F140086A652 /* Chat.json in Resources */,
-				6A37AD9428BDAA310047E5F7 /* GoogleService-Info.plist in Resources */,
 				4E3138062C658FB2003A73E5 /* codeql-analysis.yml in Resources */,
 				1596A8D92E1AD9B300E85303 /* main.jsbundle in Resources */,
 				4E0D34A52A8B4E2900BC6E43 /* e-Ukraine-Medium.ttf in Resources */,
@@ -8274,7 +8274,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+			shellScript = "# Firebase project lilico-334404 removed: no Crashlytics dSYM upload.\nif [ \"${ENABLE_CRASHLYTICS_UPLOAD:-NO}\" != \"YES\" ]; then\n  echo \"Crashlytics upload skipped\"\n  exit 0\nfi\n\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
 		};
 		6A04A4732961A71000F069C4 /* dSYM Upload */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -8294,7 +8294,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+			shellScript = "# Firebase project lilico-334404 removed: no Crashlytics dSYM upload.\nif [ \"${ENABLE_CRASHLYTICS_UPLOAD:-NO}\" != \"YES\" ]; then\n  echo \"Crashlytics upload skipped\"\n  exit 0\nfi\n\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
 		};
 		8287B02BA3D35CDBF9661556 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -9114,6 +9114,7 @@
 				15DC20A127819C56000B187A /* VSecondaryButton.swift in Sources */,
 				6A06CB0B28AA485200C81BE1 /* NFTUIKitListStyleHandler.swift in Sources */,
 				15DC1D5927816660000B187A /* Network.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F3 /* AuthSession.swift in Sources */,
 				6AEA375828A5152E004545D4 /* UIScrollView.swift in Sources */,
 				15DC214527819C56000B187A /* VTabNavigationPageItem.swift in Sources */,
 				4E9D98E32B9DEC0800A70879 /* TrustProvider.swift in Sources */,
@@ -10222,6 +10223,7 @@
 				6AE8E22829479B5E00BE395F /* StakingDetailViewModel.swift in Sources */,
 				6A06CB0A28AA485200C81BE1 /* NFTUIKitListStyleHandler.swift in Sources */,
 				15C58BA02868A4EE00BD4FC6 /* Network.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F4 /* AuthSession.swift in Sources */,
 				6AEA375728A5152E004545D4 /* UIScrollView.swift in Sources */,
 				15C58BA12868A4EE00BD4FC6 /* VTabNavigationPageItem.swift in Sources */,
 				15C58BA22868A4EE00BD4FC6 /* VSquareButton.swift in Sources */,
@@ -10711,7 +10713,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2610271;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 444MY26W7F;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -10735,7 +10737,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2610271;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 444MY26W7F;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -10762,7 +10764,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "FRW/App/Env/Dev/FRW-dev.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2610271;
 				DEVELOPMENT_ASSET_PATHS = "\"FRW/Resource/Preview Content\"";
 				DEVELOPMENT_TEAM = 444MY26W7F;
 				ENABLE_PREVIEWS = YES;
@@ -10812,7 +10814,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "FRW/App/Env/Dev/FRW-dev.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2610271;
 				DEVELOPMENT_ASSET_PATHS = "\"FRW/Resource/Preview Content\"";
 				DEVELOPMENT_TEAM = 444MY26W7F;
 				ENABLE_PREVIEWS = YES;
@@ -10861,7 +10863,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = FRW/App/Env/Prod/FRW.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2610271;
 				DEVELOPMENT_ASSET_PATHS = "\"FRW/Resource/Preview Content\"";
 				DEVELOPMENT_TEAM = 444MY26W7F;
 				ENABLE_PREVIEWS = YES;
@@ -10908,7 +10910,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = FRW/App/Env/Prod/FRW.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2610271;
 				DEVELOPMENT_ASSET_PATHS = "\"FRW/Resource/Preview Content\"";
 				DEVELOPMENT_TEAM = 444MY26W7F;
 				ENABLE_PREVIEWS = YES;
@@ -11095,7 +11097,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_ENTITLEMENTS = FRWNotificationServiceExtension/FRWNotificationServiceExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2610271;
 				DEVELOPMENT_TEAM = 444MY26W7F;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FRWNotificationServiceExtension/Info.plist;
@@ -11123,7 +11125,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_ENTITLEMENTS = FRWNotificationServiceExtension/FRWNotificationServiceExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2610271;
 				DEVELOPMENT_TEAM = 444MY26W7F;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FRWNotificationServiceExtension/Info.plist;
@@ -11151,7 +11153,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_ENTITLEMENTS = FRWDevNotificationServiceExtension/FRWDevNotificationServiceExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2610271;
 				DEVELOPMENT_TEAM = 444MY26W7F;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FRWDevNotificationServiceExtension/Info.plist;
@@ -11179,7 +11181,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CODE_SIGN_ENTITLEMENTS = FRWDevNotificationServiceExtension/FRWDevNotificationServiceExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2610271;
 				DEVELOPMENT_TEAM = 444MY26W7F;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FRWDevNotificationServiceExtension/Info.plist;

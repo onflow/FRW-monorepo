@@ -19,15 +19,6 @@ const mode = args[0];
 
 dotenv.config({ path: `.env.${mode}` });
 
-// Debug: Log Firebase API key (masked) to verify it's loaded
-const fbApiKey = process.env.FB_API_KEY;
-if (fbApiKey) {
-  const masked = `${fbApiKey.substring(0, 10)}...${fbApiKey.substring(fbApiKey.length - 4)}`;
-  console.log(`✅ Firebase API Key loaded: ${masked} (length: ${fbApiKey.length})`);
-} else {
-  console.warn('⚠️ Firebase API Key not found in environment');
-}
-
 const IS_BETA = process.env.IS_BETA === 'true';
 const OAUTH2_SCOPES = process.env.OAUTH2_SCOPES || '';
 
@@ -87,7 +78,14 @@ async function prepare() {
     manifest.description = '__MSG_appDescriptionBeta__';
     manifest.key = process.env.BETA_MANIFEST_KEY;
     manifest.oauth2.client_id = process.env.BETA_OAUTH2_CLIENT_ID;
-  } else {
+  }
+  // Chrome rejects the whole manifest if oauth2 is present with an empty
+  // client_id. Leave it out when unset (Google Drive backup needs it; it's off
+  // by default since the old OAuth client lived in the retired GCP project).
+  if (!manifest.oauth2.client_id) {
+    delete manifest.oauth2;
+  }
+  if (!IS_BETA) {
     manifest.version = version;
     manifest.name = '__MSG_appName__';
     manifest.description = '__MSG_appDescription__';

@@ -17,10 +17,9 @@ class NFTDetailPageViewModel: ObservableObject {
         self.nft = nft
         if nft.isSVG {
             guard let rawSVGURL = nft.response.postMedia?.image,
-                  let rawSVGURL = URL(string: rawSVGURL.replacingOccurrences(
-                      of: "https://lilico.app/api/svg2png?url=",
-                      with: ""
-                  ))
+                  let rawSVGURL = URL(string: rawSVGURL
+                      .replacingOccurrences(of: "https://lilico.app/api/svg2png?url=", with: "")
+                      .replacingOccurrences(of: "https://web.api.wallet.flow.com/api/svg2png?url=", with: ""))
             else {
                 return
             }

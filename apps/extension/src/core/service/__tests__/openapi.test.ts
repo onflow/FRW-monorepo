@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getLocalData } from '@/data-model';
 import { type FlowNetwork } from '@/shared/types';
 
+import { HttpError } from '../http-error';
+import { authenticationService } from '../index';
 import openApiService from '../openapi';
 import userWalletService from '../userWallet';
 import { createTestResults } from './test-data/api-test-results';
@@ -247,6 +249,98 @@ describe('OpenApiService', () => {
         openApiService.sendRequest('GET', '/test', {}, {}, 'https://test.com')
       ).rejects.toThrow('Network error');
     }, 5000);
+
+    // Real fetch Responses expose text(); these exercise the non-JSON / 401 paths
+    const textResponse = (status: number, text: string) =>
+      Promise.resolve({
+        ok: status >= 200 && status < 300,
+        status,
+        statusText: '',
+        headers: { get: () => null },
+        text: () => Promise.resolve(text),
+        json: () => Promise.resolve(JSON.parse(text)),
+      });
+
+    it('throws a typed HttpError (not a SyntaxError) for a plain-text 401 from web-next', async () => {
+      vi.mocked(authenticationService.handleUnauthorized).mockResolvedValue(false);
+      mockFetch.mockImplementation(() => textResponse(401, 'Not authenticated'));
+
+      const err = await openApiService
+        .sendRequest('GET', '/api/v4/cadence/scripts', {}, {}, 'https://WEB_NEXT_URL.com')
+        .catch((e) => e);
+
+      expect(err).toBeInstanceOf(HttpError);
+      expect(err).toMatchObject({ status: 401, code: 'unauthenticated' });
+      expect(err.message).toContain('Not authenticated');
+      expect(authenticationService.handleUnauthorized).toHaveBeenCalledWith(
+        'https://WEB_NEXT_URL.com/api/v4/cadence/scripts'
+      );
+      // handleUnauthorized said no (not the issuer): exactly one request, no retry
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns a JSON 401 body without retrying when handleUnauthorized declines', async () => {
+      vi.mocked(authenticationService.handleUnauthorized).mockResolvedValue(false);
+      const body = { status: 401, code: 'unauthenticated', message: 'Not authenticated' };
+      mockFetch.mockImplementation(() => textResponse(401, JSON.stringify(body)));
+
+      const result = await openApiService.sendRequest('GET', '/x', {}, {}, 'https://test.com');
+
+      expect(result).toEqual(body);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('retries once after an accepted 401 from the issuer', async () => {
+      vi.mocked(authenticationService.handleUnauthorized).mockResolvedValue(true);
+      mockFetch
+        .mockImplementationOnce(() =>
+          textResponse(401, JSON.stringify({ error: 'invalid token', code: 'token_expired' }))
+        )
+        .mockImplementationOnce(() => textResponse(200, JSON.stringify({ data: 'ok' })));
+
+      const result = await openApiService.sendRequest(
+        'GET',
+        '/v1/user',
+        {},
+        {},
+        'https://INITIAL_OPENAPI_URL.com'
+      );
+
+      expect(result).toEqual({ data: 'ok' });
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not retry a 401 twice', async () => {
+      vi.mocked(authenticationService.handleUnauthorized).mockResolvedValue(true);
+      mockFetch.mockImplementation(() =>
+        textResponse(401, JSON.stringify({ code: 'invalid_token' }))
+      );
+
+      const result = await openApiService.sendRequest('GET', '/v1/user', {}, {}, 'https://a.test');
+
+      expect(result).toEqual({ code: 'invalid_token' });
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(authenticationService.handleUnauthorized).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not renew on signed_token_reused', async () => {
+      mockFetch.mockImplementation(() =>
+        textResponse(401, JSON.stringify({ code: 'signed_token_reused' }))
+      );
+
+      await openApiService.sendRequest('POST', '/v4/login', {}, {}, 'https://a.test');
+
+      expect(authenticationService.handleUnauthorized).not.toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('throws HttpError for an HTML 502 page', async () => {
+      mockFetch.mockImplementation(() => textResponse(502, '<html>Bad gateway</html>'));
+
+      await expect(
+        openApiService.sendRequest('GET', '/x', {}, {}, 'https://test.com')
+      ).rejects.toMatchObject({ name: 'HttpError', status: 502, code: 'non_json_response' });
+    });
   });
 
   // Test each API function that's not marked as unused in test-groups

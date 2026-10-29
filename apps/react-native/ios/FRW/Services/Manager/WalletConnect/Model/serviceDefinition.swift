@@ -7,6 +7,10 @@
 
 import Foundation
 
+// FCL WalletConnect opens `service.uid` as a universal link on mobile dApps to bring the wallet
+// forward. frw-link.lilico.app is no longer an associated domain (Flow does not control lilico.app),
+// so the uid and website use link.wallet.flow.com, as Android does. Inbound frw-link/fcw-link
+// links are still parsed (AppExternalLinks).
 func serviceDefinition(address: String, keyId: Int, type: FCLServiceType) -> Service {
     var service = Service(
         fType: "Service",
@@ -14,7 +18,7 @@ func serviceDefinition(address: String, keyId: Int, type: FCLServiceType) -> Ser
         type: type,
         method: .walletConnect,
         endpoint: nil,
-        uid: "https://frw-link.lilico.app/wc",
+        uid: "https://link.wallet.flow.com/wc",
         id: nil,
         identity: Identity(address: address, keyId: keyId),
         provider: nil,
@@ -32,7 +36,7 @@ func serviceDefinition(address: String, keyId: Int, type: FCLServiceType) -> Ser
             description: "Flow Wallet is built from the ground up for Flow Blockchain!",
             color: "#41CC5D",
             supportEmail: "wallet@flow.com",
-            website: "https://frw-link.lilico.app/wc",
+            website: "https://link.wallet.flow.com/wc",
             icon: "https://web.api.wallet.flow.com/logo_mobile.png"
         )
     }
@@ -84,7 +88,7 @@ func accountProofServiceDefinition(
         type: FCLServiceType.accountProof,
         method: .walletConnect,
         endpoint: nil,
-        uid: "https://frw-link.lilico.app/wc",
+        uid: "https://link.wallet.flow.com/wc",
         id: nil,
         identity: nil,
         provider: nil,

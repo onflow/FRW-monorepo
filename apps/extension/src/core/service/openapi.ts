@@ -59,6 +59,8 @@ import {
 } from '@/shared/utils';
 
 import { findKeyAndInfo } from '../utils';
+import { type SessionTokenResponse } from './authentication-service';
+import { nonJsonHttpError, readResponseBody } from './http-error';
 import {
   googleSafeHostService,
   analyticsService,
@@ -487,7 +489,6 @@ export class OpenApiService {
         ? data.network
         : await userWalletService.getNetwork());
 
-    const user = authenticationService.getAuth().currentUser;
     const init: RequestInit = {
       method,
       headers: {
@@ -501,28 +502,35 @@ export class OpenApiService {
       init['body'] = JSON.stringify(data);
     }
 
-    // Wait for firebase auth to complete
-    await authenticationService.waitForAuthInit();
+    // Bearer is the FRW-Server session token (access token, or anonymous when logged out)
+    const withAuth = async (): Promise<RequestInit> => ({
+      ...init,
+      headers: {
+        ...(init.headers as Record<string, string>),
+        Authorization: 'Bearer ' + (await authenticationService.getToken()),
+      },
+    });
 
-    if (user !== null) {
-      const idToken = await user.getIdToken();
-      init.headers = {
-        ...init.headers,
-        Authorization: 'Bearer ' + idToken,
-      };
-    } else {
-      // If no user, then sign in as anonymous first
-      await authenticationService.signInAnonymously();
-      const anonymousUser = authenticationService.getAuth().currentUser;
-      const idToken = await anonymousUser?.getIdToken();
-      init.headers = {
-        ...init.headers,
-        Authorization: 'Bearer ' + idToken,
-      };
+    let response = await fetch(requestUrl, await withAuth());
+    let body = await readResponseBody(response);
+    // 401 = expired/invalid token: refresh (or re-mint anonymous) and retry once.
+    // handleUnauthorized only renews for 401s from the token issuer (FRW-Server), and at most
+    // once per 30 s; a 401 from web-next or another host is returned/thrown as a normal failure.
+    if (response.status === 401) {
+      const code = body.isJson ? body.data?.code : undefined;
+      if (
+        code !== 'signed_token_reused' &&
+        (await authenticationService.handleUnauthorized(requestUrl))
+      ) {
+        response = await fetch(requestUrl, await withAuth());
+        body = await readResponseBody(response);
+      }
     }
-
-    const response = await fetch(requestUrl, init);
-    const responseData = await response.json(); // parses JSON response into native JavaScript objects
+    if (!body.isJson) {
+      // e.g. a plain-text "Not authenticated": typed error instead of a JSON SyntaxError
+      throw nonJsonHttpError(response.status, requestUrl, body.text);
+    }
+    const responseData = body.data;
 
     // Verify signature if present in headers
     try {
@@ -551,13 +559,15 @@ export class OpenApiService {
   };
 
   fetchRemoteConfig = async (): Promise<RemoteConfig> => {
-    return await this.sendRequest(
-      'GET',
-      this.store.isDevServer ? '/config/config.dev.json' : '/config/config.json',
-      {},
-      {},
-      this.store.webNextUrl
-    );
+    // Static JSON on web-next: no auth needed, so config never depends on the token service
+    const path = this.store.isDevServer ? '/config/config.dev.json' : '/config/config.json';
+    const response = await fetch(this.store.webNextUrl + path, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) {
+      throw new Error(`Remote config fetch failed: ${response.status}`);
+    }
+    return await response.json();
   };
 
   /**
@@ -779,10 +789,10 @@ export class OpenApiService {
    * @param userId - The user id to login with
    * @param token - The custom token to login with
    */
-  private _loginWithToken = async (userId: string, token: string) => {
-    // we shouldn't need to clear storage here anymore
-    await authenticationService.signInWithCustomToken(token);
-    await setLocalData(CURRENT_ID_KEY, userId);
+  private _loginWithToken = async (data: SessionTokenResponse) => {
+    // Store the FRW-Server access + refresh tokens (replaces signInWithCustomToken)
+    await authenticationService.setSession(data);
+    await setLocalData(CURRENT_ID_KEY, data.id);
   };
 
   /**
@@ -860,16 +870,12 @@ export class OpenApiService {
     // Check if the response has the expected structure
     const responseData = data.data || data;
 
-    if (!responseData.id || !responseData.custom_token) {
-      console.error('Missing required fields in registration response:', {
-        id: responseData.id,
-        custom_token: responseData.custom_token,
-        fullResponse: data,
-      });
-      throw new Error('Registration response missing required fields (id or custom_token)');
+    if (!responseData.id) {
+      consoleError('Missing user id in registration response');
+      throw new Error('Registration response missing required fields (id)');
     }
 
-    await this._loginWithToken(responseData.id, responseData.custom_token);
+    await this._loginWithToken(responseData);
 
     // Track the registration
     analyticsService.track('account_created', {
@@ -898,18 +904,14 @@ export class OpenApiService {
       throw new Error(`NoUserFound currentId: ${currentId} public_key: ${account_key.public_key} `);
     }
     if (replaceUser) {
-      await this._loginWithToken(result.data.id, result.data.custom_token);
+      await this._loginWithToken(result.data);
     }
     return result;
   };
 
   proxytoken = async () => {
-    // Wait for firebase auth to complete
-    await authenticationService.waitForAuthInit();
-    await authenticationService.signInAnonymously();
-    const anonymousUser = authenticationService.getAuth().currentUser;
-    const idToken = await anonymousUser?.getIdToken();
-    return idToken;
+    // Returns the current Bearer token (access token, or anonymous when logged out)
+    return await authenticationService.getToken();
   };
 
   importKey = async (
@@ -931,7 +933,7 @@ export class OpenApiService {
       throw new Error('NoUserFound');
     }
     if (replaceUser) {
-      await this._loginWithToken(result.data.id, result.data.custom_token);
+      await this._loginWithToken(result.data);
     }
     return result;
   };

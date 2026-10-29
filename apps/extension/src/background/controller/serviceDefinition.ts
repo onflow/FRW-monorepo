@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '@/shared/constant';
+
 // import { walletController } from './index';
 
 interface ServiceDefinition {
@@ -50,7 +52,7 @@ export function serviceDefinition(
       f_vsn: '1.0.0', // Follows the v1.0.0 spec for service providers
       address: address, // A flow address owned by the wallet
       name: 'Flow Wallet', // OPTIONAL - The name of your wallet. ie: "Dapper Wallet" or "Blocto Wallet"
-      icon: 'https://lilico.app/fcw-logo.png',
+      icon: `${API_BASE_URL}/fcw-logo.png`,
       description: 'A wallet created for everyone.',
     };
   }

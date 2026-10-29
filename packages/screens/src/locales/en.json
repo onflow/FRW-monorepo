@@ -304,7 +304,7 @@
       },
       "cloudBackup": {
         "title": "From Cloud Multi-Backup",
-        "subtitle": "Google Drive, iCloud or DropBox."
+        "subtitle": "iCloud or Dropbox."
       },
       "recoveryPhrase": {
         "title": "From Recovery Phrase",
