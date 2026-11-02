@@ -63,8 +63,9 @@ class PushHandler: NSObject, ObservableObject {
     }
 
     func showPushAlertIfNeeded() {
-        guard !isDevMode else {
-          return
+        // No push delivery while FCM is off (Firebase disabled), so don't ask for permission.
+        guard FirebaseRuntime.isEnabled, !isDevMode else {
+            return
         }
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async {

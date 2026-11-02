@@ -162,7 +162,7 @@
 "your_wallet" = "財布";
 "Are__you__sure__you__want__to__reset__your__wallet::message" = "本当に財布をリセットしますか？";
 "extra_protection_desc" = "PINコードと生体認証によるロック解除で、財布のセキュリティを強化。";
-"Removing__the__wallet__from__Lilico__does__not__remove__the__wallet__from__Flow__blockchain::message" = "Flowウォレットからウォレットを削除しても、Flowブロックチェーンからウォレットは削除されません。リカバリーフレーズまたはGoogleドライブバックアップを使用して、ウォレットを再度インポートすることができます。";
+"Removing__the__wallet__from__Lilico__does__not__remove__the__wallet__from__Flow__blockchain::message" = "Flowウォレットからウォレットを削除しても、Flowブロックチェーンからウォレットは削除されません。リカバリーフレーズまたはマルチバックアップを使用して、ウォレットを再度インポートすることができます。";
 "select_word_by_order" = "単語を順番に一つずつ選んでください。";
 "Reset::message" = "リセット";
 "switch_to_x" = "%@";
@@ -876,9 +876,9 @@
 "multi_backup" = "マルチバックアップ";
 "multi_backup_guide_title" = "2つ以上のバックアップオプションを選択してください";
 "create_device_backup_title" = "デバイスのバックアップを作成する";
-"create_device_backup_note" = "注：お客様のGoogle DriveバックアップがFlow Walletのサーバーを経由することはありません。バックアップはエンドツーエンドで暗号化され、Flow Walletでは決して読み取ることはできません。";
+"create_device_backup_note" = "注：お客様のバックアップがFlow Walletのサーバーを経由することはありません。バックアップはエンドツーエンドで暗号化され、Flow Walletでは決して読み取ることはできません。";
 "create_multi_backup_title" = "マルチバックアップの作成";
-"create_multi_backup_note" = "注：お客様のGoogle DriveバックアップがFlow Walletのサーバーを経由することはありません。バックアップはエンドツーエンドで暗号化され、Flow Walletでは決して読み取ることはできません。";
+"create_multi_backup_note" = "注：お客様のバックアップがFlow Walletのサーバーを経由することはありません。バックアップはエンドツーエンドで暗号化され、Flow Walletでは決して読み取ることはできません。";
 "backup_note_x" = "注：バックアップキーはエンドツーエンドで暗号化され、Flowウォレットのサーバーに送信されることはありません。";
 "backup.status.create" = "バックアップの作成";
 "backup.status.upload" = "バックアップのアップロード";
@@ -899,7 +899,7 @@
 "restore_device_title" = "デバイスのバックアップから";
 "restore_device_desc" = "他の携帯電話や拡張ウォレットから復元する";
 "restore_multi_title" = "マルチバックアップより";
-"restore_multi_desc" = "Google Drive/ Passkey/ iCloud/ 復旧フレーズ";
+"restore_multi_desc" = "Passkey/ iCloud/ Dropbox/ 復旧フレーズ";
 "restore_phrase_title" = "リカバリーフレーズより（レガシー）";
 "restore_phrase_desc" = "レガシーリカバリーフレーズを使用したリストア（マルチバックアップではない）";
 "from_multi_backup" = "マルチバックアップから";
