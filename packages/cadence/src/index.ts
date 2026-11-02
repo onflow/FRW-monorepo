@@ -228,8 +228,10 @@ export async function waitForExecuted(
 
   while (Date.now() - startTime < timeout) {
     try {
-      // Use snapshot() directly - bypasses FCL's broken subscribe mechanism
-      const status = await fcl.tx(txId).snapshot();
+      // Fetch the status from the access node on every poll (same as waitForTransaction):
+      // fcl.tx(txId).snapshot() reads the cached WebSocket subscription state, which never
+      // updates in React Native.
+      const status = await fcl.send([fcl.getTransactionStatus(txId)]).then(fcl.decode);
 
       // Call callback if status changed
       if (onStatusChange && status.status !== lastStatus) {
