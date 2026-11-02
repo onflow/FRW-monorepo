@@ -385,7 +385,7 @@
       },
       "cloudBackup": {
         "title": "云多重备份",
-        "subtitle": "从Google Drive和iCloud等云服务提供商导入。"
+        "subtitle": "从iCloud和Dropbox等云服务提供商导入。"
       },
       "recoveryPhrase": {
         "title": "从恢复短语",

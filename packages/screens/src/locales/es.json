@@ -304,7 +304,7 @@
       },
       "cloudBackup": {
         "title": "Desde Copia de Seguridad Multi-Nube",
-        "subtitle": "Google Drive, iCloud o DropBox."
+        "subtitle": "iCloud o Dropbox."
       },
       "recoveryPhrase": {
         "title": "Desde Frase de Recuperación",
@@ -381,7 +381,7 @@
       },
       "cloudBackup": {
         "title": "Crear copia de seguridad en la nube",
-        "description": "Crea una copia de seguridad en la nube con proveedores de confianza como Google Drive e iCloud"
+        "description": "Crea una copia de seguridad en la nube con proveedores de confianza como iCloud y Dropbox"
       },
       "recoveryPhrase": {
         "title": "Crear copia de seguridad con frase de recuperación",

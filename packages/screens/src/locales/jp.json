@@ -304,7 +304,7 @@
       },
       "cloudBackup": {
         "title": "クラウドマルチバックアップから",
-        "subtitle": "Google DriveやiCloudなどのクラウドプロバイダーからインポートします。"
+        "subtitle": "iCloudやDropboxなどのクラウドプロバイダーからインポートします。"
       },
       "recoveryPhrase": {
         "title": "リカバリーフレーズから",
@@ -381,7 +381,7 @@
       },
       "cloudBackup": {
         "title": "クラウドバックアップを作成",
-        "description": "Google DriveやiCloudなどの信頼できるプロバイダーでクラウドバックアップを作成します"
+        "description": "iCloudやDropboxなどの信頼できるプロバイダーでクラウドバックアップを作成します"
       },
       "recoveryPhrase": {
         "title": "リカバリーフレーズバックアップを作成",

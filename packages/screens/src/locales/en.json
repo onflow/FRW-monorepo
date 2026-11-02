@@ -381,7 +381,7 @@
       },
       "cloudBackup": {
         "title": "Create cloud backup",
-        "description": "Create a cloud backup with trusted providers like google drive and icloud"
+        "description": "Create a cloud backup with trusted providers like iCloud and Dropbox"
       },
       "recoveryPhrase": {
         "title": "Create a recovery phrase backup",
