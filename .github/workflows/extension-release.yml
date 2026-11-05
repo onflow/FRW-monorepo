@@ -177,6 +177,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: FlowCore-${{ needs.build.outputs.version }}
+          # chrome-webstore-upload runs inside apps/extension (pnpm --filter), so put the zip there
+          path: apps/extension
 
       - name: Upload and publish to Chrome Web Store
         env:
