@@ -30,13 +30,13 @@ class WalletConnectManager: ObservableObject {
     init() {
         let redirect = try! AppMetadata.Redirect(
             native: "frw://",
-            universal: "https://frw-link.lilico.app"
+            universal: "https://link.wallet.flow.com"
         )
         let metadata = AppMetadata(
             name: "Flow Wallet",
             description: "Digital wallet created for everyone.",
-            url: "https://frw-link.lilico.app",
-            icons: ["https://frw-link.lilico.app/logo.png"],
+            url: "https://link.wallet.flow.com",
+            icons: ["https://link.wallet.flow.com/logo.png"],
             redirect: redirect
         )
         Networking.configure(

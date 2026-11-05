@@ -304,7 +304,7 @@
       },
       "cloudBackup": {
         "title": "From Cloud Multi-Backup",
-        "subtitle": "Google Drive, iCloud or DropBox."
+        "subtitle": "iCloud or Dropbox."
       },
       "recoveryPhrase": {
         "title": "From Recovery Phrase",
@@ -381,7 +381,7 @@
       },
       "cloudBackup": {
         "title": "Create cloud backup",
-        "description": "Create a cloud backup with trusted providers like google drive and icloud"
+        "description": "Create a cloud backup with trusted providers like iCloud and Dropbox"
       },
       "recoveryPhrase": {
         "title": "Create a recovery phrase backup",

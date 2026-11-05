@@ -28,6 +28,8 @@ const baseHostsRegex = [
   /^https:\/\/lilico\.app\//,
   /^https:\/\/web\.api\.wallet\.flow\.com\//,
   /^https:\/\/api\.lilico\.app\//,
+  /^https:\/\/api\.wallet\.flow\.com\//,
+  /^https:\/\/functions\.wallet\.flow\.com\//,
 ];
 
 const envHostRegex = apiHosts.map(

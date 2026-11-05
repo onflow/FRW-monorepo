@@ -30,13 +30,18 @@ import {
 import { getLocalData, removeLocalData, setLocalData, initializeStorage } from '@/data-model';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 import { Message, eventBus } from '@/extension-shared/messaging';
-import { EVENTS } from '@/shared/constant';
+import {
+  API_BASE_URL,
+  API_GO_SERVER_URL,
+  EVENTS,
+  FUNCTIONS_URL,
+  GOOGLE_DRIVE_BACKUP_ENABLED,
+} from '@/shared/constant';
 import { type WalletAddress } from '@/shared/types';
 import { isValidFlowAddress, consoleError, consoleLog } from '@/shared/utils';
 
 import notificationService from './controller/notification';
 import packageJson from '../../package.json';
-import { getFirbaseConfig } from './utils/firebaseConfig';
 import { getAuthTokenWrapper } from './utils/googleDriveAuthToken';
 import { mixpanelService } from './utils/mixpanel-analytics';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
@@ -47,11 +52,21 @@ const chromeWindow = await chrome.windows.getCurrent();
 
 let appStoreLoaded = false;
 
-// API URLs
-const API_GO_SERVER_URL = process.env.API_GO_SERVER_URL;
-const API_BASE_URL = process.env.API_BASE_URL;
-const FB_FUNCTIONS_URL = process.env.FB_FUNCTIONS;
+// API URLs (env-driven, with wallet.flow.com defaults; see shared/constant/hosts.ts)
 const SCRIPTS_PUBLIC_KEY = process.env.SCRIPTS_PUBLIC_KEY;
+
+/**
+ * Run a non-critical init step. A failure is logged and boot continues, so an unreachable
+ * backend (remote config, news, token lists, analytics) can never stop the keyring from
+ * loading and the wallet from unlocking.
+ */
+async function safeInit(name: string, fn: () => unknown | Promise<unknown>) {
+  try {
+    await fn();
+  } catch (error) {
+    consoleError(`[background] ${name} init failed, continuing with defaults:`, error);
+  }
+}
 
 async function restoreAppState() {
   // Initialize ServiceContext in background runtime so shared logger/cadence proxies are active.
@@ -67,32 +82,32 @@ async function restoreAppState() {
   // 1. Initialize storage first
   initializeStorage({ implementation: chromeStorage });
   // 2. Initialize version service to use the extension version
-  await versionService.init(packageJson.version);
+  await safeInit('version', () => versionService.init(packageJson.version));
 
-  // 3. Init authentication service after that
-  await authenticationService.init(getFirbaseConfig());
+  // 3. Init authentication service after that (no network; restores tokens from storage)
+  await safeInit('authentication', () => authenticationService.init(API_GO_SERVER_URL));
 
   // 4. Now we can init openapi
-  if (!API_GO_SERVER_URL || !API_BASE_URL || !FB_FUNCTIONS_URL || !SCRIPTS_PUBLIC_KEY) {
-    throw new Error(
-      'API_GO_SERVER_URL, API_BASE_URL, FB_FUNCTIONS_URL, SCRIPTS_PUBLIC_KEY must be set'
-    );
+  if (!SCRIPTS_PUBLIC_KEY) {
+    consoleError('[background] SCRIPTS_PUBLIC_KEY is not set; signed script responses will fail');
   }
-  await openapiService.init(
-    API_GO_SERVER_URL, // registrationURL
-    API_BASE_URL, // webNextURL
-    FB_FUNCTIONS_URL, // functionsURL
-    SCRIPTS_PUBLIC_KEY, // scriptsPublicKey
-    process.env.NODE_ENV === 'development' // isDev
+  await safeInit('openapi', () =>
+    openapiService.init(
+      API_GO_SERVER_URL, // registrationURL
+      API_BASE_URL, // webNextURL
+      FUNCTIONS_URL, // functionsURL
+      SCRIPTS_PUBLIC_KEY || '', // scriptsPublicKey
+      process.env.NODE_ENV === 'development' // isDev
+    )
   );
 
   // 5. Initialize mixpanel and chrome logging
   if (process.env.MIXPANEL_TOKEN) {
     // This will set the analytics service to mixpanel
-    await mixpanelService.init(process.env.MIXPANEL_TOKEN);
+    await safeInit('mixpanel', () => mixpanelService.init(process.env.MIXPANEL_TOKEN!));
   }
 
-  // 5. Load keyring store
+  // 5. Load keyring store (critical: this is what unlock needs)
   await keyringService.loadKeyringStore();
 
   // clear premnemonic in storage
@@ -105,33 +120,39 @@ async function restoreAppState() {
     }
   });
 
-  // 6. Initialize other services in any order
-  await permissionService.init();
-  await preferenceService.init();
-  await coinListService.init();
-  await userInfoService.init();
-  await addressBookService.init();
+  // 6. Initialize other services in any order. None of these may block boot.
+  await safeInit('permission', () => permissionService.init());
+  await safeInit('preference', () => preferenceService.init());
+  await safeInit('coinList', () => coinListService.init());
+  await safeInit('userInfo', () => userInfoService.init());
+  await safeInit('addressBook', () => addressBookService.init());
 
-  await userWalletService.init();
-  await transactionActivityService.init();
-  await nftService.init();
-  await googleDriveService.init({
-    baseURL: 'https://www.googleapis.com/',
-    backupName: process.env.GD_BACKUP_NAME!,
-    appDataFolder: process.env.GD_FOLDER!,
-    scope: 'https://www.googleapis.com/auth/drive.appdata',
-    AES_KEY: process.env.GD_AES_KEY!,
-    IV: process.env.GD_IV!,
-    getAuthTokenWrapper,
-  });
-  await googleSafeHostService.init({
-    baseURL: 'https://safebrowsing.googleapis.com/',
-    key: process.env.GOOGLE_API!,
-  });
+  await safeInit('userWallet', () => userWalletService.init());
+  await safeInit('transactionActivity', () => transactionActivityService.init());
+  await safeInit('nft', () => nftService.init());
+  if (GOOGLE_DRIVE_BACKUP_ENABLED) {
+    await safeInit('googleDrive', () =>
+      googleDriveService.init({
+        baseURL: 'https://www.googleapis.com/',
+        backupName: process.env.GD_BACKUP_NAME!,
+        appDataFolder: process.env.GD_FOLDER!,
+        scope: 'https://www.googleapis.com/auth/drive.appdata',
+        AES_KEY: process.env.GD_AES_KEY!,
+        IV: process.env.GD_IV!,
+        getAuthTokenWrapper,
+      })
+    );
+  }
+  await safeInit('googleSafeHost', () =>
+    googleSafeHostService.init({
+      baseURL: 'https://safebrowsing.googleapis.com/',
+      key: process.env.GOOGLE_API!,
+    })
+  );
 
-  await tokenListService.init();
-  await remoteConfigService.init();
-  await newsService.init();
+  await safeInit('tokenList', () => tokenListService.init());
+  await safeInit('remoteConfig', () => remoteConfigService.init());
+  await safeInit('news', () => newsService.init());
 
   appStoreLoaded = true;
 

@@ -7,8 +7,6 @@
 
 import Alamofire
 import Combine
-import Firebase
-import FirebaseAuth
 import Flow
 import FlowWalletKit
 import Foundation
@@ -20,6 +18,9 @@ class UserManager: ObservableObject {
   // MARK: Lifecycle
 
   init() {
+    // Firebase Auth replacement: when a profile is active but no session is stored (first launch
+    // after the upgrade, or the refresh token expired), sign a fresh token with the wallet key.
+    AuthSession.sessionRestorer = { await UserManager.shared.restoreSessionSilently() }
     checkIfHasOldAccount()
 
     self.loginUIDList = LocalUserDefaults.shared.loginUIDList
@@ -163,7 +164,7 @@ extension UserManager {
       return
     }
 
-    try await Auth.auth().signInAnonymously()
+    await AuthSession.shared.clearSession()
 
     await MainActor.run {
       NotificationCenter.default.post(name: .willResetWallet)
@@ -181,7 +182,7 @@ extension UserManager {
 
   func logout() async throws {
     log.debug("logout")
-    try await Auth.auth().signInAnonymously()
+    await AuthSession.shared.clearSession()
 
     await MainActor.run {
       NotificationCenter.default.post(name: .willResetWallet)
@@ -213,6 +214,17 @@ extension UserManager {
     keyProvider: any KeyProtocol,
     evmAddress: String? = nil
   ) async throws -> String? {
+    try await retryingSignedTokenReuse("register") {
+      try await self.registerAttempt(name: name, key: key, keyProvider: keyProvider, evmAddress: evmAddress)
+    }
+  }
+
+  private func registerAttempt(
+    name: String,
+    key: Flow.AccountKey,
+    keyProvider: any KeyProtocol,
+    evmAddress: String?
+  ) async throws -> String? {
     await MainActor.run {
       isLoggingIn = true
     }
@@ -229,7 +241,7 @@ extension UserManager {
       await IPManager.shared.fetch()
     }
 
-    guard let token = try? await getIDToken(), !token.isEmpty else {
+    guard let token = try? await AuthSession.shared.freshAnonymousToken(), !token.isEmpty else {
       loginAnonymousIfNeeded()
       throw LLError.restoreLoginFailed
     }
@@ -257,7 +269,7 @@ extension UserManager {
       deviceInfo: IPManager.shared.toParams()
     )
 
-    let model: RegisterResponse = try await Network.request(FRWAPI.User.register(request))
+    let model: RegisterResponse = try await Network.request(FRWAPI.User.register(request), bearerToken: token)
 
     let pw = KeyProvider.password(with: model.id)
     try keyProvider.store(id: model.id,password: pw)
@@ -271,7 +283,7 @@ extension UserManager {
     WalletManager.shared.updateKeyProvider(provider: keyProvider)
     LocalUserDefaults.shared.addUser(user: store)
 
-    try await finishLogin(customToken: model.customToken, isRegiter: true)
+    try await finishLogin(grant: model.authGrant(), isRegiter: true)
     let txid = await WalletManager.shared.asyncCreateWalletAddressFromServer()
     userType = .secure
 
@@ -292,11 +304,8 @@ extension UserManager {
 
 extension UserManager {
   func hasOldAccount() -> Bool {
-    if let user = Auth.auth().currentUser, !user.isAnonymous {
-      return true
-    }
-
-    return false
+    // Firebase-era check for a signed-in user; there is no Firebase session any more.
+    false
   }
 
   func tryToRestoreOldAccountOnFirstLaunch() async {
@@ -430,6 +439,12 @@ extension UserManager {
   }
 
   func restoreLogin(withMnemonic mnemonic: String, userId _: String? = nil) async throws {
+    try await retryingSignedTokenReuse("restoreLogin(mnemonic)") {
+      try await self.restoreLoginAttempt(withMnemonic: mnemonic)
+    }
+  }
+
+  private func restoreLoginAttempt(withMnemonic mnemonic: String) async throws {
     await MainActor.run {
       isLoggingIn = true
     }
@@ -442,7 +457,7 @@ extension UserManager {
       }
     }
 
-    guard let token = try? await getIDToken(),
+    guard let token = try? await AuthSession.shared.freshAnonymousToken(),
           !token.isEmpty,
           let tokenData = token.data(using: .utf8)
     else {
@@ -503,16 +518,15 @@ extension UserManager {
     )
 
     let response: Network.Response<LoginResponse> = try await Network
-      .requestWithRawModel(FRWAPI.User.login(request))
+      .requestWithRawModel(FRWAPI.User.login(request), bearerToken: token)
     if response.httpCode == 404 {
       throw LLError.accountNotFound
     }
 
-    guard let customToken = response.data?.customToken, !customToken.isEmpty,
-          let uid = response.data?.id
-    else {
+    guard let loginData = response.data, let grant = try? loginData.authGrant() else {
       throw LLError.restoreLoginFailed
     }
+    let uid = loginData.id
     let storeUser = StoreUser(
       publicKey: publicKey,
       address: nil,
@@ -526,7 +540,7 @@ extension UserManager {
     )
     LocalUserDefaults.shared.addUser(user: storeUser)
     await WalletManager.shared.updateKeyProvider(provider: provider)
-    try await finishLogin(customToken: customToken)
+    try await finishLogin(grant: grant)
   }
 
   func getAccount(by address: String, for publicKey: String) async throws -> Flow.AccountKey? {
@@ -541,6 +555,12 @@ extension UserManager {
     with address: String? = nil,
     publicKey: String? = nil
   ) async throws {
+    try await retryingSignedTokenReuse("restoreLogin(uid)") {
+      try await self.restoreLoginAttempt(with: userId)
+    }
+  }
+
+  private func restoreLoginAttempt(with userId: String) async throws {
     await MainActor.run {
       isLoggingIn = true
     }
@@ -553,7 +573,7 @@ extension UserManager {
       }
     }
 
-    guard let token = try? await getIDToken(), !token.isEmpty else {
+    guard let token = try? await AuthSession.shared.freshAnonymousToken(), !token.isEmpty else {
       loginAnonymousIfNeeded()
       throw LLError.restoreLoginFailed
     }
@@ -624,11 +644,11 @@ extension UserManager {
       deviceInfo: IPManager.shared.toParams()
     )
     let response: Network.Response<LoginResponse> = try await Network
-      .requestWithRawModel(FRWAPI.User.login(request))
+      .requestWithRawModel(FRWAPI.User.login(request), bearerToken: token)
     if response.httpCode == 404 {
       throw LLError.accountNotFound
     }
-    guard let customToken = response.data?.customToken, !customToken.isEmpty else {
+    guard let grant = try? response.data?.authGrant() else {
       throw LLError.restoreLoginFailed
     }
     // Rebuild userStore with complete info from on-chain validation
@@ -641,10 +661,16 @@ extension UserManager {
     )
     await WalletManager.shared.updateKeyProvider(provider: keyProvider)
     LocalUserDefaults.shared.addUser(user: storeUser)
-    try await finishLogin(customToken: customToken)
+    try await finishLogin(grant: grant)
   }
 
   func restoreLogin(userId: String) async throws {
+    try await retryingSignedTokenReuse("restoreLogin(secureEnclave)") {
+      try await self.restoreLoginAttempt(secureEnclaveUserId: userId)
+    }
+  }
+
+  private func restoreLoginAttempt(secureEnclaveUserId userId: String) async throws {
     await MainActor.run {
       isLoggingIn = true
     }
@@ -658,15 +684,15 @@ extension UserManager {
     }
 
     EventTrack.Dev.restoreLogin(userId: userId)
-    if Auth.auth().currentUser?.isAnonymous != true {
-      try await Auth.auth().signInAnonymously()
+    if activatedUID != nil {
+      await AuthSession.shared.clearSession()
       await MainActor.run {
         self.activatedUID = nil
         self.userInfo = nil
       }
     }
 
-    guard let token = try? await getIDToken(), !token.isEmpty else {
+    guard let token = try? await AuthSession.shared.freshAnonymousToken(), !token.isEmpty else {
       loginAnonymousIfNeeded()
       throw LLError.restoreLoginFailed
     }
@@ -697,15 +723,15 @@ extension UserManager {
     )
 
     let response: Network.Response<LoginResponse> = try await Network
-      .requestWithRawModel(FRWAPI.User.login(request))
+      .requestWithRawModel(FRWAPI.User.login(request), bearerToken: token)
     if response.httpCode == 404 {
       throw LLError.accountNotFound
     }
     userType = .secure
-    guard let customToken = response.data?.customToken, !customToken.isEmpty else {
+    guard let grant = try? response.data?.authGrant() else {
       throw LLError.restoreLoginFailed
     }
-    try await finishLogin(customToken: customToken)
+    try await finishLogin(grant: grant)
   }
 
   func importLogin(
@@ -715,6 +741,24 @@ extension UserManager {
     privateKey: any KeyProtocol,
     isImport: Bool = false,
     flowAccounts: [FlowWalletKit.Account]? = nil
+  ) async throws {
+    try await retryingSignedTokenReuse("importLogin") {
+      try await self.importLoginAttempt(
+        by: address,
+        userName: userName,
+        flowKey: flowKey,
+        privateKey: privateKey,
+        isImport: isImport
+      )
+    }
+  }
+
+  private func importLoginAttempt(
+    by address: String,
+    userName: String,
+    flowKey: Flow.AccountKey,
+    privateKey: any KeyProtocol,
+    isImport: Bool
   ) async throws {
     await MainActor.run {
       isLoggingIn = true
@@ -732,15 +776,15 @@ extension UserManager {
       EventTrack.Account.recovered(address: address, mechanism: mechanism, methods: [])
     }
 
-    if Auth.auth().currentUser?.isAnonymous != true {
-      try await Auth.auth().signInAnonymously()
+    if activatedUID != nil {
+      await AuthSession.shared.clearSession()
       await MainActor.run {
         self.activatedUID = nil
         self.userInfo = nil
       }
     }
 
-    guard let token = try? await getIDToken(), !token.isEmpty else {
+    guard let token = try? await AuthSession.shared.freshAnonymousToken(), !token.isEmpty else {
       loginAnonymousIfNeeded()
       throw LLError.restoreLoginFailed
     }
@@ -773,7 +817,7 @@ extension UserManager {
         address: address
       )
       let response: Network.Response<LoginResponse> = try await Network
-        .requestWithRawModel(FRWAPI.User.loginWithImport(request))
+        .requestWithRawModel(FRWAPI.User.loginWithImport(request), bearerToken: token)
       if response.httpCode == 404 {
         throw LLError.accountNotFound
       }
@@ -795,7 +839,7 @@ extension UserManager {
         address: address
       )
       let response: Network.Response<LoginResponse> = try await Network
-        .requestWithRawModel(FRWAPI.User.login(request))
+        .requestWithRawModel(FRWAPI.User.login(request), bearerToken: token)
       if response.httpCode == 404 {
         throw LLError.accountNotFound
       }
@@ -803,9 +847,7 @@ extension UserManager {
     }
 
     userType = .fromImport
-    guard let customToken = loginResponse?.customToken, let uid = loginResponse?.id,
-          !customToken.isEmpty
-    else {
+    guard let uid = loginResponse?.id, let grant = try? loginResponse?.authGrant() else {
       throw LLError.restoreLoginFailed
     }
     try privateKey.store(
@@ -823,7 +865,7 @@ extension UserManager {
     LocalUserDefaults.shared.addUser(user: store)
     await WalletManager.shared.updateKeyProvider(provider: privateKey)
     log.debug("[user] \(store)")
-    try await finishLogin(customToken: customToken)
+    try await finishLogin(grant: grant)
   }
 }
 
@@ -831,6 +873,12 @@ extension UserManager {
 
 extension UserManager {
   func login(with profile: ProfileModel) async throws {
+    try await retryingSignedTokenReuse("login(profile)") {
+      try await self.loginAttempt(with: profile)
+    }
+  }
+
+  private func loginAttempt(with profile: ProfileModel) async throws {
     await MainActor.run {
       isLoggingIn = true
     }
@@ -843,7 +891,7 @@ extension UserManager {
       }
     }
 
-    guard let token = try? await getIDToken(), !token.isEmpty else {
+    guard let token = try? await AuthSession.shared.freshAnonymousToken(), !token.isEmpty else {
       loginAnonymousIfNeeded()
       throw LLError.restoreLoginFailed
     }
@@ -912,11 +960,11 @@ extension UserManager {
       deviceInfo: IPManager.shared.toParams()
     )
     let response: Network.Response<LoginResponse> = try await Network
-      .requestWithRawModel(FRWAPI.User.login(request))
+      .requestWithRawModel(FRWAPI.User.login(request), bearerToken: token)
     if response.httpCode == 404 {
       throw LLError.accountNotFound
     }
-    guard let customToken = response.data?.customToken, !customToken.isEmpty else {
+    guard let grant = try? response.data?.authGrant() else {
       throw LLError.restoreLoginFailed
     }
     await WalletManager.shared.updateKeyProvider(provider: keyProvider)
@@ -962,7 +1010,7 @@ extension UserManager {
       ProfileManager.shared.replace(profile: profile, with: [storeUser])
     }
 
-    try await finishLogin(customToken: customToken)
+    try await finishLogin(grant: grant)
   }
 }
 
@@ -1025,15 +1073,15 @@ extension UserManager {
 
 extension UserManager {
   private func finishLogin(
-    customToken: String,
+    grant: AuthGrant,
     isRegiter: Bool = false
   ) async throws {
-    try await firebaseLogin(customToken: customToken)
+    await AuthSession.shared.establish(grant)
     var info = try await fetchUserInfo()
     info.type = userType
     let userInfo = info
 
-    guard let uid = getFirebaseUID() else {
+    guard let uid = grant.uid, !uid.isEmpty else {
       throw LLError.fetchUserInfoFailed
     }
 
@@ -1066,11 +1114,6 @@ extension UserManager {
     loginUIDList = oldList
   }
 
-  private func firebaseLogin(customToken: String) async throws {
-    let result = try await Auth.auth().signIn(withCustomToken: customToken)
-    debugPrint("Logged in -> \(result.user.uid)")
-  }
-
   private func fetchUserInfo() async throws -> UserInfo {
     let response: UserInfoResponse = try await Network.request(FRWAPI.User.userInfo)
     let info = UserInfo(
@@ -1092,24 +1135,87 @@ extension UserManager {
 // MARK: - Internal
 
 extension UserManager {
-  private func loginAnonymousIfNeeded() {
-    if Auth.auth().currentUser == nil {
-      Task {
-        do {
-          try await Auth.auth().signInAnonymously()
-        } catch {
-          log.error("signInAnonymously failed", context: error)
-        }
+  /// Anonymous tokens are minted on demand by AuthSession; nothing to do up front.
+  private func loginAnonymousIfNeeded() {}
+
+  func getIDToken() async throws -> String? {
+    try await AuthSession.shared.token()
+  }
+
+  /// Re-establishes the API session for the active profile without UI: signs a fresh anonymous
+  /// token with the profile's wallet key and calls /v4/login. Used by AuthSession when a profile
+  /// is active but no session is stored (for example the first launch after the Firebase removal).
+  func restoreSessionSilently() async -> Bool {
+    guard let uid = activatedUID else { return false }
+    guard case let .success(data) = await WalletManager.shared.findKeyProvider(uid: uid) else {
+      log.warning("[Auth] silent session restore: no valid key for \(uid)")
+      return false
+    }
+    do {
+      if IPManager.shared.info == nil {
+        await IPManager.shared.fetch()
       }
+      return try await retryingSignedTokenReuse("silent session restore") {
+        try await self.silentLoginAttempt(uid: uid, data: data)
+      }
+    } catch {
+      log.error("[Auth] silent session restore failed", context: error)
+      return false
     }
   }
 
-  private func getFirebaseUID() -> String? {
-    Auth.auth().currentUser?.uid
+  private func silentLoginAttempt(uid: String, data: KeyProviderData) async throws -> Bool {
+      let token = try await AuthSession.shared.freshAnonymousToken()
+      guard let signData = token.addUserMessage(),
+            let publicKey = data.provider.publicKey(signAlgo: data.accountKey.signAlgo)?.hexValue
+      else {
+        return false
+      }
+      let signature = try data.provider.sign(
+        data: signData,
+        signAlgo: data.accountKey.signAlgo,
+        hashAlgo: data.accountKey.hashAlgo
+      )
+      let key = AccountKey(
+        hashAlgo: data.accountKey.hashAlgo.index,
+        publicKey: publicKey,
+        signAlgo: data.accountKey.signAlgo.index
+      )
+      var evmAccountInfo: EVMAccountInfo?
+      if let ethProvider = data.provider as? EthereumKeyProtocol,
+         let evmAddress = try? data.wallet.ethAddress(),
+         let evmSignature = try? ethProvider.ethSign(digest: signData) {
+        evmAccountInfo = EVMAccountInfo(eoaAddress: evmAddress, signature: evmSignature.hexValue)
+      }
+      let request = LoginRequest(
+        flowAccountInfo: FlowAccountInfo(accountKey: key, signature: signature.hexValue),
+        evmAccountInfo: evmAccountInfo,
+        deviceInfo: IPManager.shared.toParams()
+      )
+      let response: Network.Response<LoginResponse> = try await Network
+        .requestWithRawModel(FRWAPI.User.login(request), bearerToken: token)
+      guard let loginData = response.data, loginData.id == uid else {
+        log.warning("[Auth] silent session restore: uid mismatch or empty response")
+        return false
+      }
+      await AuthSession.shared.establish(try loginData.authGrant())
+      log.info("[Auth] session restored for \(uid)")
+      return true
   }
 
-  func getIDToken() async throws -> String? {
-    try await Auth.auth().currentUser?.getIDToken()
+  /// auth-contract.md "Replay protection": a signed token mints a session only once, and the
+  /// server answers a second use with 401 `signed_token_reused` (for example a retry after a lost
+  /// response). Each attempt mints a fresh anonymous token and signs it, so run it once more.
+  private func retryingSignedTokenReuse<T>(
+    _ label: String,
+    _ attempt: () async throws -> T
+  ) async throws -> T {
+    do {
+      return try await attempt()
+    } catch AuthError.signedTokenReused {
+      log.warning("[Auth] \(label): signed token already used, retrying with a fresh token")
+      return try await attempt()
+    }
   }
 }
 
@@ -1121,27 +1227,7 @@ extension UserManager {
       return
     }
 
-    let username = userInfo?.username ?? ""
-    let displayName = Auth.auth().currentUser?.displayName ?? ""
-
-    if !username.isEmpty, username != displayName {
-      Task {
-        await uploadUserName(username: username)
-      }
-    }
-  }
-
-  private func uploadUserName(username: String) async {
-    guard let changeRequest = Auth.auth().currentUser?.createProfileChangeRequest() else {
-      return
-    }
-
-    changeRequest.displayName = username
-    do {
-      try await changeRequest.commitChanges()
-    } catch {
-      debugPrint("update displayName failed")
-    }
+    // Used to mirror the username into the Firebase Auth displayName. Firebase Auth is gone.
   }
 
   func updateNickname(_ name: String) {

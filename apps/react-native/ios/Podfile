@@ -54,4 +54,24 @@ post_install do |installer|
             target.remove_from_project
           end
       end
+    # Xcode 27 rejects deployment targets below iOS 15.0. Some pods (RNSVG 12.4, lottie-ios 13.0,
+    # RNCAsyncStorage and lottie-react-native 13.4) still declare older ones, so raise them to
+    # 15.1, the minimum React Native uses for every other pod.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        if Gem::Version.new(config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] || "0") < Gem::Version.new("15.1")
+          config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "15.1"
+        end
+      end
+    end
+    # fmt 11.0.2 (via RCT-Folly) fails to compile with Apple clang in Xcode 26.4+ under C++20
+    # ("call to consteval function ... is not a constant expression"). Build fmt as C++17, where
+    # it does not use consteval format-string checks.
+    installer.pods_project.targets.each do |target|
+      if target.name == "fmt"
+        target.build_configurations.each do |config|
+          config.build_settings["CLANG_CXX_LANGUAGE_STANDARD"] = "c++17"
+        end
+      end
+    end
 end

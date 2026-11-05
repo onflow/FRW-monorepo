@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
 import { getLocalData, setLocalData } from '@/data-model';
-import { MAX_MAIN_ACCOUNTS_PER_PROFILE } from '@/shared/constant';
+import { GOOGLE_DRIVE_BACKUP_ENABLED, MAX_MAIN_ACCOUNTS_PER_PROFILE } from '@/shared/constant';
 import { hasReachedFlowAddressLimit } from '@/shared/utils';
 import { AboutIcon } from '@/ui/assets/icons/settings/About';
 import { AccountListIcon } from '@/ui/assets/icons/settings/AccountList';
@@ -255,7 +255,7 @@ const SettingTab = () => {
           />
 
           {activeAccountType === 'main' && <Divider sx={{ width: '90%' }} variant="middle" />}
-          {isKeyphrase && activeAccountType === 'main' && (
+          {GOOGLE_DRIVE_BACKUP_ENABLED && isKeyphrase && activeAccountType === 'main' && (
             <SettingsListItem
               to="/dashboard/setting/backups"
               icon={<BackupIcon width={24} height={24} />}

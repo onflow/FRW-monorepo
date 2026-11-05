@@ -7,7 +7,6 @@ import { profileService } from '@onflow/frw-services';
 import { BIP44_PATHS, WalletCoreProvider } from '@onflow/frw-wallet';
 import * as bip39 from 'bip39';
 import * as ethUtil from 'ethereumjs-util';
-import { signInAnonymously } from 'firebase/auth/web-extension';
 
 import Wallet from '@/background/controller/wallet';
 import { initializePlatform } from '@/bridge/PlatformImpl';
@@ -197,24 +196,6 @@ export class AccountManagement {
     // Ensure ServiceContext is initialized (configures API package axios instances)
     await this.ensureServiceContextInitialized();
 
-    // Get Firebase auth token for signature
-    const auth = authenticationService.getAuth();
-    let idToken = await auth.currentUser?.getIdToken();
-    if (idToken === null || !idToken) {
-      const userCredential = await signInAnonymously(auth);
-      idToken = await userCredential.user.getIdToken();
-      if (idToken === null || !idToken) {
-        throw new Error('Failed to get idToken - even after signing in anonymously');
-      }
-    }
-
-    await authenticationService.waitForAuthInit();
-
-    const {
-      flowSignature,
-      evmSignature,
-      eoaAddress: checksummedEoaAddress,
-    } = await this.generateV4Signatures(accountKey, mnemonicOrPrivateKey, isPrivateKey, idToken);
     const installationId = await authenticationService.getInstallationId();
     const deviceInfo: forms_DeviceInfo = {
       device_id: installationId,
@@ -224,27 +205,31 @@ export class AccountManagement {
       user_agent: 'Chrome',
     };
 
-    const response = await profileService().registerV4({
-      username,
-      accountKey: {
-        public_key: accountKey.public_key,
-        sign_algo: accountKey.sign_algo,
-        hash_algo: accountKey.hash_algo,
-        weight: accountKey.weight,
-      },
-      flowSignature,
-      evmSignature,
-      eoaAddress: checksummedEoaAddress,
-      deviceInfo,
+    // Sign a fresh anonymous token; it is also the Bearer for the register call
+    const response = await authenticationService.withSigningToken(async (idToken) => {
+      const {
+        flowSignature,
+        evmSignature,
+        eoaAddress: checksummedEoaAddress,
+      } = await this.generateV4Signatures(accountKey, mnemonicOrPrivateKey, isPrivateKey, idToken);
+
+      return profileService().registerV4({
+        username,
+        accountKey: {
+          public_key: accountKey.public_key,
+          sign_algo: accountKey.sign_algo,
+          hash_algo: accountKey.hash_algo,
+          weight: accountKey.weight,
+        },
+        flowSignature,
+        evmSignature,
+        eoaAddress: checksummedEoaAddress,
+        deviceInfo,
+      });
     });
 
-    // Validate response has required fields (ProfileService should ensure this, but TypeScript needs explicit check)
-    if (!response.custom_token || !response.id) {
-      throw new Error('Registration response missing required fields (id or custom_token)');
-    }
-
-    // Login with custom token
-    await authenticationService.signInWithCustomToken(response.custom_token);
+    // Store FRW-Server session tokens (replaces signInWithCustomToken)
+    await authenticationService.setSession(response);
     await setLocalData(CURRENT_ID_KEY, response.id);
 
     analyticsService.track('account_created', {
@@ -271,51 +256,6 @@ export class AccountManagement {
     // Ensure ServiceContext is initialized
     await this.ensureServiceContextInitialized();
 
-    await authenticationService.waitForAuthInit();
-
-    // Get Firebase auth token right before signing to ensure it matches Authorization header
-    const auth = authenticationService.getAuth();
-    let currentUser = auth.currentUser;
-    if (!currentUser) {
-      const userCredential = await signInAnonymously(auth);
-      currentUser = userCredential.user;
-    }
-
-    // Get token right before signing to minimize chance of token refresh
-    // Force refresh to get a fresh token that matches what we'll sign
-    const idToken = await currentUser.getIdToken(true);
-
-    let {
-      flowSignature,
-      evmSignature,
-      eoaAddress: checksummedEoaAddress,
-    } = await this.generateV4Signatures(
-      accountKey,
-      mnemonicOrPrivateKey,
-      isPrivateKey,
-      idToken,
-      derivationPath,
-      passphrase
-    );
-
-    // Immediately get token again to ensure it matches what axios interceptor will use
-    // If token changed, re-sign with the new token
-    const tokenForApiCall = await currentUser.getIdToken(false);
-    if (tokenForApiCall && tokenForApiCall !== idToken) {
-      // Re-sign with the token that will be used in Authorization header
-      const reSigned = await this.generateV4Signatures(
-        accountKey,
-        mnemonicOrPrivateKey,
-        isPrivateKey,
-        tokenForApiCall,
-        derivationPath,
-        passphrase
-      );
-      flowSignature = reSigned.flowSignature;
-      evmSignature = reSigned.evmSignature;
-      checksummedEoaAddress = reSigned.eoaAddress;
-    }
-
     const installationId = await authenticationService.getInstallationId();
     const deviceInfo: forms_DeviceInfo = {
       device_id: installationId,
@@ -325,29 +265,41 @@ export class AccountManagement {
       user_agent: 'Chrome',
     };
 
-    const response = await profileService().importV4({
-      username,
-      accountKey: {
-        public_key: accountKey.public_key,
-        sign_algo: accountKey.sign_algo,
-        hash_algo: accountKey.hash_algo,
-        weight: accountKey.weight,
-      },
-      flowSignature,
-      evmSignature,
-      eoaAddress: checksummedEoaAddress,
-      address,
-      backupInfo,
-      deviceInfo,
+    // Sign a fresh anonymous token; withSigningToken pins it as the Authorization header
+    // for the import call, so the signed message always matches the Bearer.
+    const response = await authenticationService.withSigningToken(async (idToken) => {
+      const {
+        flowSignature,
+        evmSignature,
+        eoaAddress: checksummedEoaAddress,
+      } = await this.generateV4Signatures(
+        accountKey,
+        mnemonicOrPrivateKey,
+        isPrivateKey,
+        idToken,
+        derivationPath,
+        passphrase
+      );
+
+      return profileService().importV4({
+        username,
+        accountKey: {
+          public_key: accountKey.public_key,
+          sign_algo: accountKey.sign_algo,
+          hash_algo: accountKey.hash_algo,
+          weight: accountKey.weight,
+        },
+        flowSignature,
+        evmSignature,
+        eoaAddress: checksummedEoaAddress,
+        address,
+        backupInfo,
+        deviceInfo,
+      });
     });
 
-    // Validate response has required fields
-    if (!response.custom_token || !response.id) {
-      throw new Error('Import response missing required fields (id or custom_token)');
-    }
-
-    // Login with custom token
-    await authenticationService.signInWithCustomToken(response.custom_token);
+    // Store FRW-Server session tokens (replaces signInWithCustomToken)
+    await authenticationService.setSession(response);
     await setLocalData(CURRENT_ID_KEY, response.id);
   }
 
@@ -365,32 +317,6 @@ export class AccountManagement {
     // Ensure ServiceContext is initialized
     await this.ensureServiceContextInitialized();
 
-    // Get Firebase auth token for signature
-    const auth = authenticationService.getAuth();
-    let idToken = await auth.currentUser?.getIdToken();
-    if (idToken === null || !idToken) {
-      const userCredential = await signInAnonymously(auth);
-      idToken = await userCredential.user.getIdToken();
-      if (idToken === null || !idToken) {
-        throw new Error('Failed to get idToken - even after signing in anonymously');
-      }
-    }
-
-    await authenticationService.waitForAuthInit();
-
-    const {
-      flowSignature,
-      evmSignature,
-      eoaAddress: checksummedEoaAddress,
-    } = await this.generateV4Signatures(
-      accountKey,
-      mnemonicOrPrivateKey,
-      isPrivateKey,
-      idToken,
-      derivationPath,
-      passphrase
-    );
-
     const installationId = await authenticationService.getInstallationId();
     const deviceInfo: forms_DeviceInfo = {
       device_id: installationId,
@@ -400,26 +326,37 @@ export class AccountManagement {
       user_agent: 'Chrome',
     };
 
-    const response = await profileService().loginV4({
-      accountKey: {
-        public_key: accountKey.public_key,
-        sign_algo: accountKey.sign_algo,
-        hash_algo: accountKey.hash_algo,
-        weight: accountKey.weight,
-      },
-      flowSignature,
-      evmSignature,
-      eoaAddress: checksummedEoaAddress,
-      deviceInfo,
+    // Sign a fresh anonymous token; it is also the Bearer for the login call
+    const response = await authenticationService.withSigningToken(async (idToken) => {
+      const {
+        flowSignature,
+        evmSignature,
+        eoaAddress: checksummedEoaAddress,
+      } = await this.generateV4Signatures(
+        accountKey,
+        mnemonicOrPrivateKey,
+        isPrivateKey,
+        idToken,
+        derivationPath,
+        passphrase
+      );
+
+      return profileService().loginV4({
+        accountKey: {
+          public_key: accountKey.public_key,
+          sign_algo: accountKey.sign_algo,
+          hash_algo: accountKey.hash_algo,
+          weight: accountKey.weight,
+        },
+        flowSignature,
+        evmSignature,
+        eoaAddress: checksummedEoaAddress,
+        deviceInfo,
+      });
     });
 
-    // Validate response has required fields
-    if (!response.custom_token || !response.id) {
-      throw new Error('Login response missing required fields (id or custom_token)');
-    }
-
-    // Login with custom token
-    await authenticationService.signInWithCustomToken(response.custom_token);
+    // Store FRW-Server session tokens (replaces signInWithCustomToken)
+    await authenticationService.setSession(response);
     await setLocalData(CURRENT_ID_KEY, response.id);
   }
 

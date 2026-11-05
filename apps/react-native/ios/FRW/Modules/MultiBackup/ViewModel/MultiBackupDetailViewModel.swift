@@ -14,7 +14,7 @@ class MultiBackupDetailViewModel: ObservableObject {
     init(item: KeyDeviceModel) {
         self.item = item
         if let backupType = item.multiBackupType() {
-            if backupType == .google || backupType == .icloud {
+            if (backupType == .google && GoogleDriveBackup.isEnabled) || backupType == .icloud {
                 self.showPhrase = true
             }
         }
@@ -63,7 +63,7 @@ class MultiBackupDetailViewModel: ObservableObject {
 
     func onDisplayPharse() {
         guard let backupType = item.multiBackupType(),
-              backupType == .google || backupType == .icloud else {
+              (backupType == .google && GoogleDriveBackup.isEnabled) || backupType == .icloud else {
             return
         }
 

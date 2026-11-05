@@ -5,7 +5,6 @@
 //  Created by Hao Fu on 2/1/22.
 //
 
-import FirebaseAuth
 import Foundation
 import GoogleAPIClientForREST_Drive
 import GoogleAPIClientForRESTCore
@@ -78,6 +77,7 @@ extension BackupManager {
     func uploadMnemonic(to type: BackupManager.BackupType, password: String) async throws {
         switch type {
         case .googleDrive:
+            guard GoogleDriveBackup.isEnabled else { throw BackupError.unauthorized }
             try await gdTarget.uploadMnemonic(password: password)
         case .icloud:
             try await iCloudTarget.uploadMnemonic(password: password)
@@ -92,6 +92,7 @@ extension BackupManager {
     ) async throws -> [BackupManager.DriveItem] {
         switch type {
         case .googleDrive:
+            guard GoogleDriveBackup.isEnabled else { throw BackupError.unauthorized }
             try await gdTarget.relogin()
             return try await gdTarget.getCurrentDriveItems()
         case .icloud:
@@ -114,6 +115,44 @@ extension BackupManager {
         }
 
         return false
+    }
+}
+
+// MARK: - GoogleDriveBackup
+
+/// Google Drive backup and restore switch (`GOOGLE_DRIVE_BACKUP_ENABLED` in Info.plist, default off).
+/// The Google sign-in OAuth client lived in Firebase project lilico-334404 (556216024625), which is
+/// gone, so sign-in fails and backups in users' Drive appDataFolder can't be read by a new client.
+/// With the flag off every Drive entry point is hidden; iCloud, Dropbox, recovery phrase, device and
+/// passkey backups keep working. To restore: new iOS OAuth client in a live project (GoogleOAuth2.plist
+/// CLIENT_ID + reversed client id URL scheme), then set the key to true. Old backups need the old client.
+enum GoogleDriveBackup {
+    static var isEnabled: Bool {
+        (Bundle.main.object(forInfoDictionaryKey: "GOOGLE_DRIVE_BACKUP_ENABLED") as? Bool) ?? false
+    }
+
+    private static var didPromptThisLaunch = false
+
+    /// Accounts whose only backup was Google Drive get a dismissible suggestion to back up the
+    /// recovery phrase, once per app launch, until a manual or multi backup replaces it.
+    static func promptIfDriveWasOnlyBackup() {
+        guard !isEnabled, !didPromptThisLaunch,
+              let uid = UserManager.shared.activatedUID,
+              MultiAccountStorage.shared.getBackupType(uid) == .googleDrive
+        else {
+            return
+        }
+        didPromptThisLaunch = true
+        HUD.showAlert(
+            title: "google_drive_backup_retired_title".localized,
+            msg: "google_drive_backup_retired_desc".localized,
+            cancelTitle: "not_now".localized,
+            cancelAction: {},
+            confirmTitle: "backup".localized,
+            confirmAction: {
+                Router.route(to: RouteMap.Backup.backupList)
+            }
+        )
     }
 }
 

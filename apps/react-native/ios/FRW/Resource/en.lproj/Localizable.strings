@@ -161,7 +161,7 @@
 "your_wallet" = "Your Wallet";
 "Are__you__sure__you__want__to__reset__your__wallet::message" = "Are you sure you want to reset your wallet?";
 "extra_protection_desc" = "Unlock with PIN Code and Biometrics to allow extra wallet security.";
-"Removing__the__wallet__from__Lilico__does__not__remove__the__wallet__from__Flow__blockchain::message" = "Removing the wallet from Flow Wallet does not remove the wallet from Flow blockchain. You can import your wallet again using your Recovery Phrase or Google Drive Backup.";
+"Removing__the__wallet__from__Lilico__does__not__remove__the__wallet__from__Flow__blockchain::message" = "Removing the wallet from Flow Wallet does not remove the wallet from Flow blockchain. You can import your wallet again using your Recovery Phrase or Multi-Backup.";
 "select_word_by_order" = "Please select the word one by one refering to its order.";
 "Reset::message" = "Reset";
 "switch_to_x" = "Switch to %@";
@@ -195,6 +195,8 @@
 "backup_to_icloud" = "Backup to iCould";
 "Activity::message" = "Activity";
 "backup_to_gd" = "Backup to Google Drive";
+"google_drive_backup_retired_title" = "Back up your recovery phrase";
+"google_drive_backup_retired_desc" = "Google Drive backup is no longer available, so your Drive backup can't be used to restore this wallet. Your wallet is still safe on this device. Back up your recovery phrase so you can restore it if you lose this phone.";
 "Coins::message" = "coins";
 "backup_manually" = "Backup Manually";
 "Search_to_find_more_users::message" = "Search to find more users";
@@ -902,7 +904,7 @@
 "create_device_backup_title" = "Create Device Backup";
 "create_device_backup_note" = "Utilise Your Device as a Backup Wallet to Safeguard and Restore Your Digital Assets with Ease";
 "create_multi_backup_title" = "Create Multi-Backup";
-"create_multi_backup_note" = "Create a cloud backup with trusted providers like Google Drive and iCloud";
+"create_multi_backup_note" = "Create a cloud backup with trusted providers like iCloud and Dropbox";
 "backup_note_x" = "Note: Your backup secrets is end-to-end encrypted and is never sent to Flow Wallet servers.";
 "backup.status.create" = "Create Backup";
 "backup.status.upload" = "Upload Backup";
@@ -923,9 +925,9 @@
 "restore_device_title" = "From Device Backup";
 "restore_device_desc" = "Restore from another mobile or extension wallet";
 "restore_multi_title" = "From Multi Backup";
-"restore_multi_desc" = "Google Drive/ Passkey/ iCloud/ Recovery Phrase";
+"restore_multi_desc" = "Passkey/ iCloud/ Dropbox/ Recovery Phrase";
 "restore_phrase_title" = "From Raw Key";
-"restore_phrase_desc" = "Support legacy Google Drive, iCloud, Seed Phrase, Key Store and Private Key";
+"restore_phrase_desc" = "Support iCloud, Seed Phrase, Key Store and Private Key";
 "from_multi_backup" = "From Multi-Backup";
 "from_multi_backup_desc" = "Please Select 2 or More Backup Options";
 "connect_to_x" = "Connect to %@";
@@ -1036,7 +1038,7 @@
 "create_profile::waiting::finished:description" = "Congratulations! Your Flow account is now ready. To best secure your account, you can back it up now.";
 
 "what_is" = "What is a";
-"multi_backup_detail" = "A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like Google Drive and iCloud, or a Recovery Phrase.
+"multi_backup_detail" = "A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like iCloud and Dropbox, or a Recovery Phrase.
 
 Two partial-weight keys must be used together to recover access to your account. Each key individually cannot be used.
 
@@ -1046,7 +1048,7 @@ Your backups are encrypted using your wallet PIN code. You must remember or writ
 ";
 
 "what_is_multi" = "What is Multi-Backup?";
-"what_is_multi_short" = "Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Google Drive or Seed Phrase";
+"what_is_multi_short" = "Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Dropbox or Seed Phrase";
 "multi_check_phrase_1" = "I understand if I lose my recovery phrase, I may not be able to recover my account.";
 "multi_check_phrase_2" = "I understand this is a partial-weight recovery phrase that on its own does not grant me full control of my account.";
 "multi_check_phrase_3" = "I understand this partial-weight recovery phrase must be used together with my other multi-backups to recover access to my account.";
@@ -1111,9 +1113,8 @@ Please create backups for your wallet to ensure you retain access to your Flow a
 
 "restore_device_desc_2" = "Mobile or Extension Devices";
 "restore_phrase_title_2" = "From Raw Key";
-"restore_phrase_desc_2" = "Support legacy Google Drive, Seed Phrase, Key Store and Private Key";
-"import_desc" = "From Flow Wallet legacy backup, Seed Phrase, 
-Key Store and Private Key.";
+"restore_phrase_desc_2" = "Support Seed Phrase, Key Store and Private Key";
+"import_desc" = "From Seed Phrase, Key Store and Private Key.";
 "invalid_data" = "Invalid Data";
 "invalid_json" = "Key decryption failed - possibly wrong keystore file";
 "invalid_password" = "Key decryption failed - possibly wrong password";

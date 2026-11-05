@@ -162,7 +162,7 @@
 "your_wallet" = "你的钱包";
 "Are__you__sure__you__want__to__reset__your__wallet::message" = "确定要重置你的钱包吗？";
 "extra_protection_desc" = "使用 PIN 码和生物识别解锁以提供额外的钱包安全性。";
-"Removing__the__wallet__from__Lilico__does__not__remove__the__wallet__from__Flow__blockchain::message" = "从 Flow 钱包中移除钱包不会从 Flow 区块链中移除钱包。你可以使用恢复短语或 Google Drive 备份再次导入钱包。";
+"Removing__the__wallet__from__Lilico__does__not__remove__the__wallet__from__Flow__blockchain::message" = "从 Flow 钱包中移除钱包不会从 Flow 区块链中移除钱包。你可以使用恢复短语或多重备份再次导入钱包。";
 "select_word_by_order" = "请按顺序一个一个地选择单词。";
 "Reset::message" = "重置";
 "switch_to_x" = "切换到 %@";
@@ -876,9 +876,9 @@
 "multi_backup" = "多重备份";
 "multi_backup_guide_title" = "请选择两个或更多备份选项";
 "create_device_backup_title" = "创建设备备份";
-"create_device_backup_note" = "注意：您的Google Drive备份永远不会通过Flow钱包的服务器传输。它是端到端加密的，我们永远无法读取它。";
+"create_device_backup_note" = "注意：您的备份永远不会通过Flow钱包的服务器传输。它是端到端加密的，我们永远无法读取它。";
 "create_multi_backup_title" = "创建多重备份";
-"create_multi_backup_note" = "注意：您的Google Drive备份永远不会通过Flow钱包的服务器传输。它是端到端加密的，我们永远无法读取它。";
+"create_multi_backup_note" = "注意：您的备份永远不会通过Flow钱包的服务器传输。它是端到端加密的，我们永远无法读取它。";
 "backup_note_x" = "注意：您的备份密钥是端到端加密的，永远不会发送到Flow钱包服务器。";
 "backup.status.create" = "创建备份";
 "backup.status.upload" = "上传备份";
@@ -899,7 +899,7 @@
 "restore_device_title" = "从设备备份恢复";
 "restore_device_desc" = "从另一台手机或扩展钱包恢复";
 "restore_multi_title" = "从多重备份恢复";
-"restore_multi_desc" = "Google Drive/密码钥匙/iCloud/恢复短语";
+"restore_multi_desc" = "密码钥匙/iCloud/Dropbox/恢复短语";
 "restore_phrase_title" = "从恢复短语恢复（传统）";
 "restore_phrase_desc" = "使用传统恢复短语恢复（不是多重备份）";
 "from_multi_backup" = "从多重备份";

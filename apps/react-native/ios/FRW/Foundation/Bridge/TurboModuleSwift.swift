@@ -1,4 +1,3 @@
-import FirebaseAuth
 import Flow
 import FlowWalletKit
 import Foundation
@@ -685,6 +684,10 @@ extension TurboModuleSwift {
         case .privateKeyRestore:
             restoreModel.resteroWithPrivateKey()
         case .googleDriveRestore:
+            guard GoogleDriveBackup.isEnabled else {
+                log.warning("Google Drive restore is disabled (GOOGLE_DRIVE_BACKUP_ENABLED=false)")
+                return
+            }
             restoreModel.restoreWithCloudAction(type: .googleDrive)
         case .multiRestore:
             Router.route(to: RouteMap.RestoreLogin.restoreMulti)

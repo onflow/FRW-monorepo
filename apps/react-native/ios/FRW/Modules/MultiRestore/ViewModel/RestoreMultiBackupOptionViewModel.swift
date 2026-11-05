@@ -12,6 +12,9 @@ class RestoreMultiBackupOptionViewModel: ObservableObject {
 
     init() {
         for type in MultiBackupType.allCases {
+            if type == .google, !GoogleDriveBackup.isEnabled {
+                continue
+            }
             if type != .passkey {
                 list.append(BackupMultiViewModel.MultiItem(type: type, isBackup: false))
             }

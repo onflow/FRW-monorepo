@@ -18,12 +18,20 @@ class BackupGDTarget: BackupTarget {
     // MARK: Lifecycle
 
     init() {
+        guard GoogleDriveBackup.isEnabled else { return }
         guard let filePath = Bundle.main.path(forResource: "GoogleOAuth2", ofType: "plist") else {
             fatalError("fatalError ===> Can't find GoogleOAuth2.plist")
         }
         let plist = NSDictionary(contentsOfFile: filePath)
         if let clientID = plist?.object(forKey: "CLIENT_ID") as? String {
             self.clientID = clientID
+        }
+        // The prod OAuth client lives in GCP project 556216024625 (lilico-334404). When a new
+        // client exists, set GoogleDriveClientID in Info.plist (and swap the reversed-client-ID
+        // URL scheme next to it) without touching GoogleOAuth2.plist.
+        if let override = Bundle.main.object(forInfoDictionaryKey: "GoogleDriveClientID") as? String,
+           !override.isEmpty {
+            self.clientID = override
         }
         tryToRestoreLogin()
     }
@@ -114,7 +122,8 @@ extension BackupGDTarget {
     }
 
     private func googleRestoreLogin() async throws -> GIDGoogleUser {
-        try await withCheckedThrowingContinuation { continuation in
+        guard GoogleDriveBackup.isEnabled else { throw GoogleBackupError.missingLoginUser }
+        return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.main.async {
                 GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
                     guard let signInUser = user else {
@@ -129,7 +138,8 @@ extension BackupGDTarget {
     }
 
     private func googleUserLogin() async throws -> GIDGoogleUser {
-        try await withCheckedThrowingContinuation { continuation in
+        guard GoogleDriveBackup.isEnabled else { throw GoogleBackupError.missingLoginUser }
+        return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.main.async {
                 let topVC = Router.topPresentedController()
                 GIDSignIn.sharedInstance

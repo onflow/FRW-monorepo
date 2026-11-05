@@ -5,8 +5,8 @@
 	<key>lilico-web</key>
 	<string>https://web.api.wallet.flow.com/api/</string>
 	<key>lilico</key>
-	<string>https://api.lilico.app</string>
+	<string>https://api.wallet.flow.com</string>
 	<key>firebase-function</key>
-	<string>https://us-central1-lilico-334404.cloudfunctions.net</string>
+	<string>https://functions.wallet.flow.com</string>
 </dict>
 </plist>

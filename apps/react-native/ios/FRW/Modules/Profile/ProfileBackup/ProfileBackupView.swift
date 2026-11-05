@@ -25,7 +25,9 @@ extension BackupManager.BackupType {
 struct ProfileBackupView: RouteableView {
     // MARK: Internal
 
-    let types: [BackupManager.BackupType] = [.icloud, .googleDrive]
+    var types: [BackupManager.BackupType] {
+        GoogleDriveBackup.isEnabled ? [.icloud, .googleDrive] : [.icloud]
+    }
 
     var title: String {
         "backup".localized

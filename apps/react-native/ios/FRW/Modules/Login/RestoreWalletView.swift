@@ -35,10 +35,12 @@ struct RestoreWalletView: RouteableView {
                 .frame(width: 1, height: 32)
 
             ScrollView(showsIndicators: false) {
-                RestoreWalletView.Item(backupType: .google)
-                    .onTapGesture {
-                        viewModel.restoreWithCloudAction(type: .googleDrive)
-                    }
+                if GoogleDriveBackup.isEnabled {
+                    RestoreWalletView.Item(backupType: .google)
+                        .onTapGesture {
+                            viewModel.restoreWithCloudAction(type: .googleDrive)
+                        }
+                }
 
                 RestoreWalletView.Item(backupType: .phrase)
                     .onTapGesture {

@@ -103,39 +103,36 @@ global.chrome = {
   },
 } as any;
 
-// Mock Firebase Auth
-const mockAuth = {
-  currentUser: {
-    getIdToken: () => Promise.resolve('mock-token'),
-    isAnonymous: false,
-  },
-  isInitialized: false,
-};
-
-vi.mock('firebase/auth/web-extension', () => ({
-  getAuth: vi.fn(() => ({
-    currentUser: mockAuth.currentUser,
-    onAuthStateChanged: (callback) => {
-      // Simulate auth initialization
-      setTimeout(() => {
-        mockAuth.isInitialized = true;
-        callback(mockAuth.currentUser);
-      }, 0);
-      return () => {};
-    },
-  })),
-  signInWithCustomToken: vi.fn(),
-  signInAnonymously: vi.fn(),
-  signOut: vi.fn(),
-  onAuthStateChanged: vi.fn((auth, callback) => {
-    callback(mockAuth.currentUser);
-    return () => {};
-  }),
-  getApp: vi.fn(() => ({})),
-  initializeApp: vi.fn(() => ({})),
-  indexedDBLocalPersistence: vi.fn(),
-  setPersistence: vi.fn((_auth, _persistence) => ({})),
-}));
+// Mock FRW-Server auth tokens (replaces the old Firebase Auth mock)
+vi.mock('@/core/service/authentication-service', () => {
+  const service = {
+    init: vi.fn(() => Promise.resolve()),
+    waitForAuthInit: vi.fn(() => Promise.resolve()),
+    getAuth: vi.fn(() => ({
+      currentUser: {
+        uid: 'mock-uid',
+        isAnonymous: false,
+        displayName: 'mock-uid',
+        getIdToken: () => Promise.resolve('mock-token'),
+      },
+    })),
+    isLoggedIn: vi.fn(() => true),
+    getCurrentUid: vi.fn(() => 'mock-uid'),
+    getToken: vi.fn(() => Promise.resolve('mock-token')),
+    handleUnauthorized: vi.fn(() => Promise.resolve(false)),
+    withSigningToken: vi.fn((fn: (token: string) => Promise<unknown>) => fn('mock-token')),
+    setSession: vi.fn(() => Promise.resolve()),
+    signInWithCustomToken: vi.fn(() => Promise.resolve()),
+    signInAnonymously: vi.fn(() => Promise.resolve()),
+    signOut: vi.fn(() => Promise.resolve()),
+    getInstallationId: vi.fn(() => Promise.resolve('mock-installation-id')),
+  };
+  return {
+    default: service,
+    AuthenticationService: vi.fn(() => service),
+    AuthError: class AuthError extends Error {},
+  };
+});
 
 // Mock MixpanelService
 vi.mock('@onflow/frw-core', async (importOriginal) => {

@@ -11,6 +11,7 @@ import {
   HASH_ALGO_NUM_SHA2_256,
   SIGN_ALGO_NUM_ECDSA_secp256k1,
   FCLWalletConnectMethod,
+  LINK_URL,
 } from '@/shared/constant';
 import { isValidFlowAddress, withPrefix, consoleError } from '@/shared/utils';
 import AllSet from '@/ui/components/LandingPages/AllSet';
@@ -245,7 +246,7 @@ const Sync = () => {
         // Initialize WalletConnect
         const extensionOrigin = chrome.runtime.id
           ? `chrome-extension://${chrome.runtime.id}`
-          : 'https://fcw-link.lilico.app';
+          : LINK_URL;
 
         signClient = await SignClient.init({
           core: new Core({
@@ -255,7 +256,7 @@ const Sync = () => {
             name: 'Flow Wallet',
             description: 'Digital wallet created for everyone.',
             url: extensionOrigin,
-            icons: ['https://fcw-link.lilico.app/logo.png'],
+            icons: [`${LINK_URL}/logo.png`],
             redirect: {
               native: 'flowwallet://',
               universal: extensionOrigin,

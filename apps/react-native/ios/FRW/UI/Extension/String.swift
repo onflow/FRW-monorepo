@@ -164,7 +164,8 @@ extension String {
     func convertedAvatarString() -> String {
         if var comp = URLComponents(string: self) {
             if comp.host == "source.boringavatars.com" {
-                comp.host = isDevMode ? "test.lilico.app" : "lilico.app"
+                // lilico.app (web-next on Vercel) is not a Flow domain; same app on wallet.flow.com.
+                comp.host = isDevMode ? "web-dev.api.wallet.flow.com" : "web.api.wallet.flow.com"
                 comp.path = "/api/avatar\(comp.path)" + "&square=true"
                 return comp.url!.absoluteString
             }
@@ -187,7 +188,7 @@ extension String {
             return nil
         }
 
-        return URL(string: "https://lilico.app/api/svg2png?url=\(encodedString)")
+        return URL(string: "https://web.api.wallet.flow.com/api/svg2png?url=\(encodedString)")
     }
 }
 

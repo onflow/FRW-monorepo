@@ -6,12 +6,8 @@ import { formatJsonRpcResult } from '@walletconnect/jsonrpc-utils';
 import { getSdkError } from '@walletconnect/utils';
 import React, { useEffect, useState } from 'react';
 
-import { FCLWalletConnectMethod } from '@/shared/constant';
-import {
-  type AccountKeyRequest,
-  type DeviceInfo,
-  type DeviceInfoRequest,
-} from '@/shared/types';
+import { FCLWalletConnectMethod, LINK_URL } from '@/shared/constant';
+import { type AccountKeyRequest, type DeviceInfo, type DeviceInfoRequest } from '@/shared/types';
 import { consoleError } from '@/shared/utils';
 import closeCircle from '@/ui/assets/image/closeCircle.png';
 import dicon from '@/ui/assets/image/dicon.png';
@@ -54,8 +50,8 @@ const WalletConnect = (props: RevokePageProps) => {
           metadata: {
             name: 'Flow Walllet',
             description: 'Digital wallet created for everyone.',
-            url: 'https://fcw-link.lilico.app',
-            icons: ['https://fcw-link.lilico.app/logo.png'],
+            url: LINK_URL,
+            icons: [`${LINK_URL}/logo.png`],
           },
         });
         setWeb3Wallet(wallet);

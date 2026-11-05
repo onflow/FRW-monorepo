@@ -264,18 +264,37 @@ export function ConfirmRecoveryPhraseScreen({
         );
       }
 
-      if (!registerResponse.custom_token || !registerResponse.id) {
+      // FRW-Server now returns its own access/refresh tokens (auth-contract.md). The native side
+      // receives them as a JSON string through the existing signInWithCustomToken /
+      // saveMnemonic(customToken) bridge parameters, so the native module spec is unchanged.
+      // Builds whose native side still expects a Firebase custom token get custom_token while the
+      // server's Firebase fallback is on.
+      const sessionCredential = registerResponse.access_token
+        ? JSON.stringify({
+            id: registerResponse.id,
+            access_token: registerResponse.access_token,
+            refresh_token: registerResponse.refresh_token,
+            expires_in: registerResponse.expires_in,
+            refresh_expires_in: registerResponse.refresh_expires_in,
+          })
+        : registerResponse.custom_token;
+
+      if (!sessionCredential || !registerResponse.id) {
         throw new FRWError(
           ErrorCode.ACCOUNT_REGISTRATION_FAILED,
           'Registration response missing required fields',
-          { hasCustomToken: !!registerResponse.custom_token, hasId: !!registerResponse.id }
+          {
+            hasAccessToken: !!registerResponse.access_token,
+            hasCustomToken: !!registerResponse.custom_token,
+            hasId: !!registerResponse.id,
+          }
         );
       }
 
-      // Sign in with Firebase
+      // Store the session natively (was: Firebase signInWithCustomToken)
       try {
         if (bridge.signInWithCustomToken) {
-          await bridge.signInWithCustomToken(registerResponse.custom_token);
+          await bridge.signInWithCustomToken(sessionCredential);
         }
       } catch (authError: unknown) {
         throw new FRWError(
@@ -317,7 +336,7 @@ export function ConfirmRecoveryPhraseScreen({
         if (bridge.saveMnemonic) {
           await bridge.saveMnemonic(
             mnemonic,
-            registerResponse.custom_token,
+            sessionCredential,
             txId,
             username,
             evmAddress

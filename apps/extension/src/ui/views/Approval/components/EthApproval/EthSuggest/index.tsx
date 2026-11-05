@@ -2,7 +2,7 @@ import { Box, CardMedia, Divider, Stack, Typography } from '@mui/material';
 import { Contract, ethers } from 'ethers';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { EVM_ENDPOINT } from '@/shared/constant';
+import { API_BASE_URL, EVM_ENDPOINT } from '@/shared/constant';
 import { type CustomFungibleTokenInfo } from '@/shared/types';
 import { withPrefix, consoleError, networkToChainId } from '@/shared/utils';
 import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
@@ -180,8 +180,7 @@ const EthSuggest = (data) => {
                   <CardMedia
                     component="img"
                     image={
-                      data.params.data.params.options.image ??
-                      'https://lilico.app/placeholder-2.0.png'
+                      data.params.data.params.options.image ?? `${API_BASE_URL}/placeholder-2.0.png`
                     }
                     sx={{
                       height: '40px',

@@ -17,17 +17,27 @@ struct CheckUserResponse: Codable {
 
 // MARK: - LoginResponse
 
-struct LoginResponse: Codable {
-    let customToken: String
+/// `customToken` is only sent while the server still has a Firebase service account; it is
+/// ignored. Sessions come from `accessToken` / `refreshToken` (auth-contract.md).
+struct LoginResponse: Codable, AuthGrantCarrier {
+    let customToken: String?
     let id: String
+    let accessToken: String?
+    let refreshToken: String?
+    let expiresIn: Double?
+    let refreshExpiresIn: Double?
 }
 
 // MARK: - RegisterResponse
 
-struct RegisterResponse: Codable {
-    let customToken: String
+struct RegisterResponse: Codable, AuthGrantCarrier {
+    let customToken: String?
     let id: String
     let txId: String?
+    let accessToken: String?
+    let refreshToken: String?
+    let expiresIn: Double?
+    let refreshExpiresIn: Double?
 }
 
 // MARK: - UserInfoResponse

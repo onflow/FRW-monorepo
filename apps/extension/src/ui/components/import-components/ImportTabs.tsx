@@ -2,6 +2,7 @@ import { Box, Tab, Tabs, Typography } from '@mui/material';
 import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useEffect, useState } from 'react';
 
+import { GOOGLE_DRIVE_BACKUP_ENABLED } from '@/shared/constant';
 import { type PublicKeyAccount } from '@/shared/types';
 import { QrCodeIcon } from '@/ui/assets/icons/QrCodeIcon';
 import Googledrive from '@/ui/components/import-components/Googledrive';
@@ -69,7 +70,8 @@ const ImportTabs = ({
     isFromImport: boolean;
   }) => void;
 }) => {
-  const [selectedTab, setSelectedTab] = useState(0);
+  // Tab 0 (Google Drive) is hidden when Drive backup is disabled; start on Keystore instead.
+  const [selectedTab, setSelectedTab] = useState(GOOGLE_DRIVE_BACKUP_ENABLED ? 0 : 1);
   const [isSignLoading, setSignLoading] = useState(false);
   const [newKey, setKeyNew] = useState(true);
   const [isLogin, setIsLogin] = useState(false);
@@ -201,7 +203,11 @@ const ImportTabs = ({
         }}
         textColor="primary"
       >
-        <Tab sx={sxStyles} label={chrome.i18n.getMessage('Google__Drive')} />
+        <Tab
+          sx={GOOGLE_DRIVE_BACKUP_ENABLED ? sxStyles : { ...sxStyles, display: 'none' }}
+          label={chrome.i18n.getMessage('Google__Drive')}
+          disabled={!GOOGLE_DRIVE_BACKUP_ENABLED}
+        />
         <Tab sx={sxStyles} label={chrome.i18n.getMessage('Keystore')} />
         <Tab sx={sxStyles} label={chrome.i18n.getMessage('Recovery_Phrase')} />
         <Tab sx={sxStyles} label={chrome.i18n.getMessage('Private_Key')} />
@@ -219,11 +225,13 @@ const ImportTabs = ({
         />
       </Tabs>
       <TabPanel value={selectedTab} index={0}>
-        <Googledrive
-          setErrorMessage={setErrorMessage}
-          setShowError={setShowError}
-          handleGoogleAccountsFound={handleGoogleAccountsFound}
-        />
+        {GOOGLE_DRIVE_BACKUP_ENABLED && (
+          <Googledrive
+            setErrorMessage={setErrorMessage}
+            setShowError={setShowError}
+            handleGoogleAccountsFound={handleGoogleAccountsFound}
+          />
+        )}
       </TabPanel>
       <TabPanel value={selectedTab} index={1}>
         <JsonImport

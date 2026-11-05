@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { initializeStorage } from '@/data-model';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 import { Message, eventBus } from '@/extension-shared/messaging';
-import { EVENTS } from '@/shared/constant';
+import { API_BASE_URL, EVENTS } from '@/shared/constant';
 import { getUITypeName } from '@/ui/utils';
 import './sentry-react.config';
 
@@ -16,7 +16,7 @@ import Views from './views';
 function initAppMeta() {
   const head = document.querySelector('head');
   const icon = document.createElement('link');
-  icon.href = 'https://lilico.app/fcw-logo.png';
+  icon.href = `${API_BASE_URL}/fcw-logo.png`;
   icon.rel = 'icon';
   head?.appendChild(icon);
   const name = document.createElement('meta');

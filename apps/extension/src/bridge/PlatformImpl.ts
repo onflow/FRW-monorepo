@@ -248,7 +248,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.currentNetwork;
   }
 
-  async getJWT(): Promise<string> {
+  async getJWT(forceRefresh = false): Promise<string> {
     try {
       if (!this.walletController) {
         throw new Error('Wallet controller not initialized');
@@ -258,7 +258,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
         throw new Error('getJWT method not available on wallet controller');
       }
 
-      const jwt = await this.walletController.getJWT();
+      const jwt = await this.walletController.getJWT(forceRefresh);
       return jwt;
     } catch (error) {
       throw new Error('Failed to get JWT token: ' + (error as Error).message);

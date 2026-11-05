@@ -63,11 +63,17 @@ class AppDelegate: RCTDefaultReactNativeFactoryDelegate, UIApplicationDelegate {
 
         _ = LocalEnvManager.shared
         SecureEnclaveMigration.start()
-        FirebaseApp.configure()
+        // Firebase (lilico-334404) is gone: no configure(), so Auth, Messaging, Analytics,
+        // Crashlytics and Installations never start. See FirebaseRuntime in AuthSession.swift.
+        if FirebaseRuntime.isEnabled {
+            FirebaseApp.configure()
+        }
         ServiceConfig.configure()
         _ = ProfileManager.shared
-        Analytics.setAnalyticsCollectionEnabled(true)
-        Analytics.logEvent("ios_app_launch", parameters: [:])
+        if FirebaseRuntime.isEnabled {
+            Analytics.setAnalyticsCollectionEnabled(true)
+            Analytics.logEvent("ios_app_launch", parameters: [:])
+        }
 
         if !AppDelegate.isUnitTest {
             FirebaseConfig.start()
@@ -317,11 +323,15 @@ extension AppDelegate {
 //                log.error("[Push] web3wallet register error")
 //            }
         }
-        #if DEBUG
-            Messaging.messaging().setAPNSToken(deviceToken, type: .sandbox)
-        #else
-            Messaging.messaging().setAPNSToken(deviceToken, type: .prod)
-        #endif
+        // TODO(push): FCM is gone. Direct APNs delivery (upload this device token to the
+        // scanner and send from AWS) is not implemented yet, so push is off in this release.
+        if FirebaseRuntime.isEnabled {
+            #if DEBUG
+                Messaging.messaging().setAPNSToken(deviceToken, type: .sandbox)
+            #else
+                Messaging.messaging().setAPNSToken(deviceToken, type: .prod)
+            #endif
+        }
 
         Replies.didRegisterForRemoteNotifications(withDeviceToken: deviceToken)
     }
