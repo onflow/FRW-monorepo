@@ -6,36 +6,42 @@ echo "Stage: PRE-Xcode Build running.... "
 # for future reference
 # https://developer.apple.com/documentation/xcode/environment-variable-reference
 
-# Install dependencies via Homebrew for Xcode Cloud
-echo "[Xcode Cloud] Installing dependencies via Homebrew..."
-
-# Install Node.js if not available
-if ! command -v node >/dev/null 2>&1; then
-  echo "[Xcode Cloud] Installing Node.js via Homebrew..."
-  brew install node
-else
-  echo "[Xcode Cloud] Node.js already available: $(node -v)"
-fi
-
-# Install pnpm if not available
-if ! command -v pnpm >/dev/null 2>&1; then
-  echo "[Xcode Cloud] Installing pnpm via Homebrew..."
-  brew install pnpm
-else
-  echo "[Xcode Cloud] pnpm already available: $(pnpm -v)"
-fi
-
-# Install CocoaPods if not available
-if ! command -v pod >/dev/null 2>&1; then
-  echo "[Xcode Cloud] Installing CocoaPods via Homebrew..."
-  brew install cocoapods
-else
-  echo "[Xcode Cloud] CocoaPods already available: $(pod --version)"
-fi
+# Install toolchains without Homebrew. Xcode Cloud images for Xcode 26.x run on Intel Macs, where
+# Homebrew no longer ships bottles (since September 2026) and its from-source builds fail, so
+# Node.js comes from nodejs.org and Ruby is built by ruby-build directly (see below).
 
 # Store the repository root for later use
 REPO_ROOT=$(cd ../../../.. && pwd)
 echo "[Xcode Cloud] Repository root: $REPO_ROOT"
+
+# Install Node.js if not available
+NODE_VERSION="22.23.4"
+if ! command -v node >/dev/null 2>&1; then
+  case "$(uname -m)" in
+    arm64) NODE_ARCH="arm64" ;;
+    *) NODE_ARCH="x64" ;;
+  esac
+  NODE_TARBALL="node-v$NODE_VERSION-darwin-$NODE_ARCH.tar.gz"
+  echo "[Xcode Cloud] Installing Node.js $NODE_VERSION ($NODE_ARCH) from nodejs.org..."
+  curl -fsSL -o "$HOME/$NODE_TARBALL" "https://nodejs.org/dist/v$NODE_VERSION/$NODE_TARBALL"
+  curl -fsSL "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt" | grep " $NODE_TARBALL\$" | (cd "$HOME" && shasum -a 256 -c -)
+  tar -xzf "$HOME/$NODE_TARBALL" -C "$HOME"
+  export PATH="$HOME/node-v$NODE_VERSION-darwin-$NODE_ARCH/bin:$PATH"
+fi
+echo "[Xcode Cloud] Node.js $(node -v) at $(command -v node)"
+
+# Xcode build phases (React Native codegen, Hermes) don't inherit this script's PATH, so point
+# them at the same node through the .xcode.env.local file that with-environment.sh sources.
+echo "export NODE_BINARY=\"$(command -v node)\"" > "$REPO_ROOT/apps/react-native/ios/.xcode.env.local"
+
+# Install pnpm if not available, at the version pinned in package.json
+if ! command -v pnpm >/dev/null 2>&1; then
+  PNPM_VERSION=$(node -p "require('$REPO_ROOT/package.json').packageManager.split('@')[1]")
+  echo "[Xcode Cloud] Installing pnpm $PNPM_VERSION via npm..."
+  npm install -g "pnpm@$PNPM_VERSION"
+else
+  echo "[Xcode Cloud] pnpm already available: $(pnpm -v)"
+fi
 
 # Install JavaScript dependencies from monorepo root
 echo "[Xcode Cloud] Installing JavaScript dependencies..."
@@ -136,11 +142,14 @@ echo "[Xcode Cloud] Current directory for CocoaPods: $(pwd)"
 # Install and configure rbenv for Ruby version management
 echo "[Xcode Cloud] Setting up Ruby with rbenv..."
 
-# Install rbenv if not available
+# Install rbenv and ruby-build if not available. ruby-build compiles OpenSSL and libyaml itself
+# when Homebrew doesn't provide them.
 if ! command -v rbenv >/dev/null 2>&1; then
-  echo "[Xcode Cloud] Installing rbenv via Homebrew..."
-  brew install rbenv ruby-build
+  echo "[Xcode Cloud] Installing rbenv and ruby-build from GitHub..."
+  git clone --depth 1 --branch v1.3.2 https://github.com/rbenv/rbenv.git "$HOME/.rbenv"
+  git clone --depth 1 --branch v20261023 https://github.com/rbenv/ruby-build.git "$HOME/.rbenv/plugins/ruby-build"
 fi
+export RUBY_BUILD_VENDOR_OPENSSL=1
 
 # Initialize rbenv
 export PATH="$HOME/.rbenv/bin:$PATH"
@@ -157,7 +166,17 @@ fi
 
 echo "[Xcode Cloud] Installing Ruby $RUBY_VERSION..."
 if ! rbenv versions | grep -q "$RUBY_VERSION"; then
-  rbenv install "$RUBY_VERSION"
+  # Ruby's psych extension needs libyaml, which ruby-build doesn't vendor. Build it from source
+  # instead of relying on Homebrew.
+  LIBYAML_DIR="$HOME/.libyaml"
+  if [ ! -f "$LIBYAML_DIR/include/yaml.h" ]; then
+    echo "[Xcode Cloud] Building libyaml 0.2.5..."
+    curl -fsSL -o "$HOME/yaml-0.2.5.tar.gz" https://github.com/yaml/libyaml/releases/download/0.2.5/yaml-0.2.5.tar.gz
+    echo "c642ae9b75fee120b2d96c712538bd2cf283228d2337df2cf2988e3c02678ef4  $HOME/yaml-0.2.5.tar.gz" | shasum -a 256 -c -
+    tar -xzf "$HOME/yaml-0.2.5.tar.gz" -C "$HOME"
+    (cd "$HOME/yaml-0.2.5" && ./configure --prefix="$LIBYAML_DIR" --disable-dependency-tracking >/dev/null && make -j"$(sysctl -n hw.ncpu)" install >/dev/null)
+  fi
+  RUBY_CONFIGURE_OPTS="--with-libyaml-dir=$LIBYAML_DIR" rbenv install "$RUBY_VERSION"
 fi
 
 # Set Ruby version for this project
