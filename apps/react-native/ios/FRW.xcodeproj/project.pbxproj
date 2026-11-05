@@ -7977,7 +7977,7 @@
 				6A5F15F62A3185300035AC38 /* XCRemoteSwiftPackageReference "SwiftyBeaver" */,
 				150D3E352A58718700F7F2DC /* XCRemoteSwiftPackageReference "QRCode" */,
 				4E5D4FAA2AEF9A5A00DC419B /* XCRemoteSwiftPackageReference "DeviceGuru" */,
-				4E3682C52BB6A59100B24785 /* XCLocalSwiftPackageReference "LocalPackages/web3swift" */,
+				4E3682C52BB6A59100B24785 /* XCRemoteSwiftPackageReference "web3swift" */,
 				4E2E8CBB2C61B9A800095D5B /* XCRemoteSwiftPackageReference "LogView" */,
 				4E660F1A2C80B42F00E5239E /* XCRemoteSwiftPackageReference "CollectionViewPagingLayout" */,
 				4E09A1EC2CC794900099606E /* XCRemoteSwiftPackageReference "mixpanel-swift" */,
@@ -11262,13 +11262,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		4E3682C52BB6A59100B24785 /* XCLocalSwiftPackageReference "LocalPackages/web3swift" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = LocalPackages/web3swift;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		1500783028682B8900A00109 /* XCRemoteSwiftPackageReference "SPIndicator" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -11669,6 +11662,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.6.0;
+			};
+		};
+		4E3682C52BB6A59100B24785 /* XCRemoteSwiftPackageReference "web3swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Outblock/web3swift.git";
+			requirement = {
+				kind = revision;
+				revision = 12971bafa72bfc243cc4b6f35c107e12ddc6f106;
 			};
 		};
 		4E5B04302D0FFC0F00ED4C20 /* XCRemoteSwiftPackageReference "SwiftyDropbox" */ = {
@@ -12219,7 +12220,7 @@
 		};
 		4E3682C62BB6A59100B24785 /* web3swift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4E3682C52BB6A59100B24785 /* XCLocalSwiftPackageReference "LocalPackages/web3swift" */;
+			package = 4E3682C52BB6A59100B24785 /* XCRemoteSwiftPackageReference "web3swift" */;
 			productName = web3swift;
 		};
 		4E3BFD692C93F7EA00517FAB /* FlowWalletKit */ = {
@@ -12248,7 +12249,7 @@
 		};
 		4E947C912BBEB2E300E87A85 /* web3swift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4E3682C52BB6A59100B24785 /* XCLocalSwiftPackageReference "LocalPackages/web3swift" */;
+			package = 4E3682C52BB6A59100B24785 /* XCRemoteSwiftPackageReference "web3swift" */;
 			productName = web3swift;
 		};
 		4EB94AA62D115F5C00AEF3C9 /* SwiftyDropbox */ = {
